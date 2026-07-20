@@ -2783,3 +2783,408 @@ O modelo deverá permitir futuramente:
 ---
 
 # Fim do Capítulo 8
+
+---
+
+# 14. Modelo de Dados e Integridade
+
+Este capítulo define os princípios de organização dos dados do sistema.
+
+O objetivo é garantir:
+
+- consistência;
+- rastreabilidade;
+- histórico;
+- segurança;
+- evolução futura.
+
+---
+
+# 14.1 Princípio Geral
+
+O banco de dados deverá representar fielmente as regras do negócio.
+
+Nenhum dado crítico deverá existir sem relacionamento ou origem identificada.
+
+---
+
+# 14.2 Identificação dos Registros
+
+Toda entidade deverá possuir:
+
+- identificador único;
+- empresa vinculada;
+- data de criação;
+- data de atualização;
+- usuário responsável;
+- status.
+
+---
+
+# 14.3 Estrutura Multiempresa
+
+Todos os dados operacionais deverão possuir vínculo obrigatório com uma empresa.
+
+Exemplo:
+
+
+Empresa
+
+↓
+
+Unidades
+
+↓
+
+Clientes
+
+↓
+
+Agendamentos
+
+↓
+
+Comandas
+
+↓
+
+Financeiro
+
+
+Regra:
+
+Nenhuma consulta poderá retornar dados de outra empresa.
+
+---
+
+# 14.4 Estrutura Multiunidade
+
+Quando aplicável, os registros deverão possuir vínculo com uma unidade.
+
+Exemplos:
+
+- agenda;
+- caixa;
+- estoque;
+- profissionais;
+- movimentações.
+
+---
+
+# 14.5 Entidades Principais
+
+## Empresa
+
+Representa o cliente SaaS.
+
+Possui:
+
+- dados cadastrais;
+- plano contratado;
+- configurações.
+
+---
+
+## Unidade
+
+Representa uma loja física.
+
+Possui:
+
+- endereço;
+- horários;
+- equipe;
+- configurações.
+
+---
+
+## Usuário
+
+Representa acesso ao sistema.
+
+Possui:
+
+- autenticação;
+- permissões;
+- histórico.
+
+---
+
+## Profissional
+
+Representa o barbeiro.
+
+Possui:
+
+- comissão;
+- agenda;
+- serviços executados.
+
+---
+
+## Cliente
+
+Representa o consumidor final.
+
+Possui:
+
+- dados pessoais;
+- histórico de atendimento.
+
+---
+
+## Serviço
+
+Representa serviços oferecidos.
+
+Possui:
+
+- nome;
+- duração;
+- preço;
+- comissão.
+
+---
+
+## Produto
+
+Representa itens comercializados.
+
+Possui:
+
+- cadastro;
+- preço;
+- informações comerciais.
+
+---
+
+## Fornecedor
+
+Representa origem das mercadorias.
+
+---
+
+## Agendamento
+
+Representa uma reserva de horário.
+
+Relaciona:
+
+- cliente;
+- profissional;
+- serviço;
+- unidade.
+
+---
+
+## Comanda
+
+Representa o atendimento financeiro.
+
+Relaciona:
+
+- cliente;
+- serviços;
+- produtos;
+- profissional;
+- pagamento.
+
+---
+
+## Caixa
+
+Representa movimentação financeira operacional.
+
+Relaciona:
+
+- abertura;
+- recebimentos;
+- retiradas;
+- fechamento.
+
+---
+
+## Financeiro
+
+Representa consolidação financeira.
+
+Origem:
+
+
+Comanda
+
+↓
+
+Pagamento
+
+↓
+
+Caixa
+
+↓
+
+Financeiro
+
+
+---
+
+# 14.6 Snapshot Histórico
+
+Dados históricos devem ser armazenados no momento do evento.
+
+Exemplo:
+
+Serviço cadastrado:
+
+
+Corte
+
+Preço atual:
+R$ 50
+
+
+Atendimento realizado:
+
+
+Comanda
+
+Serviço:
+Corte
+
+Preço aplicado:
+R$ 45
+
+
+Alterações futuras não podem modificar históricos.
+
+---
+
+# 14.7 Integridade Financeira
+
+Todo lançamento financeiro deverá possuir:
+
+- origem;
+- valor;
+- data;
+- usuário;
+- referência.
+
+Exemplo:
+
+
+Financeiro
+
+↓
+
+Pagamento
+
+↓
+
+Comanda
+
+↓
+
+Cliente
+
+
+---
+
+# 14.8 Movimentação de Estoque
+
+O estoque deverá ser controlado por movimentações.
+
+Nunca alterar saldo diretamente.
+
+Exemplo:
+
+
+Entrada XML
+
+Venda
+
+Transferência
+
+Ajuste
+
+=
+
+Saldo Atual
+
+
+---
+
+# 14.9 Exclusão de Dados
+
+Não será permitida exclusão física de registros críticos.
+
+Aplicar:
+
+- status;
+- cancelamento;
+- inativação.
+
+---
+
+# 14.10 Auditoria dos Dados
+
+Alterações importantes deverão registrar:
+
+- usuário;
+- data;
+- ação;
+- registro afetado;
+- valores anteriores;
+- valores novos.
+
+---
+
+# 14.11 Consistência entre Módulos
+
+Os módulos deverão se comunicar através de regras oficiais.
+
+Exemplo:
+
+Agenda:
+
+cria atendimento.
+
+↓
+
+Comanda:
+
+registra execução.
+
+↓
+
+Pagamento:
+
+registra recebimento.
+
+↓
+
+Caixa:
+
+movimenta valores.
+
+↓
+
+Financeiro:
+
+consolida.
+
+---
+
+# 14.12 Preparação para Evolução
+
+O modelo deverá permitir futuras expansões:
+
+- aplicativo cliente;
+- franquias;
+- integrações;
+- BI;
+- IA;
+- novos módulos.
+
+---
+
+# Fim do Capítulo 9
