@@ -3188,3 +3188,319 @@ O modelo deverá permitir futuras expansões:
 ---
 
 # Fim do Capítulo 9
+
+---
+
+# 15. Padrões de Desenvolvimento e Controle de Qualidade
+
+Este capítulo define as regras para desenvolvimento, manutenção e evolução do sistema.
+
+O objetivo é garantir:
+
+- organização;
+- qualidade;
+- rastreabilidade;
+- facilidade de manutenção.
+
+---
+
+# 15.1 Desenvolvimento Orientado por Documentação
+
+Nenhuma funcionalidade deverá ser implementada sem documentação aprovada.
+
+Fluxo obrigatório:
+
+
+Documentação
+
+↓
+
+Planejamento
+
+↓
+
+Implementação
+
+↓
+
+Testes
+
+↓
+
+Revisão
+
+↓
+
+Aprovação
+
+↓
+
+Deploy
+
+
+---
+
+# 15.2 Organização por Módulos
+
+Todo desenvolvimento deverá respeitar a divisão modular definida no MASTER_PLAN.
+
+Cada módulo deverá possuir:
+
+- documentação funcional;
+- regras de negócio;
+- modelo de dados;
+- testes;
+- critérios de aceite.
+
+---
+
+# 15.3 Controle de Versão
+
+O projeto utilizará Git como controle oficial.
+
+Repositório:
+
+GitHub.
+
+---
+
+# 15.4 Estratégia de Branches
+
+Padrão:
+
+
+main
+
+↓
+
+develop
+
+↓
+
+feature/nome-do-modulo
+
+
+---
+
+## Main
+
+Representa versões estáveis.
+
+Somente código aprovado.
+
+---
+
+## Develop
+
+Ambiente de integração.
+
+Recebe funcionalidades concluídas.
+
+---
+
+## Feature
+
+Desenvolvimento individual.
+
+Exemplo:
+
+
+feature/modulo-clientes
+
+
+---
+
+# 15.5 Padrão de Commits
+
+Os commits deverão seguir padrão:
+
+
+tipo: descrição
+
+
+Exemplos:
+
+
+feat: adiciona cadastro de clientes
+
+fix: corrige validação de agenda
+
+docs: atualiza regras do caixa
+
+refactor: reorganiza serviço financeiro
+
+test: adiciona testes de pagamento
+
+
+---
+
+# 15.6 Revisão Obrigatória
+
+Nenhuma funcionalidade será considerada concluída sem revisão.
+
+A revisão deverá validar:
+
+- regras de negócio;
+- arquitetura;
+- segurança;
+- desempenho;
+- testes;
+- documentação.
+
+---
+
+# 15.7 Uso de Inteligência Artificial
+
+IA será utilizada como ferramenta de desenvolvimento.
+
+Porém:
+
+- não decide regras de negócio;
+- não altera arquitetura sem aprovação;
+- não remove funcionalidades documentadas.
+
+Toda sugestão de IA deverá ser validada.
+
+---
+
+# 15.8 Testes Obrigatórios
+
+Cada módulo deverá possuir:
+
+## Testes funcionais
+
+Validam comportamento do usuário.
+
+---
+
+## Testes de regra de negócio
+
+Validam processos internos.
+
+---
+
+## Testes de integração
+
+Validam comunicação entre módulos.
+
+---
+
+## Testes de segurança
+
+Validam permissões e acessos.
+
+---
+
+# 15.9 Definition of Done (DoD)
+
+Um módulo somente será considerado concluído quando:
+
+
+☐ Documentação aprovada
+
+☐ Banco implementado
+
+☐ Backend implementado
+
+☐ Frontend implementado
+
+☐ Permissões configuradas
+
+☐ Auditoria implementada
+
+☐ Testes executados
+
+☐ Revisão realizada
+
+☐ Documentação atualizada
+
+☐ Deploy homologado
+
+
+---
+
+# 15.10 Padrão de Código
+
+O projeto deverá seguir:
+
+- código limpo;
+- nomes claros;
+- baixo acoplamento;
+- funções pequenas;
+- separação de responsabilidades.
+
+---
+
+# 15.11 Segurança no Desenvolvimento
+
+Nenhuma implementação poderá:
+
+- expor dados sensíveis;
+- ignorar permissões;
+- permitir acesso entre empresas;
+- armazenar senhas inseguras.
+
+---
+
+# 15.12 Mudanças de Escopo
+
+Toda alteração importante deverá registrar:
+
+- motivo;
+- impacto;
+- decisão tomada;
+- aprovação.
+
+---
+
+# 15.13 Ambiente de Desenvolvimento
+
+O projeto deverá possuir ambientes separados:
+
+
+Desenvolvimento
+
+↓
+
+Homologação
+
+↓
+
+Produção
+
+
+Cada ambiente deverá possuir configurações próprias.
+
+---
+
+# 15.14 Deploy
+
+O processo oficial será:
+
+
+Código local
+
+↓
+
+GitHub
+
+↓
+
+Revisão
+
+↓
+
+Homologação
+
+↓
+
+Railway
+
+↓
+
+Produção
+
+
+---
+
+# Fim do Capítulo 10
