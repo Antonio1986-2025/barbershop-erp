@@ -2214,3 +2214,314 @@ Nenhuma operação crítica poderá ocorrer sem rastreabilidade.
 ---
 
 # Fim do Capítulo 6
+
+---
+
+# 12. Usuários, Perfis e Permissões
+
+Este capítulo define como o sistema controla acesso e responsabilidades.
+
+---
+
+# 12.1 Conceito Principal
+
+Usuário e Profissional são entidades diferentes.
+
+## Usuário
+
+Representa uma pessoa que acessa o sistema.
+
+Possui:
+
+- login;
+- senha;
+- permissões;
+- perfil de acesso.
+
+---
+
+## Profissional (Barbeiro)
+
+Representa uma pessoa que executa serviços.
+
+Possui:
+
+- agenda;
+- serviços realizados;
+- comissão;
+- histórico de atendimentos.
+
+---
+
+Um usuário poderá estar vinculado a um profissional.
+
+Exemplo:
+
+
+João
+
+Usuário:
+Administrador
+
+Profissional:
+Barbeiro
+
+
+---
+
+# 12.2 Acúmulo de Funções
+
+O sistema deverá permitir múltiplas funções para o mesmo usuário.
+
+Exemplos:
+
+## Proprietário
+
+Pode ser:
+
+- Administrador da empresa.
+- Barbeiro.
+
+---
+
+## Gerente
+
+Pode ser:
+
+- Gerente.
+- Barbeiro.
+
+---
+
+## Administrador
+
+Pode ser:
+
+- Administrador.
+- Barbeiro.
+
+---
+
+## Regra
+
+A permissão de acesso não deve depender da função executada como profissional.
+
+Ela deve ser controlada pelo módulo de permissões.
+
+---
+
+# 12.3 Perfis Iniciais
+
+## Administrador da Plataforma
+
+Responsável pelo sistema SaaS.
+
+Pode:
+
+- Gerenciar plataforma.
+- Gerenciar planos.
+- Administrar empresas.
+- Controlar recursos globais.
+
+---
+
+## Administrador da Empresa
+
+Responsável pela empresa contratante.
+
+Pode:
+
+- Gerenciar unidades.
+- Criar usuários.
+- Configurar permissões.
+- Visualizar todos os dados da empresa.
+- Gerenciar configurações.
+
+Observação:
+
+Criação de unidades depende do plano contratado.
+
+---
+
+## Gerente
+
+Responsável pela operação da unidade.
+
+Pode:
+
+- Gerenciar agenda.
+- Acompanhar equipe.
+- Gerenciar clientes.
+- Visualizar relatórios permitidos.
+- Operar processos da unidade.
+
+---
+
+## Recepcionista
+
+Responsável pelo atendimento inicial.
+
+Pode:
+
+- Cadastrar clientes.
+- Criar agendamentos.
+- Alterar agendamentos permitidos.
+- Consultar agenda.
+
+---
+
+## Caixa
+
+Responsável pela operação financeira do caixa.
+
+Pode:
+
+- Abrir caixa.
+- Receber pagamentos.
+- Registrar movimentações permitidas.
+- Fechar caixa conforme permissão.
+
+---
+
+## Barbeiro
+
+Responsável pela execução dos serviços.
+
+Pode:
+
+- Visualizar sua agenda.
+- Consultar seus atendimentos.
+- Atualizar etapas permitidas do atendimento.
+
+---
+
+# 12.4 Permissões
+
+As permissões serão baseadas em ações.
+
+Exemplo:
+
+
+Módulo
+↓
+Funcionalidade
+↓
+Ação
+
+
+Exemplo:
+
+
+Agenda
+
+Visualizar agenda
+Criar agendamento
+Alterar agendamento
+Cancelar agendamento
+
+---
+
+# 12.5 Permissões Customizadas
+
+O sistema deverá permitir criar permissões adicionais.
+
+Exemplo:
+
+Um barbeiro pode receber:
+
+- acesso ao caixa;
+- acesso a relatórios;
+- acesso ao cadastro de clientes.
+
+Sem alterar seu perfil principal.
+
+---
+
+# 12.6 Regra por Plano Contratado
+
+Algumas funcionalidades poderão depender do plano contratado.
+
+Exemplo:
+
+Plano básico:
+
+- 1 unidade.
+
+Plano profissional:
+
+- múltiplas unidades.
+
+Plano avançado:
+
+- recursos adicionais.
+
+A permissão deverá considerar:
+
+
+Plano contratado
+
+↓
+
+Permissão do usuário
+
+↓
+
+Acesso permitido
+
+
+---
+
+# 12.7 Hierarquia de Acesso
+
+Modelo:
+
+
+Administrador Plataforma
+
+    ↓
+
+Administrador Empresa
+
+    ↓
+
+Gerente
+
+    ↓
+
+Operadores
+
+    ↓
+
+Barbeiros
+
+
+---
+
+# 12.8 Segurança
+
+Toda ação deverá validar:
+
+- usuário autenticado;
+- empresa;
+- unidade;
+- permissão;
+- plano contratado.
+
+---
+
+# 12.9 Auditoria
+
+Alterações de permissões devem gerar auditoria.
+
+Registrar:
+
+- quem alterou;
+- data;
+- usuário afetado;
+- permissão anterior;
+- nova permissão;
+- motivo.
+
+---
+
+# Fim do Capítulo 7
