@@ -996,3 +996,425 @@ A ordem definida é:
 ---
 
 # Fim do Capítulo 3
+
+---
+
+# 9. Regras Globais do Sistema
+
+Estas regras são obrigatórias para todos os módulos.
+
+Elas definem comportamentos que não podem ser alterados por implementações específicas.
+
+---
+
+# 9.1 Caixa
+
+## RG001 — Caixa obrigatório
+
+Não é permitido receber pagamentos sem caixa aberto.
+
+Comportamento:
+
+- Bloquear pagamento.
+- Exibir:
+
+"Abra o caixa antes de receber pagamentos."
+
+---
+
+## RG002 — Apenas um caixa aberto
+
+Cada unidade poderá possuir apenas um caixa aberto por dia.
+
+---
+
+## RG003 — Fechamento do caixa
+
+Não é permitido fechar o caixa com comandas pendentes.
+
+O sistema deverá apresentar as pendências.
+
+---
+
+## RG004 — Caixa fechado
+
+Após o fechamento não é permitido:
+
+- Receber pagamentos.
+- Registrar retiradas.
+- Registrar suprimentos.
+
+---
+
+## RG005 — Reabertura
+
+Caixas fechados não podem ser reabertos.
+
+Correções deverão utilizar ajustes financeiros.
+
+---
+
+# 9.2 Comandas
+
+## RG006 — Origem
+
+Toda comanda deve possuir origem rastreável.
+
+Origem principal:
+
+Agendamento.
+
+---
+
+## RG007 — Criação
+
+A comanda será criada automaticamente quando o agendamento for confirmado.
+
+Status inicial:
+
+ABERTA.
+
+---
+
+## RG008 — Fechamento
+
+Após fechada, uma comanda não retorna para ABERTA.
+
+---
+
+## RG009 — Histórico
+
+Após fechamento não é permitido alterar:
+
+- preço;
+- quantidade;
+- barbeiro;
+- comissão;
+- pagamento.
+
+Os dados tornam-se históricos.
+
+---
+
+## RG010 — Estoque
+
+Produtos somente baixam estoque após fechamento da comanda.
+
+---
+
+# 9.3 Agenda
+
+## RG011 — Sobreposição
+
+Não pode existir conflito de horário para o mesmo barbeiro.
+
+---
+
+## RG012 — Bloqueios
+
+Não permitir agendamento durante:
+
+- folgas;
+- bloqueios;
+- horários indisponíveis.
+
+---
+
+## RG013 — Horário da unidade
+
+Não permitir agendamento fora do horário configurado.
+
+---
+
+## RG014 — Duração
+
+Alteração de duração deve validar conflitos.
+
+---
+
+## RG015 — Cancelamento
+
+Ao cancelar um agendamento:
+
+- liberar horário;
+- cancelar comanda vinculada;
+- registrar auditoria.
+
+---
+
+## RG016 — Não comparecimento
+
+Quando marcado como não compareceu:
+
+- atualizar status;
+- cancelar comanda;
+- liberar horário.
+
+---
+
+# 9.4 Atendimento e Caixa
+
+## RG017 — Independência do barbeiro após abertura da comanda
+
+Após a criação da comanda, o fluxo poderá continuar pelo caixa.
+
+O caixa poderá:
+
+- conferir atendimento;
+- finalizar comanda;
+- receber pagamento.
+
+O barbeiro não precisa obrigatoriamente concluir uma etapa no sistema para permitir o pagamento.
+
+---
+
+## RG018 — Fluxo oficial
+
+
+Agenda
+
+↓
+
+Chegada
+
+↓
+
+Atendimento
+
+↓
+
+Comanda
+
+↓
+
+Pagamento
+
+↓
+
+Caixa
+
+↓
+
+Financeiro
+
+
+---
+
+# 9.5 Financeiro
+
+## RG019 — Receita
+
+Receitas somente existem após fechamento da comanda.
+
+---
+
+## RG020 — Comissão
+
+Comissões são calculadas no fechamento da comanda.
+
+---
+
+## RG021 — Despesas
+
+Despesas nunca são apagadas fisicamente.
+
+Utilizar:
+
+- cancelamento;
+- estorno;
+- ajuste.
+
+---
+
+# 9.6 Estoque
+
+## RG022 — Estoque negativo
+
+O sistema nunca permitirá estoque negativo.
+
+---
+
+## RG023 — Baixa
+
+A baixa ocorre somente através de movimentação oficial.
+
+Exemplos:
+
+- venda;
+- ajuste;
+- entrada;
+- transferência.
+
+---
+
+## RG024 — Produtos vendidos
+
+Produtos utilizados em histórico de venda não podem ser excluídos.
+
+Somente inativados.
+
+---
+
+# 9.7 Clientes
+
+## RG025 — Identificação
+
+O telefone é o identificador principal do cliente dentro da empresa.
+
+---
+
+## RG026 — Exclusão
+
+Clientes não podem ser excluídos.
+
+Somente inativados.
+
+---
+
+## RG027 — Histórico
+
+Histórico de atendimento nunca pode ser apagado.
+
+---
+
+# 9.8 Profissionais
+
+## RG028 — Exclusão
+
+Barbeiros com histórico não podem ser excluídos.
+
+---
+
+## RG029 — Comissão
+
+Alterações futuras não alteram históricos.
+
+---
+
+## RG030 — Usuário e barbeiro
+
+Um barbeiro pode possuir diferentes permissões.
+
+Exemplos:
+
+- Dono + barbeiro.
+- Gerente + barbeiro.
+- Administrador + barbeiro.
+
+---
+
+# 9.9 Auditoria
+
+## RG031 — Operações auditadas
+
+Devem gerar registro:
+
+- pagamento;
+- cancelamento;
+- fechamento de caixa;
+- alteração financeira;
+- alteração de comissão;
+- alterações críticas.
+
+---
+
+## RG032 — Dados da auditoria
+
+Registrar:
+
+- usuário;
+- data;
+- hora;
+- operação;
+- registro afetado;
+- valores anteriores;
+- valores posteriores.
+
+---
+
+# 9.10 Integridade dos Dados
+
+## RG033 — Exclusão física
+
+Não permitido excluir:
+
+- clientes;
+- profissionais;
+- agendamentos;
+- comandas;
+- movimentações financeiras.
+
+---
+
+## RG034 — Snapshot histórico
+
+Valores históricos nunca dependem do cadastro atual.
+
+Exemplos:
+
+- preço;
+- comissão;
+- produto;
+- serviço.
+
+---
+
+## RG035 — Alteração de preço
+
+Novos preços afetam somente novos registros.
+
+---
+
+## RG036 — Troca de barbeiro
+
+Permitida somente antes do encerramento.
+
+Deve respeitar conflitos de agenda.
+
+---
+
+# 9.11 Segurança
+
+## RG037 — Permissões
+
+Toda ação deve validar permissão do usuário.
+
+---
+
+## RG038 — Autenticação
+
+Operações críticas exigem usuário autenticado.
+
+---
+
+## RG039 — Rastreabilidade financeira
+
+Todo valor financeiro deve possuir origem:
+
+
+Agendamento
+
+↓
+
+Comanda
+
+↓
+
+Pagamento
+
+↓
+
+Caixa
+
+↓
+
+Financeiro
+
+↓
+
+Relatórios
+
+
+---
+
+# Fim do Capítulo 4
