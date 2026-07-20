@@ -1418,3 +1418,292 @@ Relatórios
 ---
 
 # Fim do Capítulo 4
+
+---
+
+# 10. Premissas Arquiteturais
+
+Estas premissas definem as diretrizes técnicas obrigatórias do sistema.
+
+Elas devem ser respeitadas durante todo o desenvolvimento.
+
+---
+
+# 10.1 Integridade Transacional
+
+Toda operação crítica deverá ocorrer dentro de uma transação de banco de dados.
+
+Exemplos:
+
+- Criar agendamento e comanda.
+- Receber pagamento e atualizar caixa.
+- Fechar comanda e atualizar estoque.
+- Fechar caixa e gerar resumo financeiro.
+
+Regra:
+
+Caso uma etapa falhe, toda a operação deverá ser revertida.
+
+Nunca poderão existir dados parcialmente gravados.
+
+---
+
+# 10.2 Histórico Imutável
+
+Dados históricos não podem ser alterados.
+
+Exemplos:
+
+- preço;
+- comissão;
+- forma de pagamento;
+- valor recebido;
+- serviço executado;
+- produto vendido.
+
+Correções deverão utilizar:
+
+- ajustes;
+- estornos;
+- novos lançamentos.
+
+---
+
+# 10.3 Exclusão Lógica
+
+Registros operacionais não devem ser removidos fisicamente.
+
+Utilizar status.
+
+Exemplos:
+
+- Ativo.
+- Inativo.
+- Cancelado.
+
+Aplicável a:
+
+- clientes;
+- profissionais;
+- produtos;
+- serviços;
+- usuários;
+- agendamentos;
+- movimentações.
+
+---
+
+# 10.4 Auditoria Obrigatória
+
+Toda operação crítica deve gerar auditoria.
+
+O registro deve possuir:
+
+- usuário;
+- data;
+- hora;
+- módulo;
+- ação;
+- registro afetado;
+- valores anteriores;
+- valores posteriores;
+- motivo quando necessário.
+
+---
+
+# 10.5 Arquitetura Multi-tenant
+
+O sistema deverá suportar múltiplas empresas.
+
+Todos os dados deverão possuir vínculo obrigatório com a empresa.
+
+Regra:
+
+Nenhuma empresa poderá acessar informações de outra.
+
+---
+
+# 10.6 Segurança
+
+O sistema deverá utilizar controle baseado em permissões.
+
+Toda funcionalidade deverá validar:
+
+- usuário autenticado;
+- empresa;
+- unidade;
+- perfil;
+- permissão.
+
+---
+
+# 10.7 Performance
+
+Objetivos iniciais:
+
+Dashboard:
+até 2 segundos.
+
+Agenda:
+até 2 segundos.
+
+Pesquisa de clientes:
+até 1 segundo.
+
+Abertura de comanda:
+até 1 segundo.
+
+Consultas deverão ser otimizadas conforme crescimento do volume de dados.
+
+---
+
+# 10.8 Escalabilidade
+
+A arquitetura deverá permitir novos módulos sem reconstrução.
+
+Exemplos futuros:
+
+- WhatsApp;
+- aplicativo;
+- fidelidade;
+- marketplace;
+- BI;
+- inteligência artificial.
+
+---
+
+# 10.9 Integrações Externas
+
+Integrações não devem bloquear operações principais.
+
+Exemplos:
+
+- WhatsApp;
+- e-mail;
+- pagamentos;
+- APIs externas.
+
+Em caso de falha:
+
+- registrar erro;
+- manter operação principal;
+- realizar nova tentativa quando aplicável.
+
+---
+
+# 10.10 Consistência Financeira
+
+Todo valor financeiro deverá possuir origem rastreável.
+
+Fluxo oficial:
+
+
+Agendamento
+
+↓
+
+Comanda
+
+↓
+
+Pagamento
+
+↓
+
+Caixa
+
+↓
+
+Financeiro
+
+↓
+
+Comissão
+
+↓
+
+Relatórios
+
+
+Nenhuma receita ou despesa poderá surgir sem origem.
+
+---
+
+# 10.11 Padrão das Entidades
+
+Todas as tabelas deverão possuir:
+
+- ID único;
+- Empresa;
+- Data de criação;
+- Data de atualização;
+- Usuário responsável;
+- Status.
+
+Quando necessário:
+
+- Data de exclusão lógica;
+- Usuário responsável;
+- Motivo.
+
+---
+
+# 10.12 Design System
+
+Todo sistema deverá utilizar padrão visual único.
+
+Abrange:
+
+- botões;
+- tabelas;
+- formulários;
+- modais;
+- menus;
+- cores;
+- tipografia;
+- ícones;
+- espaçamentos;
+- responsividade.
+
+---
+
+# 10.13 Documentação Obrigatória
+
+Nenhuma funcionalidade será considerada concluída sem:
+
+- documentação atualizada;
+- regras revisadas;
+- testes realizados;
+- validação funcional;
+- aprovação.
+
+---
+
+# 10.14 Backup e Recuperação
+
+O sistema deverá possuir:
+
+- backups automáticos;
+- restauração controlada;
+- registro de falhas;
+- plano de recuperação.
+
+---
+
+# 10.15 Observabilidade
+
+O sistema deverá registrar eventos importantes.
+
+Exemplos:
+
+- erros;
+- falhas de integração;
+- problemas de autenticação;
+- lentidão;
+- exceções.
+
+Os registros não devem expor dados sensíveis.
+
+---
+
+# Fim do Capítulo 5
