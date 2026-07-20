@@ -521,3 +521,478 @@ Sem necessidade de reconstrução da base principal.
 ---
 
 # Fim do Capítulo 2
+
+---
+
+# 8. Estrutura dos Módulos
+
+O sistema será dividido em módulos independentes.
+
+Cada módulo possuirá:
+
+- Objetivo definido.
+- Responsabilidades próprias.
+- Regras de negócio específicas.
+- Dependências documentadas.
+- Critérios de aceite.
+- Testes próprios.
+
+Nenhum módulo deverá assumir responsabilidades pertencentes a outro.
+
+---
+
+# 8.1 Módulos do Sistema
+
+## Módulo 01 — Fundação e Infraestrutura
+
+Responsável por:
+
+- Configuração inicial do sistema.
+- Ambiente de desenvolvimento.
+- Banco de dados.
+- Autenticação base.
+- Estrutura técnica.
+
+Dependências:
+
+Nenhuma.
+
+---
+
+# Módulo 02 — Empresas
+
+Responsável por:
+
+- Cadastro da empresa.
+- Dados administrativos.
+- Plano contratado.
+- Configurações gerais.
+
+Regras principais:
+
+- Toda empresa possui isolamento de dados.
+- O plano contratado controla funcionalidades disponíveis.
+
+Dependências:
+
+- Infraestrutura.
+
+---
+
+# Módulo 03 — Unidades
+
+Responsável por:
+
+- Cadastro de unidades.
+- Configurações individuais.
+- Horários.
+- Dados operacionais.
+
+Dependências:
+
+- Empresas.
+
+---
+
+# Módulo 04 — Usuários e Permissões
+
+Responsável por:
+
+- Usuários do sistema.
+- Perfis de acesso.
+- Permissões.
+
+Perfis iniciais:
+
+- Administrador da Empresa.
+- Gerente.
+- Recepcionista.
+- Caixa.
+- Barbeiro.
+
+Observação:
+
+Usuário e Profissional são entidades diferentes.
+
+Dependências:
+
+- Empresas.
+- Unidades.
+
+---
+
+# Módulo 05 — Clientes
+
+Responsável por:
+
+- Cadastro de clientes.
+- Histórico de atendimento.
+- Dados de contato.
+
+Regra principal:
+
+O telefone será o identificador principal dentro da empresa.
+
+Dependências:
+
+- Empresas.
+- Unidades.
+
+---
+
+# Módulo 06 — Profissionais (Barbeiros)
+
+Responsável por:
+
+- Cadastro de barbeiros.
+- Comissão.
+- Horários.
+- Folgas.
+- Especialidades.
+
+Um profissional poderá estar vinculado a um usuário do sistema.
+
+Dependências:
+
+- Empresas.
+- Unidades.
+- Usuários.
+
+---
+
+# Módulo 07 — Serviços
+
+Responsável por:
+
+- Cadastro de serviços.
+- Preços.
+- Duração.
+- Comissão.
+
+Dependências:
+
+- Empresas.
+- Unidades.
+
+---
+
+# Módulo 08 — Agenda
+
+Responsável por:
+
+- Agendamentos.
+- Disponibilidade.
+- Bloqueios.
+- Folgas.
+- Horários.
+
+Regras:
+
+- Não permitir conflito de horários.
+- Respeitar horário da unidade.
+- Respeitar bloqueios.
+
+Dependências:
+
+- Clientes.
+- Profissionais.
+- Serviços.
+- Unidades.
+
+---
+
+# Módulo 09 — Comandas
+
+Responsável por:
+
+- Atendimento.
+- Serviços realizados.
+- Produtos consumidos.
+- Valores.
+- Histórico.
+
+Regra principal:
+
+Após fechamento, dados tornam-se históricos.
+
+Dependências:
+
+- Agenda.
+- Serviços.
+- Produtos.
+- Clientes.
+
+---
+
+# Módulo 10 — Caixa
+
+Responsável por:
+
+- Abertura.
+- Recebimentos.
+- Sangrias.
+- Suprimentos.
+- Fechamento.
+
+Regra principal:
+
+Nenhum pagamento sem caixa aberto.
+
+Dependências:
+
+- Comandas.
+
+---
+
+# Módulo 11 — Financeiro
+
+Responsável por:
+
+- Receitas.
+- Despesas.
+- Fluxo financeiro.
+- Comissões.
+- Relatórios.
+
+Dependências:
+
+- Caixa.
+- Comandas.
+
+---
+
+# Módulo 12 — Produtos
+
+Responsável por:
+
+Cadastro mestre de produtos.
+
+Não movimenta estoque.
+
+Inclui:
+
+- Nome.
+- Categoria.
+- Marca.
+- Código.
+- Preço.
+- Unidade de medida.
+
+Dependências:
+
+- Empresas.
+
+---
+
+# Módulo 13 — Fornecedores
+
+Responsável por:
+
+- Cadastro de fornecedores.
+- Histórico de relacionamento.
+
+Dependências:
+
+- Empresas.
+
+---
+
+# Módulo 14 — Compras
+
+Responsável por:
+
+- Pedidos.
+- Compras.
+- Histórico.
+
+Dependências:
+
+- Produtos.
+- Fornecedores.
+
+---
+
+# Módulo 15 — Entrada de Mercadorias
+
+Responsável por:
+
+- Entrada manual.
+- Importação XML.
+- Conferência de notas.
+
+Atualiza:
+
+- Estoque.
+
+Dependências:
+
+- Produtos.
+- Fornecedores.
+- Compras.
+
+---
+
+# Módulo 16 — Estoque
+
+Responsável por:
+
+- Saldo.
+- Movimentações.
+- Consumo.
+- Baixas.
+
+Regra:
+
+Estoque negativo não permitido.
+
+Dependências:
+
+- Produtos.
+- Entradas.
+- Comandas.
+
+---
+
+# Módulo 17 — Inventário
+
+Responsável por:
+
+- Contagem física.
+- Ajustes.
+- Divergências.
+
+Dependências:
+
+- Estoque.
+
+---
+
+# Módulo 18 — Transferências
+
+Responsável por:
+
+- Transferência entre unidades.
+- Histórico de movimentação.
+
+Dependências:
+
+- Unidades.
+- Estoque.
+
+---
+
+# Módulo 19 — Relatórios
+
+Responsável por:
+
+- Indicadores.
+- Relatórios operacionais.
+- Relatórios financeiros.
+
+Dependências:
+
+Todos os módulos.
+
+---
+
+# Módulo 20 — Auditoria
+
+Responsável por:
+
+- Logs.
+- Histórico.
+- Rastreamento.
+
+Dependências:
+
+Todos os módulos críticos.
+
+---
+
+# 8.2 Ordem Estratégica de Desenvolvimento
+
+A ordem definida é:
+
+
+01 Fundação
+
+↓
+
+02 Empresas
+
+↓
+
+03 Unidades
+
+↓
+
+04 Usuários e Permissões
+
+↓
+
+05 Clientes
+
+↓
+
+06 Profissionais
+
+↓
+
+07 Serviços
+
+↓
+
+08 Agenda
+
+↓
+
+09 Comandas
+
+↓
+
+10 Caixa
+
+↓
+
+11 Financeiro
+
+↓
+
+12 Produtos
+
+↓
+
+13 Fornecedores
+
+↓
+
+14 Compras
+
+↓
+
+15 Entrada XML
+
+↓
+
+16 Estoque
+
+↓
+
+17 Inventário
+
+↓
+
+18 Transferências
+
+↓
+
+19 Relatórios
+
+↓
+
+20 Auditoria
+
+
+---
+
+# Fim do Capítulo 3
