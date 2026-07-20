@@ -4164,3 +4164,341 @@ O desenvolvimento somente começa após:
 ---
 
 # Fim do Capítulo 12
+
+---
+
+# 18. Estrutura Inicial do Projeto
+
+Este capítulo define a organização técnica inicial do projeto.
+
+O objetivo é criar uma base preparada para desenvolvimento modular, manutenção e crescimento.
+
+---
+
+# 18.1 Estrutura Geral
+
+O projeto será organizado em uma arquitetura separada:
+
+
+barbershop-erp
+
+├── frontend
+
+├── backend
+
+├── database
+
+├── docs
+
+├── scripts
+
+└── README.md
+
+
+---
+
+# 18.2 Frontend
+
+Responsável pela aplicação web.
+
+Estrutura inicial:
+
+
+frontend
+
+├── src
+
+│ ├── components
+
+│ ├── pages
+
+│ ├── layouts
+
+│ ├── modules
+
+│ ├── services
+
+│ ├── hooks
+
+│ ├── utils
+
+│ └── styles
+
+├── public
+
+└── package.json
+
+
+---
+
+# 18.3 Backend
+
+Responsável pelas regras de negócio e APIs.
+
+Estrutura inicial:
+
+
+backend
+
+├── src
+
+│ ├── modules
+
+│ │
+│ ├── auth
+
+│ ├── companies
+
+│ ├── users
+
+│ ├── customers
+
+│ ├── professionals
+
+│ ├── services
+
+│ ├── scheduling
+
+│ ├── orders
+
+│ ├── cash
+
+│ └── finance
+
+│
+│ ├── database
+
+│ ├── middlewares
+
+│ ├── shared
+
+│ └── config
+
+├── tests
+
+└── package.json
+
+
+---
+
+# 18.4 Organização por Módulos
+
+Cada módulo deverá possuir suas próprias responsabilidades.
+
+Exemplo:
+
+
+customers
+
+├── controller
+
+├── service
+
+├── repository
+
+├── entity
+
+├── validation
+
+└── tests
+
+
+---
+
+# 18.5 Database
+
+Estrutura:
+
+
+database
+
+├── migrations
+
+├── seeds
+
+├── schemas
+
+└── backups
+
+
+Responsável por:
+
+- evolução do banco;
+- criação de tabelas;
+- dados iniciais;
+- recuperação.
+
+---
+
+# 18.6 Documentação
+
+Estrutura:
+
+
+docs
+
+├── MASTER_PLAN.md
+
+├── modules
+
+├── api
+
+├── database
+
+├── decisions
+
+└── manuals
+
+
+---
+
+# 18.7 Padrão de Nomenclatura
+
+## Arquivos
+
+Usar padrão:
+
+
+kebab-case
+
+
+Exemplo:
+
+
+customer-service.ts
+
+
+---
+
+## Variáveis
+
+Usar:
+
+
+camelCase
+
+
+Exemplo:
+
+
+customerName
+
+
+---
+
+## Banco de Dados
+
+Usar:
+
+
+snake_case
+
+
+Exemplo:
+
+
+created_at
+
+
+---
+
+# 18.8 Separação de Responsabilidades
+
+Regra:
+
+Frontend:
+
+- interface;
+- experiência;
+- validações simples.
+
+Backend:
+
+- regras;
+- segurança;
+- permissões;
+- cálculos.
+
+Banco:
+
+- integridade;
+- relacionamento;
+- histórico.
+
+---
+
+# 18.9 Primeiro Ambiente
+
+O ambiente inicial deverá permitir:
+
+- executar localmente;
+- conectar banco;
+- realizar login;
+- testar API;
+- executar frontend.
+
+---
+
+# 18.10 Controle de Configurações
+
+Cada ambiente terá suas próprias configurações:
+
+
+.env.development
+
+.env.test
+
+.env.production
+
+
+Nunca armazenar informações sensíveis no Git.
+
+---
+
+# 18.11 Preparação para Deploy
+
+Estrutura preparada para:
+
+
+GitHub
+
+↓
+
+Railway
+
+↓
+
+Produção
+
+
+---
+
+# 18.12 Primeiro Objetivo Técnico
+
+Antes dos módulos de negócio:
+
+Entregar:
+
+
+Projeto funcionando
+
+↓
+
+Frontend conectado
+
+↓
+
+Backend funcionando
+
+↓
+
+Banco conectado
+
+↓
+
+Login funcionando
+
+
+---
+
+# Fim do Capítulo 13
