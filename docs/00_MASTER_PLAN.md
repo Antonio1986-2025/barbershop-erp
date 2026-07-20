@@ -4502,3 +4502,318 @@ Login funcionando
 ---
 
 # Fim do Capítulo 13
+
+---
+
+# 19. Decisão da Stack Tecnológica
+
+Este capítulo define as tecnologias oficiais utilizadas no desenvolvimento do sistema.
+
+A escolha deve priorizar:
+
+- produtividade;
+- estabilidade;
+- manutenção;
+- comunidade;
+- escalabilidade;
+- facilidade de contratação de desenvolvedores.
+
+---
+
+# 19.1 Arquitetura Escolhida
+
+Modelo:
+
+
+Frontend Web
+
+↓
+
+API Backend
+
+↓
+
+Banco de Dados
+
+↓
+
+Serviços Externos
+
+
+Arquitetura:
+
+- aplicação web;
+- API independente;
+- banco relacional;
+- preparado para SaaS multiempresa.
+
+---
+
+# 19.2 Frontend
+
+Tecnologia:
+
+## React + TypeScript
+
+Motivos:
+
+- grande comunidade;
+- componentes reutilizáveis;
+- excelente para sistemas administrativos;
+- facilidade de manutenção.
+
+---
+
+Framework:
+
+## Next.js
+
+Responsabilidades:
+
+- aplicação web;
+- rotas;
+- organização;
+- otimização;
+- estrutura profissional.
+
+---
+
+Estilo:
+
+## Tailwind CSS
+
+Uso:
+
+- Design System;
+- componentes;
+- responsividade;
+- padronização visual.
+
+---
+
+Componentes:
+
+## Biblioteca de componentes
+
+Será definido durante implementação.
+
+Critérios:
+
+- acessibilidade;
+- consistência visual;
+- produtividade.
+
+---
+
+# 19.3 Backend
+
+Tecnologia:
+
+## Node.js + TypeScript
+
+Motivos:
+
+- mesma linguagem no frontend e backend;
+- produtividade;
+- ecossistema amplo.
+
+---
+
+Framework:
+
+## NestJS
+
+Responsabilidades:
+
+- API;
+- módulos;
+- regras de negócio;
+- segurança;
+- integrações.
+
+Motivos:
+
+- arquitetura organizada;
+- suporte a aplicações grandes;
+- separação por módulos.
+
+---
+
+# 19.4 Banco de Dados
+
+Tecnologia:
+
+## PostgreSQL
+
+Motivos:
+
+- banco relacional robusto;
+- excelente para sistemas ERP;
+- suporte a transações;
+- confiabilidade.
+
+---
+
+# 19.5 ORM
+
+Tecnologia:
+
+## Prisma
+
+Responsabilidades:
+
+- comunicação com banco;
+- migrations;
+- organização dos modelos.
+
+Motivos:
+
+- produtividade;
+- segurança de tipos;
+- integração com TypeScript.
+
+---
+
+# 19.6 Autenticação
+
+Modelo inicial:
+
+Autenticação baseada em:
+
+- usuário;
+- senha;
+- sessão segura;
+- controle de permissões.
+
+Preparado para:
+
+- recuperação de senha;
+- autenticação em dois fatores;
+- login social futuro.
+
+---
+
+# 19.7 Controle de Permissões
+
+Modelo:
+
+RBAC
+
+(Role Based Access Control)
+
+Estrutura:
+
+
+Usuário
+
+↓
+
+Perfil
+
+↓
+
+Permissões
+
+↓
+
+Ações permitidas
+
+
+---
+
+# 19.8 Ambiente de Desenvolvimento
+
+Ferramentas:
+
+- Git;
+- GitHub;
+- Node.js;
+- PostgreSQL;
+- editor de código;
+- variáveis de ambiente.
+
+---
+
+# 19.9 Deploy
+
+Plataforma inicial:
+
+## Railway
+
+Responsabilidades:
+
+- hospedagem backend;
+- banco;
+- serviços auxiliares.
+
+Fluxo:
+
+
+Código local
+
+↓
+
+GitHub
+
+↓
+
+Railway
+
+↓
+
+Produção
+
+
+---
+
+# 19.10 Preparação para Escala
+
+A arquitetura deverá permitir futuramente:
+
+- containers;
+- serviços separados;
+- filas;
+- cache;
+- monitoramento;
+- múltiplos servidores.
+
+---
+
+# 19.11 Decisão Inicial
+
+Stack oficial:
+
+
+Frontend:
+Next.js + React + TypeScript
+
+Backend:
+NestJS + TypeScript
+
+Banco:
+PostgreSQL
+
+ORM:
+Prisma
+
+Deploy:
+Railway
+
+Versionamento:
+GitHub
+
+
+---
+
+# 19.12 Regra de Alteração de Stack
+
+Mudanças de tecnologia deverão possuir:
+
+- justificativa;
+- análise de impacto;
+- aprovação;
+- atualização da documentação.
+
+---
+
+# Fim do Capítulo 14
