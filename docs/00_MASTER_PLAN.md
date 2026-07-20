@@ -2525,3 +2525,261 @@ Registrar:
 ---
 
 # Fim do Capítulo 7
+
+---
+
+# 13. Planos, Assinaturas e Limitações
+
+Este capítulo define como o sistema SaaS controla recursos conforme o plano contratado pela empresa.
+
+---
+
+# 13.1 Conceito de Plano
+
+Um plano representa o conjunto de recursos e limites disponíveis para uma empresa.
+
+Cada empresa estará vinculada a um plano ativo.
+
+Exemplo:
+
+
+Empresa
+
+↓
+
+Plano Contratado
+
+↓
+
+Recursos Liberados
+
+↓
+
+Limites Aplicados
+
+
+---
+
+# 13.2 Objetivos
+
+O sistema deverá permitir:
+
+- Diferentes níveis de contratação.
+- Liberação de funcionalidades.
+- Controle de limites.
+- Evolução de planos.
+- Crescimento do cliente.
+
+---
+
+# 13.3 Estrutura do Plano
+
+Um plano poderá possuir:
+
+- Nome.
+- Descrição.
+- Valor.
+- Periodicidade.
+- Status.
+- Recursos liberados.
+- Limites.
+
+---
+
+# 13.4 Exemplos de Limitações
+
+Os planos poderão controlar:
+
+## Unidades
+
+Exemplo:
+
+Plano básico:
+
+- 1 unidade.
+
+Plano profissional:
+
+- múltiplas unidades.
+
+---
+
+## Usuários
+
+Exemplo:
+
+Plano básico:
+
+- quantidade limitada.
+
+Plano avançado:
+
+- usuários ilimitados.
+
+---
+
+## Recursos
+
+Exemplo:
+
+Plano básico:
+
+- Agenda.
+- Clientes.
+- Serviços.
+
+Plano avançado:
+
+- Estoque.
+- Financeiro.
+- Relatórios avançados.
+
+---
+
+# 13.5 Regra de Acesso
+
+A permissão final deverá considerar:
+
+
+Plano contratado
+
+Permissão do usuário
+
+Configuração da empresa
+
+=
+
+Acesso permitido
+
+
+---
+
+# 13.6 Criação de Unidades
+
+A criação de unidades deverá respeitar o plano contratado.
+
+Fluxo:
+
+
+Administrador Empresa
+
+↓
+
+Solicita nova unidade
+
+↓
+
+Sistema verifica limite do plano
+
+↓
+
+Permitido?
+
+Sim
+↓
+Criar unidade
+
+Não
+↓
+Informar necessidade de upgrade
+
+
+---
+
+# 13.7 Alteração de Plano
+
+Alterações de plano deverão preservar os dados existentes.
+
+Exemplo:
+
+Upgrade:
+
+- Libera novos recursos.
+
+Downgrade:
+
+- Bloqueia novos recursos.
+- Mantém dados históricos.
+
+---
+
+# 13.8 Bloqueios por Plano
+
+O sistema nunca deverá apagar dados devido a alteração de plano.
+
+Exemplo:
+
+Empresa possui 5 unidades.
+
+Plano reduzido permite 1 unidade.
+
+Comportamento:
+
+- Manter unidades existentes.
+- Bloquear novas operações incompatíveis.
+- Solicitar regularização.
+
+---
+
+# 13.9 Assinaturas
+
+O sistema deverá estar preparado para futuras integrações de cobrança.
+
+Possíveis integrações:
+
+- Gateway de pagamento.
+- Cartão recorrente.
+- PIX recorrente.
+
+---
+
+# 13.10 Status da Assinatura
+
+Exemplos:
+
+
+Ativa
+
+↓
+
+Em atraso
+
+↓
+
+Suspensa
+
+↓
+
+Cancelada
+
+
+---
+
+# 13.11 Auditoria
+
+Alterações de plano deverão gerar registro:
+
+- empresa;
+- plano anterior;
+- novo plano;
+- usuário responsável;
+- data;
+- motivo.
+
+---
+
+# 13.12 Evolução Futura
+
+O modelo deverá permitir futuramente:
+
+- planos personalizados;
+- módulos adicionais;
+- cobrança por uso;
+- usuários extras;
+- unidades extras;
+- marketplace;
+- integrações premium.
+
+---
+
+# Fim do Capítulo 8
