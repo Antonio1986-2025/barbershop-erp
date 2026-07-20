@@ -215,3 +215,309 @@ Exemplos:
 ---
 
 # Fim do Capítulo 1
+
+---
+
+# 7. Arquitetura Geral do Sistema
+
+## 7.1 Modelo SaaS
+
+O sistema será desenvolvido como uma plataforma SaaS (Software as a Service).
+
+Uma única aplicação atenderá múltiplas empresas, garantindo isolamento completo dos dados entre clientes.
+
+Cada empresa possuirá:
+
+- Usuários próprios.
+- Unidades próprias.
+- Clientes próprios.
+- Profissionais próprios.
+- Agenda própria.
+- Financeiro próprio.
+- Estoque próprio.
+
+Nenhuma empresa poderá acessar dados de outra.
+
+---
+
+# 7.2 Modelo Multiempresa (Multi-tenant)
+
+O sistema utilizará arquitetura multi-tenant.
+
+A estrutura principal será:
+
+
+Plataforma
+↓
+Empresa
+↓
+Unidades
+↓
+Dados Operacionais
+
+
+Todos os registros operacionais deverão possuir vínculo obrigatório com uma empresa.
+
+Exemplo:
+
+
+Empresa
+├── Usuários
+├── Unidades
+├── Clientes
+├── Profissionais
+├── Serviços
+├── Produtos
+├── Agenda
+├── Comandas
+├── Caixa
+└── Financeiro
+
+
+---
+
+# 7.3 Modelo Multiunidade
+
+Uma empresa poderá possuir uma ou várias unidades.
+
+Cada unidade terá:
+
+- Configurações próprias.
+- Horário de funcionamento.
+- Equipe vinculada.
+- Caixa independente.
+- Estoque independente.
+- Agenda independente.
+
+Exemplo:
+
+
+Empresa X
+
+Unidade Centro
+    ↓
+    Agenda
+    Caixa
+    Estoque
+
+Unidade Shopping
+    ↓
+    Agenda
+    Caixa
+    Estoque
+
+---
+
+# 7.4 Separação de Responsabilidades
+
+O sistema será dividido em módulos independentes.
+
+Cada módulo terá responsabilidade própria.
+
+Exemplo:
+
+## Clientes
+
+Responsável por:
+
+- Cadastro.
+- Histórico.
+- Dados pessoais.
+
+Não é responsável por:
+
+- Pagamentos.
+- Estoque.
+- Financeiro.
+
+---
+
+## Agenda
+
+Responsável por:
+
+- Horários.
+- Reservas.
+- Disponibilidade.
+
+Não é responsável por:
+
+- Recebimentos.
+- Estoque.
+
+---
+
+## Comanda
+
+Responsável por:
+
+- Registrar atendimento.
+- Serviços executados.
+- Produtos consumidos.
+- Valores cobrados.
+
+---
+
+## Caixa
+
+Responsável por:
+
+- Recebimentos.
+- Movimentações financeiras do caixa.
+
+---
+
+## Financeiro
+
+Responsável por:
+
+- Consolidação financeira.
+- Receitas.
+- Despesas.
+- Relatórios.
+
+---
+
+# 7.5 Fluxo Oficial de Dados
+
+O fluxo principal do sistema será:
+
+
+Cliente
+
+↓
+
+Agendamento
+
+↓
+
+Atendimento
+
+↓
+
+Comanda
+
+↓
+
+Pagamento
+
+↓
+
+Caixa
+
+↓
+
+Financeiro
+
+↓
+
+Comissão
+
+↓
+
+Relatórios
+
+
+Este fluxo representa a origem oficial das informações financeiras.
+
+Nenhum valor financeiro deverá existir sem origem rastreável.
+
+---
+
+# 7.6 Módulos Principais
+
+O sistema será organizado nos seguintes módulos:
+
+## Administração
+
+- Empresas.
+- Unidades.
+- Usuários.
+- Permissões.
+- Configurações.
+
+---
+
+## Operação
+
+- Agenda.
+- Clientes.
+- Profissionais.
+- Serviços.
+- Comandas.
+- Caixa.
+
+---
+
+## Gestão
+
+- Financeiro.
+- Produtos.
+- Fornecedores.
+- Compras.
+- Entrada XML.
+- Estoque.
+- Inventário.
+- Transferências.
+
+---
+
+## Controle
+
+- Auditoria.
+- Relatórios.
+- Histórico.
+
+---
+
+# 7.7 Princípios Técnicos
+
+A arquitetura deverá seguir:
+
+## Modularidade
+
+Cada módulo deverá possuir baixo acoplamento.
+
+---
+
+## Escalabilidade
+
+Novos módulos poderão ser adicionados sem alterar módulos existentes.
+
+---
+
+## Segurança
+
+Toda operação deverá respeitar:
+
+- autenticação;
+- autorização;
+- empresa;
+- unidade;
+- permissões.
+
+---
+
+## Rastreabilidade
+
+Toda operação crítica deverá possuir histórico.
+
+---
+
+# 7.8 Evolução Futura
+
+A arquitetura deverá permitir futuramente:
+
+- Aplicativo mobile.
+- Portal do cliente.
+- Integração WhatsApp.
+- Integração com pagamentos.
+- Marketplace.
+- Inteligência Artificial.
+- BI.
+
+Sem necessidade de reconstrução da base principal.
+
+---
+
+# Fim do Capítulo 2
