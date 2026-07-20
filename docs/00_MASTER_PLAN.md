@@ -3880,3 +3880,287 @@ Construir um ERP completo para barbearias, preparado para:
 ---
 
 # Fim do Capítulo 11
+
+---
+
+# 17. Especificação Técnica Inicial
+
+Este capítulo define a base técnica do projeto.
+
+O objetivo é estabelecer padrões antes do início da implementação.
+
+---
+
+# 17.1 Objetivo da Arquitetura
+
+O sistema será desenvolvido como uma aplicação SaaS moderna, preparada para:
+
+- múltiplas empresas;
+- múltiplas unidades;
+- crescimento de usuários;
+- novos módulos;
+- integrações futuras.
+
+A arquitetura deverá priorizar:
+
+- segurança;
+- organização;
+- manutenção;
+- escalabilidade.
+
+---
+
+# 17.2 Arquitetura Geral
+
+Modelo inicial:
+
+
+Usuário
+
+↓
+
+Frontend Web
+
+↓
+
+API Backend
+
+↓
+
+Banco de Dados
+
+↓
+
+Serviços Externos
+
+
+---
+
+# 17.3 Frontend
+
+Responsável por:
+
+- interface do usuário;
+- telas;
+- componentes;
+- validações visuais;
+- experiência do usuário.
+
+Requisitos:
+
+- responsivo;
+- componentes reutilizáveis;
+- Design System único;
+- controle de permissões.
+
+---
+
+# 17.4 Backend
+
+Responsável por:
+
+- regras de negócio;
+- segurança;
+- validações;
+- integrações;
+- comunicação com banco.
+
+Nenhuma regra crítica deverá existir somente no frontend.
+
+---
+
+# 17.5 Banco de Dados
+
+Responsável por:
+
+- armazenamento;
+- integridade;
+- relacionamentos;
+- histórico;
+- auditoria.
+
+Requisitos:
+
+- suporte multiempresa;
+- controle de histórico;
+- exclusão lógica;
+- transações.
+
+---
+
+# 17.6 API
+
+O sistema deverá utilizar comunicação baseada em API.
+
+Princípios:
+
+- endpoints organizados por módulo;
+- autenticação obrigatória;
+- validação de permissões;
+- respostas padronizadas.
+
+Exemplo:
+
+
+/api/clientes
+
+/api/agendamentos
+
+/api/comandas
+
+/api/caixa
+
+
+---
+
+# 17.7 Autenticação
+
+O sistema deverá possuir:
+
+- login seguro;
+- controle de sessão;
+- recuperação de acesso;
+- controle de permissões.
+
+---
+
+# 17.8 Controle de Permissões
+
+Fluxo:
+
+
+Usuário
+
+↓
+
+Empresa
+
+↓
+
+Unidade
+
+↓
+
+Perfil
+
+↓
+
+Permissão
+
+↓
+
+Ação autorizada
+
+
+---
+
+# 17.9 Ambientes
+
+O projeto possuirá ambientes separados:
+
+## Desenvolvimento
+
+Uso local.
+
+---
+
+## Homologação
+
+Validação antes da produção.
+
+---
+
+## Produção
+
+Ambiente oficial dos clientes.
+
+---
+
+# 17.10 Controle de Configurações
+
+Informações sensíveis não devem ficar no código.
+
+Exemplos:
+
+- senhas;
+- chaves;
+- URLs;
+- tokens.
+
+Utilizar variáveis de ambiente.
+
+---
+
+# 17.11 Preparação para Deploy
+
+O projeto deverá estar preparado para:
+
+- GitHub;
+- Railway;
+- serviços equivalentes.
+
+Fluxo:
+
+
+Desenvolvimento local
+
+↓
+
+GitHub
+
+↓
+
+Deploy Railway
+
+↓
+
+Produção
+
+
+---
+
+# 17.12 Padrão de Desenvolvimento
+
+Cada módulo deverá seguir:
+
+
+Modelo de dados
+
+↓
+
+Backend
+
+↓
+
+API
+
+↓
+
+Frontend
+
+↓
+
+Testes
+
+↓
+
+Documentação
+
+
+---
+
+# 17.13 Critério para Início do Código
+
+O desenvolvimento somente começa após:
+
+✅ documentação aprovada;
+
+✅ arquitetura definida;
+
+✅ módulo especificado;
+
+✅ regras revisadas.
+
+---
+
+# Fim do Capítulo 12
