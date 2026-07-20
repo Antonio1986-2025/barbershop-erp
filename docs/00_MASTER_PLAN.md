@@ -3504,3 +3504,379 @@ Produção
 ---
 
 # Fim do Capítulo 10
+
+---
+
+# 16. Roadmap de Desenvolvimento
+
+Este capítulo define a ordem estratégica de execução do sistema.
+
+O desenvolvimento será realizado em fases.
+
+Cada fase deverá entregar valor funcional antes do início da próxima.
+
+---
+
+# 16.1 Estratégia Geral
+
+O sistema será construído seguindo o princípio:
+
+
+Fundação
+
+↓
+
+Operação básica
+
+↓
+
+Processos financeiros
+
+↓
+
+Gestão
+
+↓
+
+Escala e inteligência
+
+
+---
+
+# Fase 0 — Fundação do Sistema
+
+## Objetivo
+
+Criar a base técnica do projeto.
+
+## Entregas:
+
+- Estrutura inicial do projeto.
+- Configuração do ambiente.
+- Banco de dados inicial.
+- Controle de versão.
+- Configuração de ambientes.
+- Autenticação base.
+- Estrutura multiempresa.
+
+## Critério de conclusão:
+
+Sistema executando localmente com arquitetura preparada.
+
+---
+
+# Fase 1 — Cadastros Fundamentais
+
+## Objetivo
+
+Criar a base operacional da barbearia.
+
+## Módulos:
+
+- Empresas.
+- Unidades.
+- Usuários.
+- Permissões.
+- Clientes.
+- Profissionais.
+- Serviços.
+
+## Entregas:
+
+Empresa consegue:
+
+- cadastrar unidade;
+- cadastrar equipe;
+- cadastrar clientes;
+- cadastrar serviços.
+
+## Critério de conclusão:
+
+Cadastros funcionando com controle de acesso.
+
+---
+
+# Fase 2 — Agenda e Atendimento
+
+## Objetivo
+
+Criar o fluxo principal da operação.
+
+## Módulos:
+
+- Agenda.
+- Bloqueios.
+- Folgas.
+- Agendamento.
+- Comanda.
+
+## Entregas:
+
+Cliente consegue:
+
+- possuir cadastro;
+- agendar atendimento;
+- ser atendido;
+- gerar comanda.
+
+## Critério de conclusão:
+
+Fluxo completo:
+
+
+Agendamento
+
+↓
+
+Chegada
+
+↓
+
+Atendimento
+
+↓
+
+Comanda
+
+
+---
+
+# Fase 3 — Caixa e Pagamentos
+
+## Objetivo
+
+Controlar recebimentos.
+
+## Módulos:
+
+- Caixa.
+- Pagamentos.
+- Fechamento.
+
+## Entregas:
+
+Permitir:
+
+- abrir caixa;
+- receber pagamento;
+- fechar caixa;
+- registrar movimentações.
+
+## Critério de conclusão:
+
+Fluxo:
+
+
+Comanda
+
+↓
+
+Pagamento
+
+↓
+
+Caixa
+
+
+funcionando.
+
+---
+
+# Fase 4 — Financeiro
+
+## Objetivo
+
+Criar visão administrativa.
+
+## Módulos:
+
+- Receitas.
+- Despesas.
+- Comissão.
+- Relatórios financeiros.
+
+## Entregas:
+
+Administrador consegue:
+
+- visualizar faturamento;
+- acompanhar comissões;
+- controlar despesas.
+
+---
+
+# Fase 5 — Produtos e Estoque
+
+## Objetivo
+
+Controlar mercadorias.
+
+## Módulos:
+
+- Produtos.
+- Fornecedores.
+- Compras.
+- Entrada XML.
+- Estoque.
+- Inventário.
+
+## Entregas:
+
+Permitir:
+
+- cadastro de produtos;
+- entrada de mercadorias;
+- controle de saldo;
+- baixa por venda.
+
+---
+
+# Fase 6 — Relatórios e Auditoria
+
+## Objetivo
+
+Criar controle gerencial.
+
+## Módulos:
+
+- Relatórios.
+- Auditoria.
+
+## Entregas:
+
+Relatórios:
+
+- vendas;
+- clientes;
+- profissionais;
+- estoque;
+- financeiro.
+
+---
+
+# Fase 7 — Recursos Avançados
+
+## Objetivo
+
+Preparar crescimento do SaaS.
+
+Possíveis módulos:
+
+- WhatsApp.
+- Aplicativo cliente.
+- Fidelidade.
+- Marketplace.
+- BI.
+- Inteligência Artificial.
+- Integrações externas.
+
+---
+
+# 16.2 Ordem Oficial de Implementação
+
+
+01 Fundação
+
+↓
+
+02 Empresas
+
+↓
+
+03 Unidades
+
+↓
+
+04 Usuários e Permissões
+
+↓
+
+05 Clientes
+
+↓
+
+06 Profissionais
+
+↓
+
+07 Serviços
+
+↓
+
+08 Agenda
+
+↓
+
+09 Comandas
+
+↓
+
+10 Caixa
+
+↓
+
+11 Financeiro
+
+↓
+
+12 Produtos
+
+↓
+
+13 Fornecedores
+
+↓
+
+14 Compras
+
+↓
+
+15 Entrada XML
+
+↓
+
+16 Estoque
+
+↓
+
+17 Inventário
+
+↓
+
+18 Relatórios
+
+↓
+
+19 Auditoria
+
+↓
+
+20 Recursos Avançados
+
+
+---
+
+# 16.3 Regra de Evolução
+
+Nenhuma fase deverá iniciar sem:
+
+- documentação aprovada;
+- fase anterior validada;
+- testes realizados;
+- revisão técnica.
+
+---
+
+# 16.4 Objetivo Final
+
+Construir um ERP completo para barbearias, preparado para:
+
+- pequenas barbearias;
+- redes;
+- franquias;
+- múltiplas unidades;
+- crescimento SaaS.
+
+---
+
+# Fim do Capítulo 11
