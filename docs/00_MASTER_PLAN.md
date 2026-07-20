@@ -5078,3 +5078,229 @@ Fundação e Infraestrutura
 ---
 
 # Fim do Capítulo 15
+
+---
+
+# 21. Módulo 01 — Fundação e Infraestrutura
+
+Este módulo representa a base técnica do sistema.
+
+Nenhuma funcionalidade de negócio será desenvolvida antes da conclusão deste módulo.
+
+---
+
+# 21.1 Objetivo
+
+Criar uma estrutura profissional de desenvolvimento preparada para:
+
+- crescimento do ERP;
+- desenvolvimento modular;
+- múltiplas equipes;
+- manutenção futura;
+- deploy em produção.
+
+---
+
+# 21.2 Escopo
+
+Este módulo inclui:
+
+- estrutura inicial do projeto;
+- frontend;
+- backend;
+- banco de dados;
+- comunicação entre serviços;
+- configurações;
+- padrões iniciais.
+
+---
+
+# 21.3 Estrutura Final Esperada
+
+
+barbershop-erp
+
+├── frontend
+│
+├── backend
+│
+├── database
+│
+├── docs
+│
+├── scripts
+│
+└── README.md
+
+
+---
+
+# 21.4 Frontend
+
+Tecnologia:
+
+Next.js + TypeScript
+
+Responsabilidades iniciais:
+
+- iniciar aplicação;
+- configurar estrutura;
+- criar layout base;
+- preparar componentes;
+- preparar comunicação com API.
+
+---
+
+# 21.5 Backend
+
+Tecnologia:
+
+NestJS + TypeScript
+
+Responsabilidades iniciais:
+
+- iniciar API;
+- configurar módulos;
+- preparar arquitetura;
+- criar endpoint inicial;
+- configurar conexão futura com banco.
+
+---
+
+# 21.6 Banco de Dados
+
+Tecnologia:
+
+PostgreSQL
+
+ORM:
+
+Prisma
+
+Responsabilidades:
+
+- criar conexão;
+- configurar migrations;
+- preparar models.
+
+Neste módulo:
+
+Não serão criadas regras de negócio.
+
+---
+
+# 21.7 Comunicação Inicial
+
+Fluxo de teste:
+
+
+Frontend
+
+↓
+
+API Backend
+
+↓
+
+Resposta JSON
+
+↓
+
+Frontend exibe resultado
+
+
+Objetivo:
+
+Validar comunicação entre aplicações.
+
+---
+
+# 21.8 Configurações
+
+Criar:
+
+
+.env.example
+
+
+Contendo exemplos de:
+
+- banco;
+- portas;
+- ambiente;
+- chaves futuras.
+
+---
+
+# 21.9 Padrão Inicial de Código
+
+Obrigatório:
+
+- TypeScript;
+- ESLint;
+- Prettier;
+- organização modular;
+- nomes padronizados.
+
+---
+
+# 21.10 Critérios de Aceite
+
+O módulo será considerado concluído quando:
+
+
+☐ Frontend inicia
+
+☐ Backend inicia
+
+☐ Banco conecta
+
+☐ Prisma configurado
+
+☐ API responde
+
+☐ Frontend consome API
+
+☐ Projeto versionado
+
+☐ Documentação atualizada
+
+
+---
+
+# 21.11 Primeiro Deploy
+
+Após validação local:
+
+Realizar:
+
+
+GitHub
+
+↓
+
+Railway
+
+↓
+
+Teste de ambiente
+
+
+---
+
+# 21.12 Fora do Escopo
+
+Não será desenvolvido neste módulo:
+
+- clientes;
+- agenda;
+- caixa;
+- financeiro;
+- estoque;
+- telas comerciais.
+
+Esses pertencem aos próximos módulos.
+
+---
+
+# Fim do Capítulo 16
