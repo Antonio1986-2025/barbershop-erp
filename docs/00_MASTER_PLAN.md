@@ -1707,3 +1707,510 @@ Os registros não devem expor dados sensíveis.
 ---
 
 # Fim do Capítulo 5
+
+---
+
+# 11. Fluxos Operacionais Oficiais
+
+Esta seção define os fluxos oficiais do sistema.
+
+Todos os módulos deverão respeitar estes processos.
+
+---
+
+# 11.1 Fluxo Principal — Atendimento Completo
+
+Objetivo:
+
+Representar o ciclo completo de atendimento.
+
+
+Cliente
+
+↓
+
+Agendamento
+
+↓
+
+Confirmação
+
+↓
+
+Chegada
+
+↓
+
+Atendimento
+
+↓
+
+Comanda
+
+↓
+
+Pagamento
+
+↓
+
+Caixa
+
+↓
+
+Financeiro
+
+↓
+
+Comissão
+
+↓
+
+Relatórios
+
+
+---
+
+# 11.2 Fluxo de Agendamento
+
+
+Cliente solicita horário
+
+↓
+
+Selecionar serviço
+
+↓
+
+Selecionar barbeiro
+
+↓
+
+Validar disponibilidade
+
+↓
+
+Horário disponível?
+
+Não
+  ↓
+Informar conflito
+
+Sim
+  ↓
+
+Criar agendamento
+
+↓
+
+Criar comanda ABERTA
+
+↓
+
+Aguardar atendimento
+
+
+Regras:
+
+- Não permitir conflito de horários.
+- Respeitar horário da unidade.
+- Respeitar folgas e bloqueios.
+
+---
+
+# 11.3 Fluxo de Atendimento
+
+
+Cliente chega
+
+↓
+
+Atendimento iniciado
+
+↓
+
+Serviço realizado
+
+↓
+
+Adicionar produtos (opcional)
+
+↓
+
+Finalizar atendimento
+
+↓
+
+Enviar para caixa
+
+
+---
+
+# 11.4 Continuidade pelo Caixa
+
+Após a criação da comanda, o fluxo não depende obrigatoriamente do barbeiro.
+
+Situação:
+
+O barbeiro iniciou outro atendimento sem registrar a conclusão no sistema.
+
+Comportamento:
+
+O caixa poderá:
+
+- localizar a comanda;
+- conferir serviços;
+- ajustar informações permitidas;
+- finalizar atendimento;
+- receber pagamento.
+
+Regra:
+
+A comanda aberta permite continuidade operacional independente do barbeiro.
+
+---
+
+# 11.5 Fluxo de Cancelamento
+
+
+Cancelar agendamento
+
+↓
+
+Existe comanda?
+
+Não
+↓
+Liberar horário
+
+Sim
+↓
+Cancelar comanda
+
+↓
+
+Registrar auditoria
+
+
+---
+
+# 11.6 Fluxo de Não Comparecimento
+
+
+Horário expirado
+
+↓
+
+Cliente compareceu?
+
+Não
+
+↓
+
+Status:
+Não Compareceu
+
+↓
+
+Cancelar comanda
+
+↓
+
+Liberar horário
+
+↓
+
+Registrar histórico
+
+
+---
+
+# 11.7 Venda de Produto sem Agendamento
+
+
+Cliente no balcão
+
+↓
+
+Selecionar produtos
+
+↓
+
+Criar comanda de venda
+
+↓
+
+Verificar caixa aberto
+
+↓
+
+Receber pagamento
+
+↓
+
+Baixar estoque
+
+↓
+
+Registrar financeiro
+
+
+---
+
+# 11.8 Fluxo de Abertura do Caixa
+
+
+Início do expediente
+
+↓
+
+Verificar caixa aberto
+
+↓
+
+Existe?
+
+Sim
+↓
+Bloquear nova abertura
+
+Não
+↓
+
+Informar valor inicial
+
+↓
+
+Abrir caixa
+
+↓
+
+Registrar auditoria
+
+
+---
+
+# 11.9 Fluxo de Fechamento do Caixa
+
+
+Solicitar fechamento
+
+↓
+
+Verificar comandas abertas
+
+↓
+
+Existem?
+
+Sim
+↓
+Apresentar pendências
+
+Não
+↓
+
+Conferir valores
+
+↓
+
+Informar dinheiro contado
+
+↓
+
+Existe diferença?
+
+Sim
+↓
+Solicitar justificativa
+
+↓
+
+Fechar caixa
+
+↓
+
+Registrar auditoria
+
+
+---
+
+# 11.10 Fluxo de Comissão
+
+
+Comanda fechada
+
+↓
+
+Calcular comissão
+
+↓
+
+Disponibilizar para profissional
+
+↓
+
+Selecionar período
+
+↓
+
+Confirmar pagamento
+
+↓
+
+Registrar financeiro
+
+↓
+
+Auditoria
+
+
+---
+
+# 11.11 Fluxo de Estorno/Reembolso
+
+Quando permitido pela política da empresa.
+
+
+Selecionar comanda
+
+↓
+
+Pagamento confirmado?
+
+Não
+↓
+Encerrar
+
+Sim
+↓
+
+Solicitar estorno
+
+↓
+
+Administrador aprova?
+
+Não
+↓
+Encerrar
+
+Sim
+↓
+
+Registrar estorno
+
+↓
+
+Atualizar caixa
+
+↓
+
+Atualizar financeiro
+
+↓
+
+Auditoria
+
+
+---
+
+# 11.12 Fluxo de Remarcação
+
+Remarcação não é cancelamento.
+
+
+Selecionar agendamento
+
+↓
+
+Alterar data/hora
+
+↓
+
+Validar disponibilidade
+
+↓
+
+Atualizar agendamento
+
+↓
+
+Manter histórico
+
+↓
+
+Registrar auditoria
+
+
+---
+
+# 11.13 Fluxo de Troca de Barbeiro
+
+Permitido somente antes do encerramento.
+
+
+Solicitar troca
+
+↓
+
+Validar disponibilidade
+
+↓
+
+Alterar barbeiro
+
+↓
+
+Atualizar comissão conforme regra
+
+↓
+
+Registrar auditoria
+
+
+---
+
+# 11.14 Fluxo de Bloqueio de Horário
+
+
+Selecionar barbeiro
+
+↓
+
+Selecionar período
+
+↓
+
+Existem agendamentos?
+
+Sim
+↓
+Solicitar confirmação
+
+Não
+↓
+
+Criar bloqueio
+
+↓
+
+Atualizar agenda
+
+
+---
+
+# 11.15 Princípio Geral dos Fluxos
+
+Todo processo deve possuir:
+
+- origem identificada;
+- responsável;
+- validações;
+- histórico;
+- auditoria.
+
+Nenhuma operação crítica poderá ocorrer sem rastreabilidade.
+
+---
+
+# Fim do Capítulo 6
