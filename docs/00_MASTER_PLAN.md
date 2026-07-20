@@ -4817,3 +4817,264 @@ Mudanças de tecnologia deverão possuir:
 ---
 
 # Fim do Capítulo 14
+
+---
+
+# 20. Configuração do Ambiente de Desenvolvimento
+
+Este capítulo define o ambiente necessário para desenvolvimento local do sistema.
+
+O objetivo é garantir que qualquer desenvolvedor consiga reproduzir o ambiente.
+
+---
+
+# 20.1 Requisitos do Ambiente
+
+O computador de desenvolvimento deverá possuir:
+
+- Sistema operacional atualizado.
+- Git.
+- Node.js.
+- Gerenciador de pacotes.
+- PostgreSQL.
+- Editor de código.
+
+---
+
+# 20.2 Controle de Versão
+
+Ferramenta:
+
+## Git
+
+Responsabilidades:
+
+- controle de histórico;
+- versionamento;
+- branches;
+- integração com GitHub.
+
+Configuração inicial:
+
+
+git config --global user.name
+
+git config --global user.email
+
+
+---
+
+# 20.3 Node.js
+
+Versão recomendada:
+
+Node.js LTS.
+
+Responsabilidades:
+
+- executar frontend;
+- executar backend;
+- gerenciar dependências.
+
+Verificação:
+
+
+node -v
+
+npm -v
+
+
+---
+
+# 20.4 Gerenciamento de Pacotes
+
+Padrão inicial:
+
+npm
+
+Responsável por:
+
+- instalação de bibliotecas;
+- scripts;
+- gerenciamento de versões.
+
+---
+
+# 20.5 Banco de Dados
+
+Tecnologia:
+
+PostgreSQL.
+
+Responsabilidades:
+
+- armazenar dados;
+- executar migrations;
+- garantir integridade.
+
+Configuração inicial:
+
+Criar banco de desenvolvimento:
+
+
+barbershop_erp_dev
+
+
+---
+
+# 20.6 Editor de Código
+
+Recomendação:
+
+Visual Studio Code.
+
+Extensões sugeridas:
+
+- ESLint.
+- Prettier.
+- Prisma.
+- GitLens.
+- TypeScript.
+
+---
+
+# 20.7 Estrutura Inicial Local
+
+Após configuração:
+
+
+barbershop-erp
+
+├── frontend
+
+├── backend
+
+├── database
+
+├── docs
+
+└── README.md
+
+
+---
+
+# 20.8 Variáveis de Ambiente
+
+Nenhum dado sensível deverá ficar no código.
+
+Exemplo:
+
+
+.env
+
+
+Possíveis configurações:
+
+
+DATABASE_URL=
+
+JWT_SECRET=
+
+API_URL=
+
+APP_ENV=
+
+
+---
+
+# 20.9 Ambientes
+
+O sistema deverá possuir:
+
+## Desenvolvimento
+
+Uso local.
+
+
+development
+
+
+---
+
+## Testes
+
+Ambiente automatizado.
+
+
+test
+
+
+---
+
+## Produção
+
+Ambiente real.
+
+
+production
+
+
+---
+
+# 20.10 Primeiro Teste Técnico
+
+Antes do desenvolvimento funcional deverá ser validado:
+
+Backend:
+
+
+API iniciando corretamente
+
+
+Frontend:
+
+
+Aplicação carregando
+
+
+Banco:
+
+
+Conexão funcionando
+
+
+Integração:
+
+
+Frontend comunicando com Backend
+
+
+---
+
+# 20.11 Regra de Segurança
+
+Nunca enviar para o GitHub:
+
+- senhas;
+- tokens;
+- arquivos .env;
+- dados reais de clientes.
+
+Utilizar:
+
+
+.env.example
+
+
+---
+
+# 20.12 Preparação para Desenvolvimento
+
+Após ambiente pronto:
+
+Iniciar:
+
+
+Módulo 01
+
+Fundação e Infraestrutura
+
+
+---
+
+# Fim do Capítulo 15
