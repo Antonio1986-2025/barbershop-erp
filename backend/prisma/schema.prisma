@@ -53,6 +53,32 @@ enum ServiceOrderStatus {
   CANCELED
 }
 
+enum CashRegisterStatus {
+  OPEN
+  CLOSED
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  TRANSFER
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  CANCELED
+  REFUNDED
+}
+
+enum CashTransactionType {
+  ENTRY
+  EXIT
+}
+
 model Plan {
   id String @id @default(uuid())
 
@@ -177,15 +203,18 @@ model Company {
   updatedBy String?
   deletedBy String?
 
-  subscription  Subscription     @relation(fields: [subscriptionId], references: [id])
-  settings      CompanySettings?
-  users         User[]
-  units         Unit[]
-  customers     Customer[]
-  professionals Professional[]
-  services      Service[]
-  appointments  Appointment[]
-  serviceOrders ServiceOrder[]
+  subscription     Subscription      @relation(fields: [subscriptionId], references: [id])
+  settings         CompanySettings?
+  users            User[]
+  units            Unit[]
+  customers        Customer[]
+  professionals    Professional[]
+  services         Service[]
+  appointments     Appointment[]
+  serviceOrders    ServiceOrder[]
+  cashRegisters    CashRegister[]
+  payments         Payment[]
+  cashTransactions CashTransaction[]
 
   @@index([status])
   @@index([createdAt])
@@ -330,9 +359,12 @@ model Unit {
 
   company Company @relation(fields: [companyId], references: [id])
 
-  professionals ProfessionalUnit[]
-  appointments  Appointment[]
-  serviceOrders ServiceOrder[]
+  professionals    ProfessionalUnit[]
+  appointments     Appointment[]
+  serviceOrders    ServiceOrder[]
+  cashRegisters    CashRegister[]
+  payments         Payment[]
+  cashTransactions CashTransaction[]
 
   @@unique([companyId, code])
   @@index([companyId])
@@ -545,7 +577,8 @@ model ServiceOrder {
   customer     Customer     @relation(fields: [customerId], references: [id])
   professional Professional @relation(fields: [professionalId], references: [id])
 
-  items ServiceOrderItem[]
+  items    ServiceOrderItem[]
+  payments Payment[]
 
   @@index([companyId])
   @@index([unitId])
@@ -575,4 +608,101 @@ model ServiceOrderItem {
   @@index([serviceOrderId])
   @@index([serviceId])
   @@map("service_order_items")
+}
+
+model CashRegister {
+  id String @id @default(uuid())
+
+  companyId String
+  unitId    String
+
+  openedBy String
+  closedBy String?
+
+  openedAt DateTime  @default(now())
+  closedAt DateTime?
+
+  openingAmount Decimal  @db.Decimal(10, 2)
+  closingAmount Decimal? @db.Decimal(10, 2)
+
+  status CashRegisterStatus @default(OPEN)
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  unit    Unit    @relation(fields: [unitId], references: [id])
+
+  transactions CashTransaction[]
+
+  @@index([companyId])
+  @@index([unitId])
+  @@index([status])
+  @@map("cash_registers")
+}
+
+model Payment {
+  id String @id @default(uuid())
+
+  companyId String
+  unitId    String
+
+  serviceOrderId String
+
+  amount Decimal @db.Decimal(10, 2)
+
+  paymentMethod PaymentMethod
+  status        PaymentStatus @default(PENDING)
+
+  paidAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  unit    Unit    @relation(fields: [unitId], references: [id])
+
+  serviceOrder ServiceOrder @relation(fields: [serviceOrderId], references: [id])
+
+  transactions CashTransaction[]
+
+  @@index([companyId])
+  @@index([unitId])
+  @@index([serviceOrderId])
+  @@index([status])
+  @@map("payments")
+}
+
+model CashTransaction {
+  id String @id @default(uuid())
+
+  companyId String
+  unitId    String
+
+  cashRegisterId String
+
+  paymentId String?
+
+  type CashTransactionType
+
+  amount Decimal @db.Decimal(10, 2)
+
+  description String
+
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+  unit    Unit    @relation(fields: [unitId], references: [id])
+
+  cashRegister CashRegister @relation(fields: [cashRegisterId], references: [id])
+
+  payment Payment? @relation(fields: [paymentId], references: [id])
+
+  @@index([companyId])
+  @@index([unitId])
+  @@index([cashRegisterId])
+  @@index([paymentId])
+  @@map("cash_transactions")
 }
