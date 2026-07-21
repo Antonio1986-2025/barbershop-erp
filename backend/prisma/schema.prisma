@@ -5,3 +5,178 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  TRIAL
+  SUSPENDED
+  CANCELED
+  EXPIRED
+}
+
+enum CompanyStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum FeatureType {
+  BOOLEAN
+  NUMBER
+  TEXT
+}
+
+enum Currency {
+  BRL
+  USD
+  EUR
+}
+
+model Plan {
+  id String @id @default(uuid())
+
+  code        String  @unique
+  name        String
+  description String?
+
+  active Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdBy     String?
+  updatedBy     String?
+  deletedBy     String?
+  planPrices    PlanPrice[]
+  planFeatures  PlanFeature[]
+  subscriptions Subscription[]
+
+  @@index([active])
+  @@index([createdAt])
+  @@map("plans")
+}
+
+model PlanPrice {
+  id String @id @default(uuid())
+
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  price    Float
+  currency Currency @default(BRL)
+
+  billingCycle BillingCycle
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([planId, billingCycle, currency])
+  @@map("plan_prices")
+}
+
+model Feature {
+  id String @id @default(uuid())
+
+  name         String
+  code         String      @unique
+  description  String?
+  type         FeatureType
+  defaultValue String?
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  plans PlanFeature[]
+
+  @@map("features")
+}
+
+model PlanFeature {
+  id String @id @default(uuid())
+
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  featureId String
+  feature   Feature @relation(fields: [featureId], references: [id])
+
+  value String
+
+  @@unique([planId, featureId])
+  @@map("plan_features")
+}
+
+model Subscription {
+  id String @id @default(uuid())
+
+  planId String
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  status SubscriptionStatus @default(TRIAL)
+
+  startDate DateTime
+  endDate   DateTime?
+
+  canceledAt   DateTime?
+  cancelReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company?
+
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model Company {
+  id String @id @default(uuid())
+
+  subscriptionId String @unique
+
+  corporateName String
+  tradeName     String?
+
+  document String  @unique
+  email    String
+  phone    String?
+
+  status CompanyStatus @default(ACTIVE)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  subscription Subscription     @relation(fields: [subscriptionId], references: [id])
+  settings     CompanySettings?
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("companies")
+}
+
+model CompanySettings {
+  id String @id @default(uuid())
+
+  companyId String  @unique
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("company_settings")
+}
