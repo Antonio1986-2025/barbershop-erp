@@ -90,6 +90,23 @@ enum ScheduleBlockType {
   PROFESSIONAL
 }
 
+enum FinancialCategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum FinancialAccountType {
+  RECEIVABLE
+  PAYABLE
+}
+
+enum FinancialAccountStatus {
+  OPEN
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
 enum NotificationType {
   APPOINTMENT_CREATED
   APPOINTMENT_CONFIRMED
@@ -254,6 +271,9 @@ model Company {
   businessHours    BusinessHour[]
   scheduleBlocks   ScheduleBlock[]
   notifications    Notification[]
+  financialCategories FinancialCategory[]
+  financialAccounts   FinancialAccount[]
+  cashClosings        CashClosing[]
 
   @@index([status])
   @@index([createdAt])
@@ -450,6 +470,7 @@ model Unit {
   stockMovements   StockMovement[]
   businessHours    BusinessHour[]
   scheduleBlocks   ScheduleBlock[]
+  cashClosings     CashClosing[]
 
   @@unique([companyId, code])
   @@index([companyId])
@@ -824,6 +845,7 @@ model CashRegister {
   unit    Unit    @relation(fields: [unitId], references: [id])
 
   transactions CashTransaction[]
+  closings     CashClosing[]
 
   @@index([companyId])
   @@index([unitId])
@@ -902,6 +924,9 @@ enum AuditAction {
   LOGIN
   LOGOUT
   REFRESH_TOKEN
+  PAY
+  CANCEL
+  CLOSE_CASH
 }
 
 model AuditLog {
@@ -1038,4 +1063,89 @@ model StockMovement {
   @@index([productId])
   @@index([type])
   @@map("stock_movements")
+}
+
+model FinancialCategory {
+  id String @id @default(uuid())
+
+  companyId String
+
+  name String
+  type FinancialCategoryType
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  accounts FinancialAccount[]
+
+  @@unique([companyId, name, type])
+  @@index([companyId])
+  @@index([type])
+  @@map("financial_categories")
+}
+
+model FinancialAccount {
+  id String @id @default(uuid())
+
+  companyId  String
+  categoryId String
+
+  description String
+
+  type   FinancialAccountType
+  status FinancialAccountStatus @default(OPEN)
+
+  amount Decimal @db.Decimal(10, 2)
+
+  dueDate DateTime
+  paidAt  DateTime?
+
+  paymentId String?
+
+  createdBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company  Company            @relation(fields: [companyId], references: [id])
+  category FinancialCategory  @relation(fields: [categoryId], references: [id])
+
+  @@index([companyId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([type])
+  @@map("financial_accounts")
+}
+
+model CashClosing {
+  id String @id @default(uuid())
+
+  companyId      String
+  unitId         String
+  cashRegisterId String
+
+  openedAt DateTime
+  closedAt DateTime?
+
+  openingAmount Decimal @db.Decimal(10, 2)
+  closingAmount Decimal? @db.Decimal(10, 2)
+  expectedAmount Decimal? @db.Decimal(10, 2)
+  difference     Decimal? @db.Decimal(10, 2)
+
+  closedBy String?
+
+  createdAt DateTime @default(now())
+
+  company      Company      @relation(fields: [companyId], references: [id])
+  unit         Unit         @relation(fields: [unitId], references: [id])
+  cashRegister CashRegister @relation(fields: [cashRegisterId], references: [id])
+
+  @@index([companyId])
+  @@index([unitId])
+  @@index([closedAt])
+  @@map("cash_closings")
 }

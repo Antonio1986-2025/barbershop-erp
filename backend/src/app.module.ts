@@ -18,9 +18,10 @@ import { CompanySettingsModule } from './modules/company-settings/company-settin
 import { ScheduleModule } from './modules/schedule/schedule.module';
 import { AppointmentModule } from './modules/appointment/appointment.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { FinancialModule } from './modules/financial/financial.module';
 
 @Module({
-  imports: [PrismaModule, DashboardModule, AuthModule, CustomerModule, ProfessionalModule, UnitModule, ServiceModule, CategoryModule, ProductModule, UserModule, RoleModule, CompanyModule, AuditModule, CompanySettingsModule, ScheduleModule, AppointmentModule, NotificationsModule],
+  imports: [PrismaModule, DashboardModule, AuthModule, CustomerModule, ProfessionalModule, UnitModule, ServiceModule, CategoryModule, ProductModule, UserModule, RoleModule, CompanyModule, AuditModule, CompanySettingsModule, ScheduleModule, AppointmentModule, NotificationsModule, FinancialModule],
   controllers: [AppController],
   providers: [AppService],
 })

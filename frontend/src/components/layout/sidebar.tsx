@@ -11,6 +11,7 @@ const links = [
   { href: '/agendamentos', label: 'Agendamentos', icon: '📅' },
   { href: '/agenda', label: 'Agenda', icon: '🗓' },
   { href: '/notificacoes', label: 'Notificações', icon: '🔔' },
+  { href: '/financeiro/contas', label: 'Financeiro', icon: '💰' },
   { href: '/clientes', label: 'Clientes', icon: '👤' },
   { href: '/profissionais', label: 'Profissionais', icon: '✂' },
   { href: '/servicos', label: 'Serviços', icon: '⚙' },
