@@ -19,10 +19,12 @@ import { ScheduleModule } from './modules/schedule/schedule.module';
 import { AppointmentModule } from './modules/appointment/appointment.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { FinancialModule } from './modules/financial/financial.module';
+import { ObservabilityModule } from './modules/observability/observability.module';
 
 @Module({
   imports: [
     PrismaModule,
+    ObservabilityModule,
     DashboardModule,
     AuthModule,
     CustomerModule,
