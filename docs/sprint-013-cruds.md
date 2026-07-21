@@ -2,59 +2,57 @@
 
 ## Objetivo
 
-Implementar os CRUDs completos de todos os módulos já modelados, disponibilizando operações de criação, consulta, atualização e exclusão lógica (soft delete), além de integração com o frontend.
+Implementar os CRUDs completos dos módulos já existentes no banco de dados, disponibilizando operações de criação, consulta, atualização, exclusão lógica e integração completa com o frontend.
+
+Esta sprint será dividida em sub-sprints, entregando um módulo por vez de ponta a ponta (backend + frontend + testes básicos).
 
 ---
 
-## Escopo
+## Ordem de implementação
 
-Implementar CRUD para:
-
-- Empresas
-- Unidades
-- Usuários
-- Clientes
-- Profissionais
-- Serviços
-- Categorias
-- Produtos
+### Sprint 013.1 — Customer (Clientes)
+### Sprint 013.2 — Professional (Profissionais)
+### Sprint 013.3 — Service (Serviços)
+### Sprint 013.4 — Category (Categorias)
+### Sprint 013.5 — Product (Produtos)
+### Sprint 013.6 — Unit (Unidades)
+### Sprint 013.7 — User (Usuários)
+### Sprint 013.8 — Company (Empresas)
 
 ---
 
-## Backend
+## Padrão para todos os módulos
 
-Cada módulo deverá conter:
+### Backend
 
 - Controller
 - Service
-- DTOs
-- Validação
+- DTO Create
+- DTO Update
 - Paginação
 - Filtros
 - Soft Delete
-- Tratamento de erros
+- Validação
+- Swagger (preparado)
 
----
+### Frontend
 
-## Frontend
-
-Cada módulo deverá possuir:
-
-- Listagem
-- Formulário de criação
-- Formulário de edição
+- Página de listagem
+- Formulário
+- Cadastro
+- Edição
 - Exclusão lógica
 - Busca
 - Paginação
-- Feedback visual
+- Estados de loading e erro
 
 ---
 
 ## Critérios de aceite
 
-- Todos os CRUDs funcionando.
-- Validação de dados.
-- Paginação.
-- Busca.
-- Soft delete.
-- Integração completa entre backend e frontend.
+Cada sub-sprint será considerada concluída quando:
+- Backend implementado.
+- Frontend implementado.
+- Integração funcionando.
+- Validações concluídas.
+- Testes básicos executados.
