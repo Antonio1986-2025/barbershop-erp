@@ -223,6 +223,7 @@ model Company {
   cashTransactions CashTransaction[]
   categories       Category[]
   products         Product[]
+  auditLogs        AuditLog[]
 
   @@index([status])
   @@index([createdAt])
@@ -262,8 +263,9 @@ model User {
   updatedBy String?
   deletedBy String?
 
-  company Company    @relation(fields: [companyId], references: [id])
-  roles   UserRole[]
+  company   Company    @relation(fields: [companyId], references: [id])
+  roles     UserRole[]
+  auditLogs AuditLog[]
 
   @@unique([email, companyId])
   @@index([companyId])
@@ -715,6 +717,43 @@ model CashTransaction {
   @@index([cashRegisterId])
   @@index([paymentId])
   @@map("cash_transactions")
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+}
+
+model AuditLog {
+  id String @id @default(uuid())
+
+  companyId String
+  userId    String
+
+  action   AuditAction
+  entity   String
+  entityId String?
+
+  oldData String?
+  newData String?
+
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([entity])
+  @@index([entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
 
 model Category {

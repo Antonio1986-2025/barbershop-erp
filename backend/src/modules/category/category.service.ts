@@ -4,12 +4,16 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoryService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(
     companyId: string,
@@ -71,7 +75,7 @@ export class CategoryService {
       throw new ConflictException('Já existe uma categoria com este nome');
     }
 
-    return this.prisma.category.create({
+    const result = await this.prisma.category.create({
       data: {
         name: dto.name,
         description: dto.description,
@@ -79,6 +83,17 @@ export class CategoryService {
         createdBy: userId,
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'CREATE',
+      entity: 'category',
+      entityId: result.id,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async update(
@@ -87,7 +102,7 @@ export class CategoryService {
     userId: string,
     dto: UpdateCategoryDto,
   ) {
-    await this.findOne(companyId, id);
+    const old = await this.findOne(companyId, id);
 
     if (dto.name) {
       const existing = await this.prisma.category.findFirst({
@@ -103,14 +118,26 @@ export class CategoryService {
       }
     }
 
-    return this.prisma.category.update({
+    const result = await this.prisma.category.update({
       where: { id },
       data: { ...dto, updatedBy: userId },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'category',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async remove(companyId: string, id: string, userId: string) {
-    await this.findOne(companyId, id);
+    const old = await this.findOne(companyId, id);
 
     const productCount = await this.prisma.product.count({
       where: { categoryId: id, deletedAt: null, active: true },
@@ -122,7 +149,7 @@ export class CategoryService {
       );
     }
 
-    return this.prisma.category.update({
+    const result = await this.prisma.category.update({
       where: { id },
       data: {
         deletedAt: new Date(),
@@ -130,5 +157,16 @@ export class CategoryService {
         active: false,
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'DELETE',
+      entity: 'category',
+      entityId: id,
+      oldData: old as any,
+    });
+
+    return result;
   }
 }

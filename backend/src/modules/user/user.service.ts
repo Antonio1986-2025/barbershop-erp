@@ -4,13 +4,17 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as argon2 from 'argon2';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(
     companyId: string,
@@ -108,7 +112,7 @@ export class UserService {
 
     const { roleIds, password, ...data } = dto;
 
-    return this.prisma.user.create({
+    const result = await this.prisma.user.create({
       data: {
         ...data,
         passwordHash,
@@ -127,6 +131,17 @@ export class UserService {
         roles: { include: { role: { select: { id: true, name: true, slug: true } } } },
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'CREATE',
+      entity: 'user',
+      entityId: result.id,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async update(
@@ -168,7 +183,12 @@ export class UserService {
       }
     }
 
-    return this.prisma.user.update({
+    const old = await this.prisma.user.findUnique({
+      where: { id },
+      select: { id: true, name: true, email: true, active: true },
+    });
+
+    const result = await this.prisma.user.update({
       where: { id },
       data: updateData,
       select: {
@@ -181,11 +201,23 @@ export class UserService {
         roles: { include: { role: { select: { id: true, name: true, slug: true } } } },
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'user',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async remove(companyId: string, id: string, userId: string) {
-    await this.findOne(companyId, id);
-    return this.prisma.user.update({
+    const old = await this.findOne(companyId, id);
+    const result = await this.prisma.user.update({
       where: { id },
       data: {
         deletedAt: new Date(),
@@ -200,5 +232,16 @@ export class UserService {
         deletedAt: true,
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'DELETE',
+      entity: 'user',
+      entityId: id,
+      oldData: old as any,
+    });
+
+    return result;
   }
 }

@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 
 @Injectable()
 export class CustomerService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(
     companyId: string,
@@ -66,7 +70,7 @@ export class CustomerService {
   }
 
   async create(companyId: string, userId: string, dto: CreateCustomerDto) {
-    return this.prisma.customer.create({
+    const result = await this.prisma.customer.create({
       data: {
         ...dto,
         birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
@@ -74,6 +78,17 @@ export class CustomerService {
         createdBy: userId,
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'CREATE',
+      entity: 'customer',
+      entityId: result.id,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async update(
@@ -82,8 +97,8 @@ export class CustomerService {
     userId: string,
     dto: UpdateCustomerDto,
   ) {
-    await this.findOne(companyId, id);
-    return this.prisma.customer.update({
+    const old = await this.findOne(companyId, id);
+    const result = await this.prisma.customer.update({
       where: { id },
       data: {
         ...dto,
@@ -91,11 +106,23 @@ export class CustomerService {
         updatedBy: userId,
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'customer',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async remove(companyId: string, id: string, userId: string) {
-    await this.findOne(companyId, id);
-    return this.prisma.customer.update({
+    const old = await this.findOne(companyId, id);
+    const result = await this.prisma.customer.update({
       where: { id },
       data: {
         deletedAt: new Date(),
@@ -103,5 +130,16 @@ export class CustomerService {
         active: false,
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'DELETE',
+      entity: 'customer',
+      entityId: id,
+      oldData: old as any,
+    });
+
+    return result;
   }
 }

@@ -4,12 +4,16 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @Injectable()
 export class CompanyService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(query: {
     page?: number;
@@ -113,11 +117,22 @@ export class CompanyService {
       data: { companyId: company.id },
     });
 
-    return this.findOne(company.id);
+    const result = await this.findOne(company.id);
+
+    await this.auditService.create({
+      companyId: company.id,
+      userId,
+      action: 'CREATE',
+      entity: 'company',
+      entityId: company.id,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async update(id: string, userId: string, dto: UpdateCompanyDto) {
-    await this.findOne(id);
+    const old = await this.findOne(id);
 
     if (dto.document) {
       const existing = await this.prisma.company.findFirst({
@@ -132,7 +147,7 @@ export class CompanyService {
       }
     }
 
-    return this.prisma.company.update({
+    const result = await this.prisma.company.update({
       where: { id },
       data: { ...dto, updatedBy: userId },
       include: {
@@ -142,10 +157,22 @@ export class CompanyService {
         },
       },
     });
+
+    await this.auditService.create({
+      companyId: id,
+      userId,
+      action: 'UPDATE',
+      entity: 'company',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async remove(id: string, userId: string) {
-    await this.findOne(id);
+    const old = await this.findOne(id);
 
     const [userCount, unitCount] = await Promise.all([
       this.prisma.user.count({ where: { companyId: id, deletedAt: null, active: true } }),
@@ -161,7 +188,7 @@ export class CompanyService {
       );
     }
 
-    return this.prisma.company.update({
+    const result = await this.prisma.company.update({
       where: { id },
       data: {
         deletedAt: new Date(),
@@ -176,5 +203,16 @@ export class CompanyService {
         deletedAt: true,
       },
     });
+
+    await this.auditService.create({
+      companyId: id,
+      userId,
+      action: 'DELETE',
+      entity: 'company',
+      entityId: id,
+      oldData: old as any,
+    });
+
+    return result;
   }
 }

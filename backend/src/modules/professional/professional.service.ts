@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { CreateProfessionalDto } from './dto/create-professional.dto';
 import { UpdateProfessionalDto } from './dto/update-professional.dto';
 
 @Injectable()
 export class ProfessionalService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(
     companyId: string,
@@ -84,7 +88,7 @@ export class ProfessionalService {
   ) {
     const { unitIds, ...data } = dto;
 
-    const professional = await this.prisma.professional.create({
+    const result = await this.prisma.professional.create({
       data: {
         ...data,
         companyId,
@@ -98,7 +102,16 @@ export class ProfessionalService {
       include: { units: { include: { unit: true } } },
     });
 
-    return professional;
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'CREATE',
+      entity: 'professional',
+      entityId: result.id,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async update(
@@ -107,7 +120,7 @@ export class ProfessionalService {
     userId: string,
     dto: UpdateProfessionalDto,
   ) {
-    await this.findOne(companyId, id);
+    const old = await this.findOne(companyId, id);
 
     const { unitIds, ...data } = dto;
 
@@ -123,16 +136,28 @@ export class ProfessionalService {
       }
     }
 
-    return this.prisma.professional.update({
+    const result = await this.prisma.professional.update({
       where: { id },
       data: { ...data, updatedBy: userId },
       include: { units: { include: { unit: true } } },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'professional',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async remove(companyId: string, id: string, userId: string) {
-    await this.findOne(companyId, id);
-    return this.prisma.professional.update({
+    const old = await this.findOne(companyId, id);
+    const result = await this.prisma.professional.update({
       where: { id },
       data: {
         deletedAt: new Date(),
@@ -140,5 +165,16 @@ export class ProfessionalService {
         active: false,
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'DELETE',
+      entity: 'professional',
+      entityId: id,
+      oldData: old as any,
+    });
+
+    return result;
   }
 }

@@ -4,12 +4,16 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
 @Injectable()
 export class ProductService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(
     companyId: string,
@@ -92,7 +96,7 @@ export class ProductService {
       }
     }
 
-    return this.prisma.product.create({
+    const result = await this.prisma.product.create({
       data: {
         name: dto.name,
         barcode: dto.barcode,
@@ -104,6 +108,17 @@ export class ProductService {
       },
       include: { category: { select: { id: true, name: true } } },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'CREATE',
+      entity: 'product',
+      entityId: result.id,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async update(
@@ -112,7 +127,7 @@ export class ProductService {
     userId: string,
     dto: UpdateProductDto,
   ) {
-    await this.findOne(companyId, id);
+    const old = await this.findOne(companyId, id);
 
     if (dto.barcode) {
       const existing = await this.prisma.product.findFirst({
@@ -137,15 +152,27 @@ export class ProductService {
       }
     }
 
-    return this.prisma.product.update({
+    const result = await this.prisma.product.update({
       where: { id },
       data: { ...dto, updatedBy: userId },
       include: { category: { select: { id: true, name: true } } },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'product',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async remove(companyId: string, id: string, userId: string) {
-    await this.findOne(companyId, id);
+    const old = await this.findOne(companyId, id);
 
     const [stockCount, movementCount] = await Promise.all([
       this.prisma.stock.count({
@@ -165,7 +192,7 @@ export class ProductService {
       );
     }
 
-    return this.prisma.product.update({
+    const result = await this.prisma.product.update({
       where: { id },
       data: {
         deletedAt: new Date(),
@@ -173,5 +200,16 @@ export class ProductService {
         active: false,
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'DELETE',
+      entity: 'product',
+      entityId: id,
+      oldData: old as any,
+    });
+
+    return result;
   }
 }

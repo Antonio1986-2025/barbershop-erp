@@ -4,12 +4,16 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 
 @Injectable()
 export class ServiceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   async findAll(
     companyId: string,
@@ -64,7 +68,7 @@ export class ServiceService {
   }
 
   async create(companyId: string, userId: string, dto: CreateServiceDto) {
-    return this.prisma.service.create({
+    const result = await this.prisma.service.create({
       data: {
         name: dto.name,
         description: dto.description,
@@ -76,6 +80,17 @@ export class ServiceService {
         createdBy: userId,
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'CREATE',
+      entity: 'service',
+      entityId: result.id,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async update(
@@ -84,18 +99,30 @@ export class ServiceService {
     userId: string,
     dto: UpdateServiceDto,
   ) {
-    await this.findOne(companyId, id);
-    return this.prisma.service.update({
+    const old = await this.findOne(companyId, id);
+    const result = await this.prisma.service.update({
       where: { id },
       data: {
         ...dto,
         updatedBy: userId,
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'service',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
+
+    return result;
   }
 
   async remove(companyId: string, id: string, userId: string) {
-    await this.findOne(companyId, id);
+    const old = await this.findOne(companyId, id);
 
     const [appointmentCount, itemCount] = await Promise.all([
       this.prisma.appointment.count({
@@ -115,7 +142,7 @@ export class ServiceService {
       );
     }
 
-    return this.prisma.service.update({
+    const result = await this.prisma.service.update({
       where: { id },
       data: {
         deletedAt: new Date(),
@@ -123,5 +150,16 @@ export class ServiceService {
         active: false,
       },
     });
+
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'DELETE',
+      entity: 'service',
+      entityId: id,
+      oldData: old as any,
+    });
+
+    return result;
   }
 }
