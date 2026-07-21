@@ -163,6 +163,7 @@ model Company {
 
   subscription Subscription     @relation(fields: [subscriptionId], references: [id])
   settings     CompanySettings?
+  users        User[]
 
   @@index([status])
   @@index([createdAt])
@@ -179,4 +180,98 @@ model CompanySettings {
   updatedAt DateTime @updatedAt
 
   @@map("company_settings")
+}
+
+model User {
+  id String @id @default(uuid())
+
+  companyId String
+
+  name         String
+  email        String
+  passwordHash String
+
+  active Boolean @default(true)
+
+  lastLoginAt DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  company Company    @relation(fields: [companyId], references: [id])
+  roles   UserRole[]
+
+  @@unique([email, companyId])
+  @@index([companyId])
+  @@index([active])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Role {
+  id   String @id @default(uuid())
+  name String @unique
+  slug String @unique
+
+  description String?
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@index([active])
+  @@map("roles")
+}
+
+model Permission {
+  id   String @id @default(uuid())
+  name String @unique
+  slug String @unique
+
+  description String?
+  module      String?
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles RolePermission[]
+
+  @@index([active])
+  @@index([module])
+  @@map("permissions")
+}
+
+model UserRole {
+  id     String @id @default(uuid())
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  id           String @id @default(uuid())
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
 }
