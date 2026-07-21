@@ -164,6 +164,7 @@ model Company {
   subscription Subscription     @relation(fields: [subscriptionId], references: [id])
   settings     CompanySettings?
   users        User[]
+  units        Unit[]
 
   @@index([status])
   @@index([createdAt])
@@ -274,4 +275,43 @@ model RolePermission {
 
   @@unique([roleId, permissionId])
   @@map("role_permissions")
+}
+
+model Unit {
+  id String @id @default(uuid())
+
+  companyId String
+
+  name String
+  code String
+
+  document String?
+  phone    String?
+  email    String?
+
+  address      String?
+  number       String?
+  complement   String?
+  neighborhood String?
+  city         String?
+  state        String?
+  zipCode      String?
+
+  status CompanyStatus @default(ACTIVE)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, code])
+  @@index([companyId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("units")
 }
