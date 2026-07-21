@@ -15,6 +15,7 @@ const links = [
   { href: '/usuarios', label: 'Usuários', icon: '🔐' },
   { href: '/empresas', label: 'Empresas', icon: '🏛' },
   { href: '/auditoria', label: 'Auditoria', icon: '📋' },
+  { href: '/configuracoes', label: 'Configurações', icon: '⚙' },
 ];
 
 export function Sidebar() {

@@ -70,7 +70,7 @@ async function seed() {
     create: { userId, roleId: role.id },
   });
 
-  const permSlugs = ['users.view', 'users.create', 'users.update', 'users.delete', 'companies.view', 'companies.create', 'companies.update', 'companies.delete', 'audit.view'];
+  const permSlugs = ['users.view', 'users.create', 'users.update', 'users.delete', 'companies.view', 'companies.create', 'companies.update', 'companies.delete', 'audit.view', 'company_settings.view', 'company_settings.update'];
   for (const slug of permSlugs) {
     const perm = await prisma.permission.upsert({
       where: { slug },

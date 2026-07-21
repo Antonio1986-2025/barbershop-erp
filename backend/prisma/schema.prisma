@@ -236,6 +236,23 @@ model CompanySettings {
   companyId String  @unique
   company   Company @relation(fields: [companyId], references: [id])
 
+  logoUrl        String?
+  primaryColor   String?
+  secondaryColor String?
+
+  displayName   String?
+  website       String?
+  contactEmail  String?
+  contactPhone  String?
+
+  timezone  String?
+  currency  String?
+  dateFormat String?
+
+  defaultAppointmentDuration Int?
+  allowOnlineScheduling      Boolean?
+  cancellationLimitHours     Int?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
