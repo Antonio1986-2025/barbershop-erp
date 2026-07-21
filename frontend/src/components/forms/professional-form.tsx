@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createProfessional, updateProfessional } from '@/lib/professionals';
-import { fetchUnits } from '@/lib/units';
+import { fetchUnitsSimple } from '@/lib/units';
 import { FormField } from '@/components/forms/form-field';
 import { FormActions } from '@/components/forms/form-actions';
 import { ErrorBox } from '@/components/crud/error-box';
@@ -31,7 +31,7 @@ export function ProfessionalForm({ initial }: ProfessionalFormProps) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetchUnits().then(setUnits).catch(() => {});
+    fetchUnitsSimple().then(setUnits).catch(() => {});
   }, []);
 
   function set(field: string, value: string) {
