@@ -6,6 +6,8 @@ import { useAuth } from '@/hooks/use-auth';
 
 const links = [
   { href: '/dashboard', label: 'Dashboard', icon: '▦' },
+  { href: '/agendamentos', label: 'Agendamentos', icon: '📅' },
+  { href: '/agenda', label: 'Agenda', icon: '🗓' },
   { href: '/clientes', label: 'Clientes', icon: '👤' },
   { href: '/profissionais', label: 'Profissionais', icon: '✂' },
   { href: '/servicos', label: 'Serviços', icon: '⚙' },
