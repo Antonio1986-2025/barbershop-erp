@@ -165,6 +165,7 @@ model Company {
   settings     CompanySettings?
   users        User[]
   units        Unit[]
+  customers    Customer[]
 
   @@index([status])
   @@index([createdAt])
@@ -314,4 +315,38 @@ model Unit {
   @@index([status])
   @@index([createdAt])
   @@map("units")
+}
+
+model Customer {
+  id String @id @default(uuid())
+
+  companyId String
+
+  name     String
+  email    String?
+  phone    String?
+  document String?
+
+  birthDate DateTime?
+
+  notes String?
+
+  active Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, document])
+  @@index([companyId])
+  @@index([name])
+  @@index([phone])
+  @@index([active])
+  @@map("customers")
 }
