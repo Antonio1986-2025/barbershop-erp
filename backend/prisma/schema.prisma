@@ -46,6 +46,13 @@ enum AppointmentStatus {
   NO_SHOW
 }
 
+enum ServiceOrderStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
 model Plan {
   id String @id @default(uuid())
 
@@ -178,6 +185,7 @@ model Company {
   professionals Professional[]
   services      Service[]
   appointments  Appointment[]
+  serviceOrders ServiceOrder[]
 
   @@index([status])
   @@index([createdAt])
@@ -324,6 +332,7 @@ model Unit {
 
   professionals ProfessionalUnit[]
   appointments  Appointment[]
+  serviceOrders ServiceOrder[]
 
   @@unique([companyId, code])
   @@index([companyId])
@@ -356,8 +365,9 @@ model Customer {
   updatedBy String?
   deletedBy String?
 
-  company      Company       @relation(fields: [companyId], references: [id])
-  appointments Appointment[]
+  company       Company        @relation(fields: [companyId], references: [id])
+  appointments  Appointment[]
+  serviceOrders ServiceOrder[]
 
   @@unique([companyId, document])
   @@index([companyId])
@@ -393,8 +403,9 @@ model Professional {
 
   company Company @relation(fields: [companyId], references: [id])
 
-  units        ProfessionalUnit[]
-  appointments Appointment[]
+  units         ProfessionalUnit[]
+  appointments  Appointment[]
+  serviceOrders ServiceOrder[]
 
   @@unique([companyId, document])
   @@index([companyId])
@@ -447,8 +458,9 @@ model Service {
   updatedBy String?
   deletedBy String?
 
-  company      Company       @relation(fields: [companyId], references: [id])
-  appointments Appointment[]
+  company           Company            @relation(fields: [companyId], references: [id])
+  appointments      Appointment[]
+  serviceOrderItems ServiceOrderItem[]
 
   @@index([companyId])
   @@index([name])
@@ -486,6 +498,8 @@ model Appointment {
   professional Professional @relation(fields: [professionalId], references: [id])
   service      Service      @relation(fields: [serviceId], references: [id])
 
+  serviceOrder ServiceOrder?
+
   @@index([companyId])
   @@index([unitId])
   @@index([customerId])
@@ -493,4 +507,72 @@ model Appointment {
   @@index([startAt])
   @@index([status])
   @@map("appointments")
+}
+
+model ServiceOrder {
+  id String @id @default(uuid())
+
+  companyId String
+  unitId    String
+
+  appointmentId String? @unique
+
+  customerId     String
+  professionalId String
+
+  status ServiceOrderStatus @default(OPEN)
+
+  startedAt  DateTime?
+  finishedAt DateTime?
+
+  subtotal Decimal @db.Decimal(10, 2)
+  discount Decimal @default(0) @db.Decimal(10, 2)
+  total    Decimal @db.Decimal(10, 2)
+
+  notes String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  company      Company      @relation(fields: [companyId], references: [id])
+  unit         Unit         @relation(fields: [unitId], references: [id])
+  appointment  Appointment? @relation(fields: [appointmentId], references: [id])
+  customer     Customer     @relation(fields: [customerId], references: [id])
+  professional Professional @relation(fields: [professionalId], references: [id])
+
+  items ServiceOrderItem[]
+
+  @@index([companyId])
+  @@index([unitId])
+  @@index([customerId])
+  @@index([professionalId])
+  @@index([status])
+  @@map("service_orders")
+}
+
+model ServiceOrderItem {
+  id String @id @default(uuid())
+
+  serviceOrderId String
+  serviceId      String
+
+  quantity Int @default(1)
+
+  unitPrice  Decimal @db.Decimal(10, 2)
+  totalPrice Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  serviceOrder ServiceOrder @relation(fields: [serviceOrderId], references: [id])
+  service      Service      @relation(fields: [serviceId], references: [id])
+
+  @@index([serviceOrderId])
+  @@index([serviceId])
+  @@map("service_order_items")
 }
