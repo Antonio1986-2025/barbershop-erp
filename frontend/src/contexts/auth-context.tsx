@@ -10,10 +10,14 @@ import type { ReactNode } from 'react';
 import {
   getToken,
   setToken,
+  setRefreshToken,
   clearToken,
   loginRequest,
+  refreshRequest,
+  logoutRequest,
   meRequest,
   LoginResponse,
+  getRefreshToken,
 } from '@/lib/auth';
 
 interface User {
@@ -44,7 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    await logoutRequest();
     clearToken();
     setUser(null);
     window.location.href = '/login';
@@ -54,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (email: string, password: string) => {
       const data: LoginResponse = await loginRequest(email, password);
       setToken(data.accessToken);
+      setRefreshToken(data.refreshToken);
       setUser(data.user);
     },
     [],
@@ -62,7 +68,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const token = getToken();
     if (!token) {
-      setLoading(false);
+      const refreshToken = getRefreshToken();
+      if (!refreshToken) {
+        setLoading(false);
+        return;
+      }
+      refreshRequest()
+        .then((data) => {
+          if (data) {
+            setToken(data.accessToken);
+            setRefreshToken(data.refreshToken);
+            return meRequest(data.accessToken);
+          }
+          return null;
+        })
+        .then((data) => {
+          if (data) {
+            setUser(data);
+          } else {
+            clearToken();
+          }
+        })
+        .catch(() => {
+          clearToken();
+        })
+        .finally(() => {
+          setLoading(false);
+        });
       return;
     }
 
@@ -71,7 +103,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (data) {
           setUser(data);
         } else {
-          clearToken();
+          const refreshToken = getRefreshToken();
+          if (refreshToken) {
+            refreshRequest()
+              .then((r) => {
+                if (r) {
+                  setToken(r.accessToken);
+                  setRefreshToken(r.refreshToken);
+                  return meRequest(r.accessToken);
+                }
+                return null;
+              })
+              .then((d) => {
+                if (d) setUser(d);
+                else clearToken();
+              });
+          } else {
+            clearToken();
+          }
         }
       })
       .catch(() => {

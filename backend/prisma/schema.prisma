@@ -263,15 +263,38 @@ model User {
   updatedBy String?
   deletedBy String?
 
-  company   Company    @relation(fields: [companyId], references: [id])
-  roles     UserRole[]
-  auditLogs AuditLog[]
+  company       Company         @relation(fields: [companyId], references: [id])
+  roles         UserRole[]
+  auditLogs     AuditLog[]
+  refreshTokens RefreshToken[]
 
   @@unique([email, companyId])
   @@index([companyId])
   @@index([active])
   @@index([createdAt])
   @@map("users")
+}
+
+model RefreshToken {
+  id String @id @default(uuid())
+
+  userId String
+
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  ipAddress String?
+  userAgent String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
 }
 
 model Role {
@@ -725,6 +748,7 @@ enum AuditAction {
   DELETE
   LOGIN
   LOGOUT
+  REFRESH_TOKEN
 }
 
 model AuditLog {
