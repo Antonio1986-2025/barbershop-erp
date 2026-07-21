@@ -79,6 +79,12 @@ enum CashTransactionType {
   EXIT
 }
 
+enum StockMovementType {
+  ENTRY
+  EXIT
+  ADJUSTMENT
+}
+
 model Plan {
   id String @id @default(uuid())
 
@@ -215,6 +221,8 @@ model Company {
   cashRegisters    CashRegister[]
   payments         Payment[]
   cashTransactions CashTransaction[]
+  categories       Category[]
+  products         Product[]
 
   @@index([status])
   @@index([createdAt])
@@ -365,6 +373,8 @@ model Unit {
   cashRegisters    CashRegister[]
   payments         Payment[]
   cashTransactions CashTransaction[]
+  stocks           Stock[]
+  stockMovements   StockMovement[]
 
   @@unique([companyId, code])
   @@index([companyId])
@@ -705,4 +715,111 @@ model CashTransaction {
   @@index([cashRegisterId])
   @@index([paymentId])
   @@map("cash_transactions")
+}
+
+model Category {
+  id String @id @default(uuid())
+
+  companyId String
+
+  name        String
+  description String?
+
+  active Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  products Product[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@index([active])
+  @@map("categories")
+}
+
+model Product {
+  id String @id @default(uuid())
+
+  companyId  String
+  categoryId String?
+
+  name    String
+  barcode String?
+
+  costPrice Decimal @db.Decimal(10, 2)
+  salePrice Decimal @db.Decimal(10, 2)
+
+  active Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  company  Company   @relation(fields: [companyId], references: [id])
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  stocks    Stock[]
+  movements StockMovement[]
+
+  @@unique([companyId, barcode])
+  @@index([companyId])
+  @@index([categoryId])
+  @@index([name])
+  @@index([active])
+  @@map("products")
+}
+
+model Stock {
+  id String @id @default(uuid())
+
+  unitId    String
+  productId String
+
+  quantity Decimal @db.Decimal(10, 3)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  unit    Unit    @relation(fields: [unitId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([unitId, productId])
+  @@index([unitId])
+  @@index([productId])
+  @@map("stocks")
+}
+
+model StockMovement {
+  id String @id @default(uuid())
+
+  unitId    String
+  productId String
+
+  type StockMovementType
+
+  quantity Decimal @db.Decimal(10, 3)
+
+  description String?
+
+  createdAt DateTime @default(now())
+
+  unit    Unit    @relation(fields: [unitId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([unitId])
+  @@index([productId])
+  @@index([type])
+  @@map("stock_movements")
 }
