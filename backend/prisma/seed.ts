@@ -70,6 +70,22 @@ async function seed() {
     create: { userId, roleId: role.id },
   });
 
+  const permSlugs = ['users.view', 'users.create', 'users.update', 'users.delete'];
+  for (const slug of permSlugs) {
+    const perm = await prisma.permission.upsert({
+      where: { slug },
+      update: {},
+      create: { name: slug.replace('.', ' '), slug, module: 'users' },
+    });
+    await prisma.rolePermission
+      .upsert({
+        where: { roleId_permissionId: { roleId: role.id, permissionId: perm.id } },
+        update: {},
+        create: { roleId: role.id, permissionId: perm.id },
+      })
+      .catch(() => {});
+  }
+
   console.log('Seed concluído');
   console.log({ email: 'admin@demo.com', password: '123456' });
 

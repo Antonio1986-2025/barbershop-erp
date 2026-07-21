@@ -34,6 +34,9 @@ export class PermissionsGuard implements CanActivate {
       },
     });
 
+    const isSuperAdmin = userRoles.some((ur) => ur.role.slug === 'admin');
+    if (isSuperAdmin) return true;
+
     const userPermSlugs = new Set<string>();
     for (const ur of userRoles) {
       for (const rp of ur.role.permissions) {
