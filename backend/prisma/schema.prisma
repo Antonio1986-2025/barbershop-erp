@@ -37,6 +37,15 @@ enum Currency {
   EUR
 }
 
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+  NO_SHOW
+}
+
 model Plan {
   id String @id @default(uuid())
 
@@ -168,6 +177,7 @@ model Company {
   customers     Customer[]
   professionals Professional[]
   services      Service[]
+  appointments  Appointment[]
 
   @@index([status])
   @@index([createdAt])
@@ -313,6 +323,7 @@ model Unit {
   company Company @relation(fields: [companyId], references: [id])
 
   professionals ProfessionalUnit[]
+  appointments  Appointment[]
 
   @@unique([companyId, code])
   @@index([companyId])
@@ -345,7 +356,8 @@ model Customer {
   updatedBy String?
   deletedBy String?
 
-  company Company @relation(fields: [companyId], references: [id])
+  company      Company       @relation(fields: [companyId], references: [id])
+  appointments Appointment[]
 
   @@unique([companyId, document])
   @@index([companyId])
@@ -381,7 +393,8 @@ model Professional {
 
   company Company @relation(fields: [companyId], references: [id])
 
-  units ProfessionalUnit[]
+  units        ProfessionalUnit[]
+  appointments Appointment[]
 
   @@unique([companyId, document])
   @@index([companyId])
@@ -434,10 +447,50 @@ model Service {
   updatedBy String?
   deletedBy String?
 
-  company Company @relation(fields: [companyId], references: [id])
+  company      Company       @relation(fields: [companyId], references: [id])
+  appointments Appointment[]
 
   @@index([companyId])
   @@index([name])
   @@index([active])
   @@map("services")
+}
+
+model Appointment {
+  id String @id @default(uuid())
+
+  companyId      String
+  unitId         String
+  customerId     String
+  professionalId String
+  serviceId      String
+
+  startAt DateTime
+  endAt   DateTime
+
+  status AppointmentStatus @default(SCHEDULED)
+
+  notes String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  company      Company      @relation(fields: [companyId], references: [id])
+  unit         Unit         @relation(fields: [unitId], references: [id])
+  customer     Customer     @relation(fields: [customerId], references: [id])
+  professional Professional @relation(fields: [professionalId], references: [id])
+  service      Service      @relation(fields: [serviceId], references: [id])
+
+  @@index([companyId])
+  @@index([unitId])
+  @@index([customerId])
+  @@index([professionalId])
+  @@index([startAt])
+  @@index([status])
+  @@map("appointments")
 }
