@@ -161,11 +161,12 @@ model Company {
   updatedBy String?
   deletedBy String?
 
-  subscription Subscription     @relation(fields: [subscriptionId], references: [id])
-  settings     CompanySettings?
-  users        User[]
-  units        Unit[]
-  customers    Customer[]
+  subscription  Subscription     @relation(fields: [subscriptionId], references: [id])
+  settings      CompanySettings?
+  users         User[]
+  units         Unit[]
+  customers     Customer[]
+  professionals Professional[]
 
   @@index([status])
   @@index([createdAt])
@@ -310,6 +311,8 @@ model Unit {
 
   company Company @relation(fields: [companyId], references: [id])
 
+  professionals ProfessionalUnit[]
+
   @@unique([companyId, code])
   @@index([companyId])
   @@index([status])
@@ -349,4 +352,59 @@ model Customer {
   @@index([phone])
   @@index([active])
   @@map("customers")
+}
+
+model Professional {
+  id String @id @default(uuid())
+
+  companyId String
+
+  name     String
+  email    String?
+  phone    String?
+  document String?
+
+  specialty String?
+
+  commissionRate Decimal? @db.Decimal(5, 2)
+
+  active Boolean @default(true)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  units ProfessionalUnit[]
+
+  @@unique([companyId, document])
+  @@index([companyId])
+  @@index([name])
+  @@index([active])
+  @@map("professionals")
+}
+
+model ProfessionalUnit {
+  id String @id @default(uuid())
+
+  professionalId String
+  unitId         String
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  professional Professional @relation(fields: [professionalId], references: [id])
+  unit         Unit         @relation(fields: [unitId], references: [id])
+
+  @@unique([professionalId, unitId])
+  @@index([professionalId])
+  @@index([unitId])
+  @@map("professional_units")
 }
