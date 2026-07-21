@@ -22,6 +22,13 @@ export class AppointmentFilterDto {
   endDate?: string;
 
   @IsOptional()
-  @IsIn(['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS', 'COMPLETED', 'CANCELED', 'NO_SHOW'])
+  @IsIn([
+    'SCHEDULED',
+    'CONFIRMED',
+    'IN_PROGRESS',
+    'COMPLETED',
+    'CANCELED',
+    'NO_SHOW',
+  ])
   status?: string;
 }

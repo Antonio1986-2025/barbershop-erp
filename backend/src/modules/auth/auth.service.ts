@@ -66,7 +66,11 @@ export class AuthService {
     });
 
     const accessToken = this.jwtService.sign(payload);
-    const refreshToken = await this.createRefreshToken(user.id, ipAddress, userAgent);
+    const refreshToken = await this.createRefreshToken(
+      user.id,
+      ipAddress,
+      userAgent,
+    );
 
     await this.auditService.create({
       companyId: user.companyId,
@@ -201,7 +205,11 @@ export class AuthService {
     };
   }
 
-  private async createRefreshToken(userId: string, ipAddress?: string, userAgent?: string) {
+  private async createRefreshToken(
+    userId: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
     const rawToken = crypto.randomBytes(48).toString('hex');
     const tokenHash = await argon2.hash(rawToken);
 
@@ -209,7 +217,9 @@ export class AuthService {
       data: {
         userId,
         tokenHash,
-        expiresAt: new Date(Date.now() + REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000),
+        expiresAt: new Date(
+          Date.now() + REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000,
+        ),
         ipAddress,
         userAgent,
       },

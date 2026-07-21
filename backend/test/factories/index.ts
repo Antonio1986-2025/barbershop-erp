@@ -1,6 +1,9 @@
 import { PrismaService } from '../../src/prisma/prisma.service';
 
-export async function createCompany(prisma: PrismaService, overrides: any = {}) {
+export async function createCompany(
+  prisma: PrismaService,
+  overrides: any = {},
+) {
   const sub = await prisma.subscription.create({
     data: {
       planId: (await prisma.plan.findFirst())!.id,
@@ -22,26 +25,37 @@ export async function createCompany(prisma: PrismaService, overrides: any = {}) 
   });
 }
 
-export async function createUser(prisma: PrismaService, companyId: string, overrides: any = {}) {
+export async function createUser(
+  prisma: PrismaService,
+  companyId: string,
+  overrides: any = {},
+) {
   const role = await prisma.role.findFirst();
   const user = await prisma.user.create({
     data: {
       companyId,
       name: overrides.name ?? 'Admin Test',
       email: overrides.email ?? `admin${Date.now()}@test.com`,
-      passwordHash: overrides.passwordHash ?? '$argon2id$v=19$m=65536,t=3,p=4$hashed',
+      passwordHash:
+        overrides.passwordHash ?? '$argon2id$v=19$m=65536,t=3,p=4$hashed',
       active: true,
     },
   });
 
   if (role) {
-    await prisma.userRole.create({ data: { userId: user.id, roleId: role.id } });
+    await prisma.userRole.create({
+      data: { userId: user.id, roleId: role.id },
+    });
   }
 
   return user;
 }
 
-export async function createUnit(prisma: PrismaService, companyId: string, overrides: any = {}) {
+export async function createUnit(
+  prisma: PrismaService,
+  companyId: string,
+  overrides: any = {},
+) {
   return prisma.unit.create({
     data: {
       companyId,
@@ -52,7 +66,11 @@ export async function createUnit(prisma: PrismaService, companyId: string, overr
   });
 }
 
-export async function createCustomer(prisma: PrismaService, companyId: string, overrides: any = {}) {
+export async function createCustomer(
+  prisma: PrismaService,
+  companyId: string,
+  overrides: any = {},
+) {
   return prisma.customer.create({
     data: {
       companyId,
@@ -64,7 +82,11 @@ export async function createCustomer(prisma: PrismaService, companyId: string, o
   });
 }
 
-export async function createProfessional(prisma: PrismaService, companyId: string, overrides: any = {}) {
+export async function createProfessional(
+  prisma: PrismaService,
+  companyId: string,
+  overrides: any = {},
+) {
   return prisma.professional.create({
     data: {
       companyId,
@@ -76,7 +98,11 @@ export async function createProfessional(prisma: PrismaService, companyId: strin
   });
 }
 
-export async function createService(prisma: PrismaService, companyId: string, overrides: any = {}) {
+export async function createService(
+  prisma: PrismaService,
+  companyId: string,
+  overrides: any = {},
+) {
   return prisma.service.create({
     data: {
       companyId,
@@ -94,10 +120,12 @@ export async function createAppointment(
   companyId: string,
   overrides: any = {},
 ) {
-  const unit = overrides.unit ?? await createUnit(prisma, companyId);
-  const customer = overrides.customer ?? await createCustomer(prisma, companyId);
-  const professional = overrides.professional ?? await createProfessional(prisma, companyId);
-  const service = overrides.service ?? await createService(prisma, companyId);
+  const unit = overrides.unit ?? (await createUnit(prisma, companyId));
+  const customer =
+    overrides.customer ?? (await createCustomer(prisma, companyId));
+  const professional =
+    overrides.professional ?? (await createProfessional(prisma, companyId));
+  const service = overrides.service ?? (await createService(prisma, companyId));
   const startAt = overrides.startAt ?? new Date();
 
   return prisma.appointment.create({
@@ -114,7 +142,11 @@ export async function createAppointment(
   });
 }
 
-export async function createFinancialCategory(prisma: PrismaService, companyId: string, overrides: any = {}) {
+export async function createFinancialCategory(
+  prisma: PrismaService,
+  companyId: string,
+  overrides: any = {},
+) {
   return prisma.financialCategory.create({
     data: {
       companyId,
@@ -125,8 +157,13 @@ export async function createFinancialCategory(prisma: PrismaService, companyId: 
   });
 }
 
-export async function createFinancialAccount(prisma: PrismaService, companyId: string, overrides: any = {}) {
-  const cat = overrides.category ?? await createFinancialCategory(prisma, companyId);
+export async function createFinancialAccount(
+  prisma: PrismaService,
+  companyId: string,
+  overrides: any = {},
+) {
+  const cat =
+    overrides.category ?? (await createFinancialCategory(prisma, companyId));
   return prisma.financialAccount.create({
     data: {
       companyId,

@@ -12,7 +12,13 @@ export class CreateNotificationDto {
   @IsString()
   customerId?: string;
 
-  @IsIn(['APPOINTMENT_CREATED', 'APPOINTMENT_CONFIRMED', 'APPOINTMENT_CANCELLED', 'APPOINTMENT_RESCHEDULED', 'APPOINTMENT_REMINDER'])
+  @IsIn([
+    'APPOINTMENT_CREATED',
+    'APPOINTMENT_CONFIRMED',
+    'APPOINTMENT_CANCELLED',
+    'APPOINTMENT_RESCHEDULED',
+    'APPOINTMENT_REMINDER',
+  ])
   type: string;
 
   @IsOptional()

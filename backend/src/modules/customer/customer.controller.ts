@@ -46,10 +46,7 @@ export class CustomerController {
   }
 
   @Post()
-  create(
-    @Request() req: any,
-    @Body() dto: CreateCustomerDto,
-  ) {
+  create(@Request() req: any, @Body() dto: CreateCustomerDto) {
     return this.customerService.create(req.user.companyId, req.user.id, dto);
   }
 

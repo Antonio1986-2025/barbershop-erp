@@ -83,7 +83,9 @@ export class ProductService {
         where: { companyId, barcode: dto.barcode, deletedAt: null },
       });
       if (existing) {
-        throw new ConflictException('Já existe um produto com este código de barras');
+        throw new ConflictException(
+          'Já existe um produto com este código de barras',
+        );
       }
     }
 
@@ -92,7 +94,9 @@ export class ProductService {
         where: { id: dto.categoryId, companyId },
       });
       if (!cat) {
-        throw new NotFoundException('Categoria não encontrada ou não pertence à empresa');
+        throw new NotFoundException(
+          'Categoria não encontrada ou não pertence à empresa',
+        );
       }
     }
 
@@ -139,7 +143,9 @@ export class ProductService {
         },
       });
       if (existing) {
-        throw new ConflictException('Já existe outro produto com este código de barras');
+        throw new ConflictException(
+          'Já existe outro produto com este código de barras',
+        );
       }
     }
 
@@ -148,7 +154,9 @@ export class ProductService {
         where: { id: dto.categoryId, companyId },
       });
       if (!cat) {
-        throw new NotFoundException('Categoria não encontrada ou não pertence à empresa');
+        throw new NotFoundException(
+          'Categoria não encontrada ou não pertence à empresa',
+        );
       }
     }
 

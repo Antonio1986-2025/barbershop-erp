@@ -25,10 +25,12 @@ describe('Users (e2e)', () => {
   afterEach(async () => {
     for (const id of createdUserIds) {
       await prisma.userRole.deleteMany({ where: { userId: id } });
-      await prisma.user.update({
-        where: { id },
-        data: { deletedAt: null, active: true },
-      }).catch(() => {});
+      await prisma.user
+        .update({
+          where: { id },
+          data: { deletedAt: null, active: true },
+        })
+        .catch(() => {});
       await prisma.user.delete({ where: { id } }).catch(() => {});
     }
     createdUserIds = [];
@@ -199,7 +201,11 @@ describe('Users (e2e)', () => {
       const res = await request(httpServer)
         .post('/users')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'Para Atualizar', email: `update${Date.now()}@test.com`, password: '123456' })
+        .send({
+          name: 'Para Atualizar',
+          email: `update${Date.now()}@test.com`,
+          password: '123456',
+        })
         .expect(201);
 
       createdUserIds.push(res.body.id);
@@ -225,14 +231,22 @@ describe('Users (e2e)', () => {
       const res1 = await request(httpServer)
         .post('/users')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'User A', email: `a${Date.now()}@test.com`, password: '123456' })
+        .send({
+          name: 'User A',
+          email: `a${Date.now()}@test.com`,
+          password: '123456',
+        })
         .expect(201);
       createdUserIds.push(res1.body.id);
 
       const res2 = await request(httpServer)
         .post('/users')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'User B', email: `b${Date.now()}@test.com`, password: '123456' })
+        .send({
+          name: 'User B',
+          email: `b${Date.now()}@test.com`,
+          password: '123456',
+        })
         .expect(201);
       createdUserIds.push(res2.body.id);
 
@@ -249,7 +263,11 @@ describe('Users (e2e)', () => {
       const res = await request(httpServer)
         .post('/users')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'Será Deletado', email: `del${Date.now()}@test.com`, password: '123456' })
+        .send({
+          name: 'Será Deletado',
+          email: `del${Date.now()}@test.com`,
+          password: '123456',
+        })
         .expect(201);
 
       createdUserIds.push(res.body.id);
@@ -274,7 +292,11 @@ describe('Users (e2e)', () => {
       const res = await request(httpServer)
         .post('/users')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'Sumiu', email: `sumiu${Date.now()}@test.com`, password: '123456' })
+        .send({
+          name: 'Sumiu',
+          email: `sumiu${Date.now()}@test.com`,
+          password: '123456',
+        })
         .expect(201);
 
       createdUserIds.push(res.body.id);
@@ -322,7 +344,9 @@ describe('Users (e2e)', () => {
         },
       });
       createdUserIds.push(noPermUser.id);
-      await prisma.userRole.create({ data: { userId: noPermUser.id, roleId: noPermRole.id } });
+      await prisma.userRole.create({
+        data: { userId: noPermUser.id, roleId: noPermRole.id },
+      });
 
       const token = await loginAsUser(app, noPermUser.email, '123456');
 
@@ -334,7 +358,11 @@ describe('Users (e2e)', () => {
       await request(httpServer)
         .post('/users')
         .set('Authorization', `Bearer ${token}`)
-        .send({ name: 'Test', email: `test${Date.now()}@test.com`, password: '123456' })
+        .send({
+          name: 'Test',
+          email: `test${Date.now()}@test.com`,
+          password: '123456',
+        })
         .expect(403);
     });
 

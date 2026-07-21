@@ -81,11 +81,7 @@ export class ProfessionalService {
     return professional;
   }
 
-  async create(
-    companyId: string,
-    userId: string,
-    dto: CreateProfessionalDto,
-  ) {
+  async create(companyId: string, userId: string, dto: CreateProfessionalDto) {
     const { unitIds, ...data } = dto;
 
     const result = await this.prisma.professional.create({

@@ -78,7 +78,9 @@ export class DashboardController {
   @Get('professionals-ranking')
   @Permissions('dashboard.analytics')
   professionalsRanking(@Request() req: any, @Query() query: any) {
-    return this.dashboardService.professionalsRanking(this.extractFilter(req, query));
+    return this.dashboardService.professionalsRanking(
+      this.extractFilter(req, query),
+    );
   }
 
   @Get('occupancy')
@@ -90,7 +92,9 @@ export class DashboardController {
   @Get('financial-analysis')
   @Permissions('dashboard.analytics')
   financialAnalysis(@Request() req: any, @Query() query: any) {
-    return this.dashboardService.financialAnalysis(this.extractFilter(req, query));
+    return this.dashboardService.financialAnalysis(
+      this.extractFilter(req, query),
+    );
   }
 
   @Get('stock-analysis')

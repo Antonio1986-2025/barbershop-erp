@@ -4,8 +4,7 @@ import { loginAsAdmin } from './auth';
 
 export async function authenticatedRequest(app: INestApplication) {
   const token = await loginAsAdmin(app);
-  return request(app.getHttpServer())
-    .set('Authorization', `Bearer ${token}`);
+  return request(app.getHttpServer()).set('Authorization', `Bearer ${token}`);
 }
 
 export function withAuth(agent: request.SuperTest<request.Test>) {

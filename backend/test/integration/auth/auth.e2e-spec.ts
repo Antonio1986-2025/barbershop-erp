@@ -83,7 +83,9 @@ describe('Auth (e2e)', () => {
     it('deve retornar 400 para senha curta', async () => {
       const companies = await prisma.company.findMany();
       for (const c of companies) {
-        await prisma.refreshToken.deleteMany({ where: { user: { companyId: c.id } } });
+        await prisma.refreshToken.deleteMany({
+          where: { user: { companyId: c.id } },
+        });
       }
 
       await request(httpServer)
@@ -200,7 +202,9 @@ describe('Auth (e2e)', () => {
           active: true,
         },
       });
-      await prisma.userRole.create({ data: { userId: user.id, roleId: role.id } });
+      await prisma.userRole.create({
+        data: { userId: user.id, roleId: role.id },
+      });
 
       const token = await loginAsUser(app, user.email, '123456');
 

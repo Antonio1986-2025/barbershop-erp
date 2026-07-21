@@ -56,12 +56,7 @@ export class ServiceController {
     @Param('id') id: string,
     @Body() dto: UpdateServiceDto,
   ) {
-    return this.serviceService.update(
-      req.user.companyId,
-      id,
-      req.user.id,
-      dto,
-    );
+    return this.serviceService.update(req.user.companyId, id, req.user.id, dto);
   }
 
   @Delete(':id')

@@ -58,12 +58,7 @@ export class ProductController {
     @Param('id') id: string,
     @Body() dto: UpdateProductDto,
   ) {
-    return this.productService.update(
-      req.user.companyId,
-      id,
-      req.user.id,
-      dto,
-    );
+    return this.productService.update(req.user.companyId, id, req.user.id, dto);
   }
 
   @Delete(':id')

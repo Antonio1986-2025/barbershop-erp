@@ -68,7 +68,9 @@ export class UserService {
           createdAt: true,
           updatedAt: true,
           deletedAt: true,
-          roles: { include: { role: { select: { id: true, name: true, slug: true } } } },
+          roles: {
+            include: { role: { select: { id: true, name: true, slug: true } } },
+          },
         },
       }),
       this.prisma.user.count({ where }),
@@ -93,7 +95,9 @@ export class UserService {
         createdAt: true,
         updatedAt: true,
         deletedAt: true,
-        roles: { include: { role: { select: { id: true, name: true, slug: true } } } },
+        roles: {
+          include: { role: { select: { id: true, name: true, slug: true } } },
+        },
       },
     });
     if (!user) throw new NotFoundException('Usuário não encontrado');
@@ -105,7 +109,9 @@ export class UserService {
       where: { email: dto.email, companyId, deletedAt: null },
     });
     if (existing) {
-      throw new ConflictException('Já existe um usuário com este email na empresa');
+      throw new ConflictException(
+        'Já existe um usuário com este email na empresa',
+      );
     }
 
     const passwordHash = await argon2.hash(dto.password);
@@ -128,7 +134,9 @@ export class UserService {
         email: true,
         active: true,
         createdAt: true,
-        roles: { include: { role: { select: { id: true, name: true, slug: true } } } },
+        roles: {
+          include: { role: { select: { id: true, name: true, slug: true } } },
+        },
       },
     });
 
@@ -162,7 +170,9 @@ export class UserService {
         },
       });
       if (existing) {
-        throw new ConflictException('Já existe outro usuário com este email na empresa');
+        throw new ConflictException(
+          'Já existe outro usuário com este email na empresa',
+        );
       }
     }
 
@@ -198,7 +208,9 @@ export class UserService {
         active: true,
         createdAt: true,
         updatedAt: true,
-        roles: { include: { role: { select: { id: true, name: true, slug: true } } } },
+        roles: {
+          include: { role: { select: { id: true, name: true, slug: true } } },
+        },
       },
     });
 

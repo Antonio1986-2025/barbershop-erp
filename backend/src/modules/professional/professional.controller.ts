@@ -18,9 +18,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @Controller('professionals')
 export class ProfessionalController {
-  constructor(
-    private readonly professionalService: ProfessionalService,
-  ) {}
+  constructor(private readonly professionalService: ProfessionalService) {}
 
   @Get()
   findAll(
@@ -74,10 +72,6 @@ export class ProfessionalController {
 
   @Delete(':id')
   remove(@Request() req: any, @Param('id') id: string) {
-    return this.professionalService.remove(
-      req.user.companyId,
-      id,
-      req.user.id,
-    );
+    return this.professionalService.remove(req.user.companyId, id, req.user.id);
   }
 }

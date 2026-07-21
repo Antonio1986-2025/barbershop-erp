@@ -1,9 +1,23 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { FinancialService } from './financial.service';
 import { FinancialFilterDto } from './dto/financial-filter.dto';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
-import { CreateCategoryDto, UpdateCategoryDto } from './dto/create-category.dto';
+import {
+  CreateCategoryDto,
+  UpdateCategoryDto,
+} from './dto/create-category.dto';
 import { CashClosingDto } from './dto/cash-closing.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/permissions.guard';
@@ -30,8 +44,17 @@ export class FinancialController {
 
   @Patch('categories/:id')
   @Permissions('financial.update')
-  updateCategory(@Param('id') id: string, @Body() dto: UpdateCategoryDto, @Request() req: any) {
-    return this.service.updateCategory(req.user.companyId, id, req.user.id, dto);
+  updateCategory(
+    @Param('id') id: string,
+    @Body() dto: UpdateCategoryDto,
+    @Request() req: any,
+  ) {
+    return this.service.updateCategory(
+      req.user.companyId,
+      id,
+      req.user.id,
+      dto,
+    );
   }
 
   @Delete('categories/:id')
@@ -62,7 +85,11 @@ export class FinancialController {
 
   @Patch('accounts/:id')
   @Permissions('financial.update')
-  updateAccount(@Param('id') id: string, @Body() dto: UpdateAccountDto, @Request() req: any) {
+  updateAccount(
+    @Param('id') id: string,
+    @Body() dto: UpdateAccountDto,
+    @Request() req: any,
+  ) {
     return this.service.updateAccount(req.user.companyId, id, req.user.id, dto);
   }
 
@@ -82,8 +109,18 @@ export class FinancialController {
 
   @Get('cash-flow')
   @Permissions('financial.view')
-  getCashFlow(@Request() req: any, @Query('unitId') unitId?: string, @Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
-    return this.service.getCashFlow(req.user.companyId, unitId, startDate, endDate);
+  getCashFlow(
+    @Request() req: any,
+    @Query('unitId') unitId?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.service.getCashFlow(
+      req.user.companyId,
+      unitId,
+      startDate,
+      endDate,
+    );
   }
 
   // ── Cash Closing ──

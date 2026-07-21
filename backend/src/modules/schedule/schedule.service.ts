@@ -1,9 +1,16 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { CreateBusinessHourDto } from './dto/create-business-hour.dto';
 import { CreateScheduleBlockDto } from './dto/create-schedule-block.dto';
-import type { UpdateBusinessHourDto, UpdateScheduleBlockDto } from './dto/update.dto';
+import type {
+  UpdateBusinessHourDto,
+  UpdateScheduleBlockDto,
+} from './dto/update.dto';
 
 @Injectable()
 export class ScheduleService {
@@ -17,35 +24,80 @@ export class ScheduleService {
   async findBusinessHours(companyId: string, unitId?: string) {
     const where: any = { companyId };
     if (unitId) where.unitId = unitId;
-    return this.prisma.businessHour.findMany({ where, orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] });
+    return this.prisma.businessHour.findMany({
+      where,
+      orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }],
+    });
   }
 
-  async createBusinessHour(companyId: string, userId: string, dto: CreateBusinessHourDto) {
+  async createBusinessHour(
+    companyId: string,
+    userId: string,
+    dto: CreateBusinessHourDto,
+  ) {
     const result = await this.prisma.businessHour.create({
       data: { ...dto, companyId },
     });
-    await this.auditService.create({ companyId, userId, action: 'CREATE', entity: 'BusinessHour', entityId: result.id, newData: result as any });
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'CREATE',
+      entity: 'BusinessHour',
+      entityId: result.id,
+      newData: result as any,
+    });
     return result;
   }
 
-  async updateBusinessHour(companyId: string, id: string, userId: string, dto: UpdateBusinessHourDto) {
-    const old = await this.prisma.businessHour.findFirst({ where: { id, companyId } });
+  async updateBusinessHour(
+    companyId: string,
+    id: string,
+    userId: string,
+    dto: UpdateBusinessHourDto,
+  ) {
+    const old = await this.prisma.businessHour.findFirst({
+      where: { id, companyId },
+    });
     if (!old) throw new NotFoundException('Horário não encontrado');
-    const result = await this.prisma.businessHour.update({ where: { id }, data: dto });
-    await this.auditService.create({ companyId, userId, action: 'UPDATE', entity: 'BusinessHour', entityId: id, oldData: old as any, newData: result as any });
+    const result = await this.prisma.businessHour.update({
+      where: { id },
+      data: dto,
+    });
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'BusinessHour',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
     return result;
   }
 
   async removeBusinessHour(companyId: string, id: string, userId: string) {
-    const old = await this.prisma.businessHour.findFirst({ where: { id, companyId } });
+    const old = await this.prisma.businessHour.findFirst({
+      where: { id, companyId },
+    });
     if (!old) throw new NotFoundException('Horário não encontrado');
     await this.prisma.businessHour.delete({ where: { id } });
-    await this.auditService.create({ companyId, userId, action: 'DELETE', entity: 'BusinessHour', entityId: id, oldData: old as any });
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'DELETE',
+      entity: 'BusinessHour',
+      entityId: id,
+      oldData: old as any,
+    });
   }
 
   // ── Schedule Blocks ──
 
-  async findBlocks(companyId: string, unitId?: string, professionalId?: string) {
+  async findBlocks(
+    companyId: string,
+    unitId?: string,
+    professionalId?: string,
+  ) {
     const where: any = { companyId };
     if (unitId) where.unitId = unitId;
     if (professionalId) where.professionalId = professionalId;
@@ -56,7 +108,11 @@ export class ScheduleService {
     });
   }
 
-  async createBlock(companyId: string, userId: string, dto: CreateScheduleBlockDto) {
+  async createBlock(
+    companyId: string,
+    userId: string,
+    dto: CreateScheduleBlockDto,
+  ) {
     const result = await this.prisma.scheduleBlock.create({
       data: {
         unitId: dto.unitId,
@@ -71,45 +127,93 @@ export class ScheduleService {
       },
       include: { professional: { select: { id: true, name: true } } },
     });
-    await this.auditService.create({ companyId, userId, action: 'CREATE', entity: 'ScheduleBlock', entityId: result.id, newData: result as any });
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'CREATE',
+      entity: 'ScheduleBlock',
+      entityId: result.id,
+      newData: result as any,
+    });
     return result;
   }
 
-  async updateBlock(companyId: string, id: string, userId: string, dto: UpdateScheduleBlockDto) {
-    const old = await this.prisma.scheduleBlock.findFirst({ where: { id, companyId } });
+  async updateBlock(
+    companyId: string,
+    id: string,
+    userId: string,
+    dto: UpdateScheduleBlockDto,
+  ) {
+    const old = await this.prisma.scheduleBlock.findFirst({
+      where: { id, companyId },
+    });
     if (!old) throw new NotFoundException('Bloqueio não encontrado');
     const data: any = { ...dto };
     if (dto.startAt) data.startAt = new Date(dto.startAt);
     if (dto.endAt) data.endAt = new Date(dto.endAt);
-    const result = await this.prisma.scheduleBlock.update({ where: { id }, data, include: { professional: { select: { id: true, name: true } } } });
-    await this.auditService.create({ companyId, userId, action: 'UPDATE', entity: 'ScheduleBlock', entityId: id, oldData: old as any, newData: result as any });
+    const result = await this.prisma.scheduleBlock.update({
+      where: { id },
+      data,
+      include: { professional: { select: { id: true, name: true } } },
+    });
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'ScheduleBlock',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
     return result;
   }
 
   async removeBlock(companyId: string, id: string, userId: string) {
-    const old = await this.prisma.scheduleBlock.findFirst({ where: { id, companyId } });
+    const old = await this.prisma.scheduleBlock.findFirst({
+      where: { id, companyId },
+    });
     if (!old) throw new NotFoundException('Bloqueio não encontrado');
     await this.prisma.scheduleBlock.delete({ where: { id } });
-    await this.auditService.create({ companyId, userId, action: 'DELETE', entity: 'ScheduleBlock', entityId: id, oldData: old as any });
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'DELETE',
+      entity: 'ScheduleBlock',
+      entityId: id,
+      oldData: old as any,
+    });
   }
 
   // ── Availability ──
 
-  async getAvailability(companyId: string, unitId: string, date: string, professionalId?: string, serviceId?: string) {
+  async getAvailability(
+    companyId: string,
+    unitId: string,
+    date: string,
+    professionalId?: string,
+    serviceId?: string,
+  ) {
     const dayOfWeek = new Date(date).getDay();
 
     const hours = await this.prisma.businessHour.findMany({
       where: { companyId, unitId, dayOfWeek, active: true },
     });
 
-    if (hours.length === 0) return { date, available: false, slots: [], reason: 'Unidade não abre neste dia' };
+    if (hours.length === 0)
+      return {
+        date,
+        available: false,
+        slots: [],
+        reason: 'Unidade não abre neste dia',
+      };
 
     const dayStart = new Date(`${date}T00:00:00Z`);
     const dayEnd = new Date(`${date}T23:59:59Z`);
 
     const blocks = await this.prisma.scheduleBlock.findMany({
       where: {
-        companyId, unitId,
+        companyId,
+        unitId,
         startAt: { lt: dayEnd },
         endAt: { gt: dayStart },
         ...(professionalId ? { professionalId } : {}),
@@ -118,7 +222,8 @@ export class ScheduleService {
 
     const appointments = await this.prisma.appointment.findMany({
       where: {
-        companyId, unitId,
+        companyId,
+        unitId,
         ...(professionalId ? { professionalId } : {}),
         startAt: { gte: dayStart, lt: dayEnd },
         status: { notIn: ['CANCELED', 'NO_SHOW'] },
@@ -129,7 +234,10 @@ export class ScheduleService {
 
     let duration = 60;
     if (serviceId) {
-      const service = await this.prisma.service.findUnique({ where: { id: serviceId }, select: { durationMinutes: true } });
+      const service = await this.prisma.service.findUnique({
+        where: { id: serviceId },
+        select: { durationMinutes: true },
+      });
       if (service) duration = service.durationMinutes;
     }
 
@@ -141,13 +249,19 @@ export class ScheduleService {
       const endMin = hEnd * 60 + mEnd;
 
       for (let m = startMin; m + duration <= endMin; m += 15) {
-        const slotStart = new Date(`${date}T${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}:00Z`);
+        const slotStart = new Date(
+          `${date}T${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}:00Z`,
+        );
         const slotEnd = new Date(slotStart.getTime() + duration * 60000);
 
-        const blocked = blocks.some((b) => slotStart < b.endAt && slotEnd > b.startAt);
+        const blocked = blocks.some(
+          (b) => slotStart < b.endAt && slotEnd > b.startAt,
+        );
         if (blocked) continue;
 
-        const conflicted = appointments.some((a) => slotStart < a.endAt && slotEnd > a.startAt);
+        const conflicted = appointments.some(
+          (a) => slotStart < a.endAt && slotEnd > a.startAt,
+        );
         if (conflicted) continue;
 
         slots.push(slotStart.toISOString());

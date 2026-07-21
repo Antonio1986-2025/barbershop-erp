@@ -21,7 +21,26 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { FinancialModule } from './modules/financial/financial.module';
 
 @Module({
-  imports: [PrismaModule, DashboardModule, AuthModule, CustomerModule, ProfessionalModule, UnitModule, ServiceModule, CategoryModule, ProductModule, UserModule, RoleModule, CompanyModule, AuditModule, CompanySettingsModule, ScheduleModule, AppointmentModule, NotificationsModule, FinancialModule],
+  imports: [
+    PrismaModule,
+    DashboardModule,
+    AuthModule,
+    CustomerModule,
+    ProfessionalModule,
+    UnitModule,
+    ServiceModule,
+    CategoryModule,
+    ProductModule,
+    UserModule,
+    RoleModule,
+    CompanyModule,
+    AuditModule,
+    CompanySettingsModule,
+    ScheduleModule,
+    AppointmentModule,
+    NotificationsModule,
+    FinancialModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

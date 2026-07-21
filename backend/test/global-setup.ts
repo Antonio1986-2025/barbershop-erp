@@ -1,17 +1,25 @@
-import 'dotenv/config';
 import { execSync } from 'child_process';
+import { existsSync } from 'fs';
 
-process.env.DATABASE_URL ||= 'postgresql://postgres:postgres@localhost:5432/barbershop_erp_test?schema=public';
-process.env.JWT_SECRET ||= 'test-jwt-secret';
-process.env.JWT_EXPIRES_IN ||= '15m';
-process.env.JWT_REFRESH_EXPIRES_IN ||= '7d';
-process.env.NODE_ENV = 'test';
+const TEST_DB =
+  'postgresql://postgres:postgres@localhost:5432/barbershop_erp_test?schema=public';
+const CONSENT = 'Sim, pode prosseguir';
 
 module.exports = async () => {
   try {
-    execSync('npx prisma migrate deploy', { stdio: 'pipe', env: { ...process.env } });
-    execSync('npx prisma db seed', { stdio: 'pipe', env: { ...process.env } });
+    execSync(`npx prisma db push --accept-data-loss --url="${TEST_DB}"`, {
+      stdio: 'pipe',
+      env: {
+        ...process.env,
+        PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION: CONSENT,
+      },
+    });
+    execSync(`npx tsx prisma/seed.ts`, {
+      stdio: 'pipe',
+      env: { ...process.env, DATABASE_URL: TEST_DB },
+    });
   } catch (e) {
-    // migrations may already be applied
+    console.error('Setup failed:', e.message);
+    throw e;
   }
 };

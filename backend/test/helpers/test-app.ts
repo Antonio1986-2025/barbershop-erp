@@ -15,14 +15,42 @@ export async function createTestApp(): Promise<INestApplication> {
 }
 
 export async function cleanupDatabase(prisma: PrismaService) {
-  const tables = ['notifications', 'financial_accounts', 'financial_categories', 'cash_closings',
-    'schedule_blocks', 'business_hours', 'audit_logs', 'refresh_tokens',
-    'appointments', 'service_order_items', 'service_orders', 'payments',
-    'cash_transactions', 'cash_registers', 'stock_movements', 'stocks',
-    'products', 'categories', 'professional_units', 'professionals',
-    'customers', 'user_roles', 'role_permissions', 'permissions', 'roles',
-    'users', 'company_settings', 'units', 'companies', 'subscriptions',
-    'plan_prices', 'plan_features', 'features', 'plans'];
+  const tables = [
+    'notifications',
+    'financial_accounts',
+    'financial_categories',
+    'cash_closings',
+    'schedule_blocks',
+    'business_hours',
+    'audit_logs',
+    'refresh_tokens',
+    'appointments',
+    'service_order_items',
+    'service_orders',
+    'payments',
+    'cash_transactions',
+    'cash_registers',
+    'stock_movements',
+    'stocks',
+    'products',
+    'categories',
+    'professional_units',
+    'professionals',
+    'customers',
+    'user_roles',
+    'role_permissions',
+    'permissions',
+    'roles',
+    'users',
+    'company_settings',
+    'units',
+    'companies',
+    'subscriptions',
+    'plan_prices',
+    'plan_features',
+    'features',
+    'plans',
+  ];
 
   for (const table of tables) {
     try {

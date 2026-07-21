@@ -1,11 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AppointmentFilterDto } from './dto/appointment-filter.dto';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import { CancelAppointmentDto, RescheduleAppointmentDto } from './dto/cancel-reschedule.dto';
+import {
+  CancelAppointmentDto,
+  RescheduleAppointmentDto,
+} from './dto/cancel-reschedule.dto';
 
 @Injectable()
 export class AppointmentService {
@@ -32,7 +39,9 @@ export class AppointmentService {
       include: {
         professional: { select: { id: true, name: true } },
         customer: { select: { id: true, name: true, phone: true } },
-        service: { select: { id: true, name: true, durationMinutes: true, price: true } },
+        service: {
+          select: { id: true, name: true, durationMinutes: true, price: true },
+        },
         unit: { select: { id: true, name: true } },
       },
     });
@@ -44,7 +53,9 @@ export class AppointmentService {
       include: {
         professional: { select: { id: true, name: true } },
         customer: { select: { id: true, name: true, phone: true } },
-        service: { select: { id: true, name: true, durationMinutes: true, price: true } },
+        service: {
+          select: { id: true, name: true, durationMinutes: true, price: true },
+        },
         unit: { select: { id: true, name: true } },
       },
     });
@@ -53,7 +64,9 @@ export class AppointmentService {
   }
 
   async create(companyId: string, userId: string, dto: CreateAppointmentDto) {
-    const service = await this.prisma.service.findFirst({ where: { id: dto.serviceId, companyId } });
+    const service = await this.prisma.service.findFirst({
+      where: { id: dto.serviceId, companyId },
+    });
     if (!service) throw new NotFoundException('Serviço não encontrado');
 
     const startAt = new Date(dto.startAt);
@@ -69,7 +82,10 @@ export class AppointmentService {
         endAt: { gt: startAt },
       },
     });
-    if (conflict) throw new BadRequestException('Conflito de horário com outro agendamento');
+    if (conflict)
+      throw new BadRequestException(
+        'Conflito de horário com outro agendamento',
+      );
 
     const result = await this.prisma.appointment.create({
       data: {
@@ -90,18 +106,36 @@ export class AppointmentService {
         service: { select: { id: true, name: true } },
       },
     });
-    await this.auditService.create({ companyId, userId, action: 'CREATE', entity: 'Appointment', entityId: result.id, newData: result as any });
-    this.notificationsService.createFromAppointment(companyId, result, 'APPOINTMENT_CREATED').catch(() => {});
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'CREATE',
+      entity: 'Appointment',
+      entityId: result.id,
+      newData: result as any,
+    });
+    this.notificationsService
+      .createFromAppointment(companyId, result, 'APPOINTMENT_CREATED')
+      .catch(() => {});
     return result;
   }
 
-  async update(companyId: string, id: string, userId: string, dto: UpdateAppointmentDto) {
+  async update(
+    companyId: string,
+    id: string,
+    userId: string,
+    dto: UpdateAppointmentDto,
+  ) {
     const old = await this.findOne(companyId, id);
     const data: any = { ...dto };
     if (dto.startAt) {
-      const service = await this.prisma.service.findUnique({ where: { id: old.serviceId } });
+      const service = await this.prisma.service.findUnique({
+        where: { id: old.serviceId },
+      });
       const startAt = new Date(dto.startAt);
-      data.endAt = new Date(startAt.getTime() + (service?.durationMinutes ?? 60) * 60000);
+      data.endAt = new Date(
+        startAt.getTime() + (service?.durationMinutes ?? 60) * 60000,
+      );
       data.startAt = startAt;
     }
     const result = await this.prisma.appointment.update({
@@ -113,38 +147,79 @@ export class AppointmentService {
         service: { select: { id: true, name: true } },
       },
     });
-    await this.auditService.create({ companyId, userId, action: 'UPDATE', entity: 'Appointment', entityId: id, oldData: old as any, newData: result as any });
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'Appointment',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
     return result;
   }
 
-  async cancel(companyId: string, id: string, userId: string, dto: CancelAppointmentDto) {
+  async cancel(
+    companyId: string,
+    id: string,
+    userId: string,
+    dto: CancelAppointmentDto,
+  ) {
     const old = await this.findOne(companyId, id);
     if (old.status === 'CANCELED' || old.status === 'COMPLETED') {
-      throw new BadRequestException(`Agendamento já está ${old.status === 'CANCELED' ? 'cancelado' : 'concluído'}`);
+      throw new BadRequestException(
+        `Agendamento já está ${old.status === 'CANCELED' ? 'cancelado' : 'concluído'}`,
+      );
     }
     const result = await this.prisma.appointment.update({
       where: { id },
-      data: { status: 'CANCELED', cancellationReason: dto.reason, cancelledAt: new Date(), cancelledBy: userId },
+      data: {
+        status: 'CANCELED',
+        cancellationReason: dto.reason,
+        cancelledAt: new Date(),
+        cancelledBy: userId,
+      },
       include: {
         professional: { select: { id: true, name: true } },
         customer: { select: { id: true, name: true } },
         service: { select: { id: true, name: true } },
       },
     });
-    await this.auditService.create({ companyId, userId, action: 'UPDATE', entity: 'Appointment', entityId: id, oldData: old as any, newData: result as any });
-    this.notificationsService.createFromAppointment(companyId, result, 'APPOINTMENT_CANCELLED').catch(() => {});
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'Appointment',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
+    this.notificationsService
+      .createFromAppointment(companyId, result, 'APPOINTMENT_CANCELLED')
+      .catch(() => {});
     return result;
   }
 
-  async reschedule(companyId: string, id: string, userId: string, dto: RescheduleAppointmentDto) {
+  async reschedule(
+    companyId: string,
+    id: string,
+    userId: string,
+    dto: RescheduleAppointmentDto,
+  ) {
     const old = await this.findOne(companyId, id);
     if (old.status === 'CANCELED' || old.status === 'COMPLETED') {
-      throw new BadRequestException(`Não é possível reagendar um agendamento ${old.status === 'CANCELED' ? 'cancelado' : 'concluído'}`);
+      throw new BadRequestException(
+        `Não é possível reagendar um agendamento ${old.status === 'CANCELED' ? 'cancelado' : 'concluído'}`,
+      );
     }
 
     const newStartAt = new Date(dto.newStartAt);
-    const service = await this.prisma.service.findUnique({ where: { id: old.serviceId } });
-    const newEndAt = new Date(newStartAt.getTime() + (service?.durationMinutes ?? 60) * 60000);
+    const service = await this.prisma.service.findUnique({
+      where: { id: old.serviceId },
+    });
+    const newEndAt = new Date(
+      newStartAt.getTime() + (service?.durationMinutes ?? 60) * 60000,
+    );
 
     const newAppointment = await this.prisma.appointment.create({
       data: {
@@ -171,19 +246,30 @@ export class AppointmentService {
       where: { id: old.id },
       data: {
         status: 'CANCELED',
-        cancellationReason: dto.reason ?? `Reagendado para ${newStartAt.toISOString()}`,
+        cancellationReason:
+          dto.reason ?? `Reagendado para ${newStartAt.toISOString()}`,
         cancelledAt: new Date(),
         cancelledBy: userId,
       },
     });
 
     await this.auditService.create({
-      companyId, userId, action: 'UPDATE', entity: 'Appointment', entityId: old.id,
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'Appointment',
+      entityId: old.id,
       oldData: { status: old.status } as any,
       newData: { status: 'CANCELED', reason: 'Rescheduled' } as any,
     });
 
-    this.notificationsService.createFromAppointment(companyId, newAppointment, 'APPOINTMENT_RESCHEDULED').catch(() => {});
+    this.notificationsService
+      .createFromAppointment(
+        companyId,
+        newAppointment,
+        'APPOINTMENT_RESCHEDULED',
+      )
+      .catch(() => {});
     return newAppointment;
   }
 
@@ -193,10 +279,22 @@ export class AppointmentService {
       where: { id },
       data: { deletedAt: new Date() },
     });
-    await this.auditService.create({ companyId, userId, action: 'DELETE', entity: 'Appointment', entityId: id, oldData: old as any });
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'DELETE',
+      entity: 'Appointment',
+      entityId: id,
+      oldData: old as any,
+    });
   }
 
-  async updateStatus(companyId: string, id: string, userId: string, status: string) {
+  async updateStatus(
+    companyId: string,
+    id: string,
+    userId: string,
+    status: string,
+  ) {
     const old = await this.findOne(companyId, id);
     const result = await this.prisma.appointment.update({
       where: { id },
@@ -207,14 +305,30 @@ export class AppointmentService {
         service: { select: { id: true, name: true } },
       },
     });
-    await this.auditService.create({ companyId, userId, action: 'UPDATE', entity: 'Appointment', entityId: id, oldData: old as any, newData: result as any });
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'Appointment',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
     if (status === 'CONFIRMED') {
-      this.notificationsService.createFromAppointment(companyId, result, 'APPOINTMENT_CONFIRMED').catch(() => {});
+      this.notificationsService
+        .createFromAppointment(companyId, result, 'APPOINTMENT_CONFIRMED')
+        .catch(() => {});
     }
     return result;
   }
 
-  async findByDateRange(companyId: string, startDate: string, endDate: string, unitId?: string, professionalId?: string) {
+  async findByDateRange(
+    companyId: string,
+    startDate: string,
+    endDate: string,
+    unitId?: string,
+    professionalId?: string,
+  ) {
     const where: any = {
       companyId,
       deletedAt: null,
@@ -228,7 +342,9 @@ export class AppointmentService {
       include: {
         professional: { select: { id: true, name: true } },
         customer: { select: { id: true, name: true, phone: true } },
-        service: { select: { id: true, name: true, durationMinutes: true, price: true } },
+        service: {
+          select: { id: true, name: true, durationMinutes: true, price: true },
+        },
         unit: { select: { id: true, name: true } },
       },
     });

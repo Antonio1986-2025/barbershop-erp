@@ -13,7 +13,10 @@ export class NotificationsService {
 
   async findAll(companyId: string, filter: NotificationFilterDto) {
     const page = Math.max(1, parseInt(filter.page ?? '1', 10));
-    const limit = Math.min(100, Math.max(1, parseInt(filter.limit ?? '20', 10)));
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(filter.limit ?? '20', 10)),
+    );
     const skip = (page - 1) * limit;
 
     const where: any = { companyId };
@@ -57,7 +60,11 @@ export class NotificationsService {
     return result;
   }
 
-  async create(companyId: string, userId: string | undefined, dto: CreateNotificationDto) {
+  async create(
+    companyId: string,
+    userId: string | undefined,
+    dto: CreateNotificationDto,
+  ) {
     const result = await this.prisma.notification.create({
       data: {
         companyId: dto.companyId,
@@ -72,7 +79,14 @@ export class NotificationsService {
       },
     });
     if (userId) {
-      await this.auditService.create({ companyId, userId, action: 'CREATE', entity: 'Notification', entityId: result.id, newData: result as any });
+      await this.auditService.create({
+        companyId,
+        userId,
+        action: 'CREATE',
+        entity: 'Notification',
+        entityId: result.id,
+        newData: result as any,
+      });
     }
     return result;
   }
@@ -85,7 +99,15 @@ export class NotificationsService {
       where: { id },
       data: { status: 'READ', readAt: new Date() },
     });
-    await this.auditService.create({ companyId, userId, action: 'UPDATE', entity: 'Notification', entityId: id, oldData: old as any, newData: result as any });
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'UPDATE',
+      entity: 'Notification',
+      entityId: id,
+      oldData: old as any,
+      newData: result as any,
+    });
     return result;
   }
 
@@ -129,7 +151,11 @@ export class NotificationsService {
     });
   }
 
-  async createFromAppointment(companyId: string, appointment: any, type: string) {
+  async createFromAppointment(
+    companyId: string,
+    appointment: any,
+    type: string,
+  ) {
     const promises: Promise<any>[] = [];
 
     const titleMap: Record<string, string> = {

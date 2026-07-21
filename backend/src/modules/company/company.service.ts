@@ -143,7 +143,9 @@ export class CompanyService {
         },
       });
       if (existing) {
-        throw new ConflictException('Já existe outra empresa com este documento');
+        throw new ConflictException(
+          'Já existe outra empresa com este documento',
+        );
       }
     }
 
@@ -175,8 +177,12 @@ export class CompanyService {
     const old = await this.findOne(id);
 
     const [userCount, unitCount] = await Promise.all([
-      this.prisma.user.count({ where: { companyId: id, deletedAt: null, active: true } }),
-      this.prisma.unit.count({ where: { companyId: id, deletedAt: null, status: 'ACTIVE' } }),
+      this.prisma.user.count({
+        where: { companyId: id, deletedAt: null, active: true },
+      }),
+      this.prisma.unit.count({
+        where: { companyId: id, deletedAt: null, status: 'ACTIVE' },
+      }),
     ]);
 
     if (userCount > 0 || unitCount > 0) {

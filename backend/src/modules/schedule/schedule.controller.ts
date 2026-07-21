@@ -1,9 +1,23 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { ScheduleService } from './schedule.service';
 import { CreateBusinessHourDto } from './dto/create-business-hour.dto';
 import { CreateScheduleBlockDto } from './dto/create-schedule-block.dto';
 import { AvailabilityFilterDto } from './dto/availability-filter.dto';
-import { UpdateBusinessHourDto, UpdateScheduleBlockDto } from './dto/update.dto';
+import {
+  UpdateBusinessHourDto,
+  UpdateScheduleBlockDto,
+} from './dto/update.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/permissions.guard';
 import { Permissions } from '../auth/decorators/permissions.decorator';
@@ -22,13 +36,26 @@ export class ScheduleController {
   @Post('business-hours')
   @Permissions('schedule.create')
   createBusinessHour(@Body() dto: CreateBusinessHourDto, @Request() req: any) {
-    return this.service.createBusinessHour(req.user.companyId, req.user.id, dto);
+    return this.service.createBusinessHour(
+      req.user.companyId,
+      req.user.id,
+      dto,
+    );
   }
 
   @Patch('business-hours/:id')
   @Permissions('schedule.update')
-  updateBusinessHour(@Param('id') id: string, @Body() dto: UpdateBusinessHourDto, @Request() req: any) {
-    return this.service.updateBusinessHour(req.user.companyId, id, req.user.id, dto);
+  updateBusinessHour(
+    @Param('id') id: string,
+    @Body() dto: UpdateBusinessHourDto,
+    @Request() req: any,
+  ) {
+    return this.service.updateBusinessHour(
+      req.user.companyId,
+      id,
+      req.user.id,
+      dto,
+    );
   }
 
   @Delete('business-hours/:id')
@@ -39,7 +66,11 @@ export class ScheduleController {
 
   @Get('blocks')
   @Permissions('schedule.view')
-  findBlocks(@Request() req: any, @Query('unitId') unitId?: string, @Query('professionalId') professionalId?: string) {
+  findBlocks(
+    @Request() req: any,
+    @Query('unitId') unitId?: string,
+    @Query('professionalId') professionalId?: string,
+  ) {
     return this.service.findBlocks(req.user.companyId, unitId, professionalId);
   }
 
@@ -51,7 +82,11 @@ export class ScheduleController {
 
   @Patch('blocks/:id')
   @Permissions('schedule.update')
-  updateBlock(@Param('id') id: string, @Body() dto: UpdateScheduleBlockDto, @Request() req: any) {
+  updateBlock(
+    @Param('id') id: string,
+    @Body() dto: UpdateScheduleBlockDto,
+    @Request() req: any,
+  ) {
     return this.service.updateBlock(req.user.companyId, id, req.user.id, dto);
   }
 
@@ -64,6 +99,12 @@ export class ScheduleController {
   @Get('availability')
   @Permissions('schedule.view')
   getAvailability(@Query() dto: AvailabilityFilterDto, @Request() req: any) {
-    return this.service.getAvailability(req.user.companyId, dto.unitId, dto.date, dto.professionalId, dto.serviceId);
+    return this.service.getAvailability(
+      req.user.companyId,
+      dto.unitId,
+      dto.date,
+      dto.professionalId,
+      dto.serviceId,
+    );
   }
 }

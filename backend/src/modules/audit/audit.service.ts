@@ -3,11 +3,19 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditAction } from '@prisma/client';
 
 const SENSITIVE_KEYS = new Set([
-  'password', 'passwordHash', 'token', 'accessToken', 'refreshToken',
-  'credential', 'secret', 'apiKey',
+  'password',
+  'passwordHash',
+  'token',
+  'accessToken',
+  'refreshToken',
+  'credential',
+  'secret',
+  'apiKey',
 ]);
 
-function stripSensitive(data: Record<string, any> | null): Record<string, any> | null {
+function stripSensitive(
+  data: Record<string, any> | null,
+): Record<string, any> | null {
   if (!data) return null;
   const result: Record<string, any> = {};
   for (const [key, value] of Object.entries(data)) {
@@ -43,8 +51,12 @@ export class AuditService {
         action: params.action,
         entity: params.entity,
         entityId: params.entityId,
-        oldData: params.oldData ? JSON.stringify(stripSensitive(params.oldData)) : null,
-        newData: params.newData ? JSON.stringify(stripSensitive(params.newData)) : null,
+        oldData: params.oldData
+          ? JSON.stringify(stripSensitive(params.oldData))
+          : null,
+        newData: params.newData
+          ? JSON.stringify(stripSensitive(params.newData))
+          : null,
         ipAddress: params.ipAddress,
         userAgent: params.userAgent,
       },

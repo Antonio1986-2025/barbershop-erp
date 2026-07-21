@@ -92,7 +92,9 @@ describe('UserService', () => {
         expect.objectContaining({
           where: expect.objectContaining({
             OR: expect.arrayContaining([
-              expect.objectContaining({ name: expect.objectContaining({ contains: 'João' }) }),
+              expect.objectContaining({
+                name: expect.objectContaining({ contains: 'João' }),
+              }),
             ]),
           }),
         }),
@@ -176,13 +178,15 @@ describe('UserService', () => {
     it('deve lançar NotFoundException para usuário inexistente', async () => {
       prisma.user.findFirst.mockResolvedValue(null);
 
-      await expect(service.findOne('company-1', 'non-existent')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.findOne('company-1', 'non-existent'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('deve respeitar o scopo da empresa', async () => {
-      prisma.user.findFirst.mockRejectedValue(new NotFoundException('Usuário não encontrado'));
+      prisma.user.findFirst.mockRejectedValue(
+        new NotFoundException('Usuário não encontrado'),
+      );
 
       await expect(service.findOne('company-2', 'user-1')).rejects.toThrow();
     });
@@ -217,9 +221,9 @@ describe('UserService', () => {
     it('deve lançar ConflictException para email duplicado', async () => {
       prisma.user.findFirst.mockResolvedValue(mockUserBase);
 
-      await expect(service.create('company-1', 'admin-id', createDto)).rejects.toThrow(
-        ConflictException,
-      );
+      await expect(
+        service.create('company-1', 'admin-id', createDto),
+      ).rejects.toThrow(ConflictException);
     });
 
     it('deve fazer hash da senha com argon2', async () => {
@@ -316,13 +320,20 @@ describe('UserService', () => {
       prisma.user.findFirst.mockResolvedValue(mockUserBase);
       prisma.user.findUnique.mockResolvedValue(mockUserBase);
 
-      const result = await service.update('company-1', 'user-1', 'admin-id', updateDto);
+      const result = await service.update(
+        'company-1',
+        'user-1',
+        'admin-id',
+        updateDto,
+      );
 
       expect(prisma.user.update).toHaveBeenCalled();
     });
 
     it('deve lançar NotFoundException se usuário não existir', async () => {
-      prisma.user.findFirst.mockRejectedValue(new NotFoundException('Usuário não encontrado'));
+      prisma.user.findFirst.mockRejectedValue(
+        new NotFoundException('Usuário não encontrado'),
+      );
 
       await expect(
         service.update('company-1', 'non-existent', 'admin-id', updateDto),
@@ -335,7 +346,9 @@ describe('UserService', () => {
         .mockResolvedValueOnce({ id: 'other-user' }); // duplicate email check
 
       await expect(
-        service.update('company-1', 'user-1', 'admin-id', { email: 'other@test.com' }),
+        service.update('company-1', 'user-1', 'admin-id', {
+          email: 'other@test.com',
+        }),
       ).rejects.toThrow(ConflictException);
     });
 
@@ -344,12 +357,16 @@ describe('UserService', () => {
       prisma.user.findUnique.mockResolvedValue(mockUserBase);
       (argon2.hash as jest.Mock).mockResolvedValue('new-hashed-password');
 
-      await service.update('company-1', 'user-1', 'admin-id', { password: 'new-password' });
+      await service.update('company-1', 'user-1', 'admin-id', {
+        password: 'new-password',
+      });
 
       expect(argon2.hash).toHaveBeenCalledWith('new-password');
       expect(prisma.user.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ passwordHash: 'new-hashed-password' }),
+          data: expect.objectContaining({
+            passwordHash: 'new-hashed-password',
+          }),
         }),
       );
     });
@@ -362,9 +379,14 @@ describe('UserService', () => {
         roleIds: ['role-2', 'role-3'],
       });
 
-      expect(prisma.userRole.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
+      expect(prisma.userRole.deleteMany).toHaveBeenCalledWith({
+        where: { userId: 'user-1' },
+      });
       expect(prisma.userRole.createMany).toHaveBeenCalledWith({
-        data: [{ userId: 'user-1', roleId: 'role-2' }, { userId: 'user-1', roleId: 'role-3' }],
+        data: [
+          { userId: 'user-1', roleId: 'role-2' },
+          { userId: 'user-1', roleId: 'role-3' },
+        ],
       });
     });
 
@@ -403,11 +425,13 @@ describe('UserService', () => {
     });
 
     it('deve lançar NotFoundException para usuário inexistente', async () => {
-      prisma.user.findFirst.mockRejectedValue(new NotFoundException('Usuário não encontrado'));
-
-      await expect(service.remove('company-1', 'non-existent', 'admin-id')).rejects.toThrow(
-        NotFoundException,
+      prisma.user.findFirst.mockRejectedValue(
+        new NotFoundException('Usuário não encontrado'),
       );
+
+      await expect(
+        service.remove('company-1', 'non-existent', 'admin-id'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('deve registrar auditoria no delete', async () => {

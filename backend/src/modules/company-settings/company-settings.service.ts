@@ -24,7 +24,11 @@ export class CompanySettingsService {
     return settings;
   }
 
-  async update(companyId: string, userId: string, dto: UpdateCompanySettingsDto) {
+  async update(
+    companyId: string,
+    userId: string,
+    dto: UpdateCompanySettingsDto,
+  ) {
     const old = await this.findOne(companyId);
 
     const updated = await this.prisma.companySettings.update({

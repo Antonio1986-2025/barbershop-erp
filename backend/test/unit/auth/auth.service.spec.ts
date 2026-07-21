@@ -27,7 +27,14 @@ describe('AuthService', () => {
     active: true,
     companyId: 'company-1',
     company: mockCompany,
-    roles: [{ role: { slug: 'admin', permissions: [{ permission: { slug: 'users.view' } }] } }],
+    roles: [
+      {
+        role: {
+          slug: 'admin',
+          permissions: [{ permission: { slug: 'users.view' } }],
+        },
+      },
+    ],
   };
 
   const mockRefreshToken = {
@@ -83,7 +90,10 @@ describe('AuthService', () => {
       (argon2.verify as jest.Mock).mockResolvedValue(true);
       (argon2.hash as jest.Mock).mockResolvedValue('new-hashed-rt');
 
-      const result = await service.login({ email: 'admin@test.com', password: '123456' });
+      const result = await service.login({
+        email: 'admin@test.com',
+        password: '123456',
+      });
 
       expect(result.accessToken).toBe('jwt-token');
       expect(result.refreshToken).toBeDefined();
@@ -261,7 +271,9 @@ describe('AuthService', () => {
     it('deve lançar UnauthorizedException se usuário não existir', async () => {
       prisma.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.me('non-existent')).rejects.toThrow(UnauthorizedException);
+      await expect(service.me('non-existent')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('não deve expor passwordHash', async () => {
