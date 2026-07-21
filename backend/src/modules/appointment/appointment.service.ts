@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { AppointmentFilterDto } from './dto/appointment-filter.dto';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
@@ -11,6 +12,7 @@ export class AppointmentService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(companyId: string, filter: AppointmentFilterDto) {
@@ -89,6 +91,7 @@ export class AppointmentService {
       },
     });
     await this.auditService.create({ companyId, userId, action: 'CREATE', entity: 'Appointment', entityId: result.id, newData: result as any });
+    this.notificationsService.createFromAppointment(companyId, result, 'APPOINTMENT_CREATED').catch(() => {});
     return result;
   }
 
@@ -129,6 +132,7 @@ export class AppointmentService {
       },
     });
     await this.auditService.create({ companyId, userId, action: 'UPDATE', entity: 'Appointment', entityId: id, oldData: old as any, newData: result as any });
+    this.notificationsService.createFromAppointment(companyId, result, 'APPOINTMENT_CANCELLED').catch(() => {});
     return result;
   }
 
@@ -179,6 +183,7 @@ export class AppointmentService {
       newData: { status: 'CANCELED', reason: 'Rescheduled' } as any,
     });
 
+    this.notificationsService.createFromAppointment(companyId, newAppointment, 'APPOINTMENT_RESCHEDULED').catch(() => {});
     return newAppointment;
   }
 
@@ -203,6 +208,9 @@ export class AppointmentService {
       },
     });
     await this.auditService.create({ companyId, userId, action: 'UPDATE', entity: 'Appointment', entityId: id, oldData: old as any, newData: result as any });
+    if (status === 'CONFIRMED') {
+      this.notificationsService.createFromAppointment(companyId, result, 'APPOINTMENT_CONFIRMED').catch(() => {});
+    }
     return result;
   }
 

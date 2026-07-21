@@ -17,9 +17,10 @@ import { AuditModule } from './modules/audit/audit.module';
 import { CompanySettingsModule } from './modules/company-settings/company-settings.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
 import { AppointmentModule } from './modules/appointment/appointment.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
-  imports: [PrismaModule, DashboardModule, AuthModule, CustomerModule, ProfessionalModule, UnitModule, ServiceModule, CategoryModule, ProductModule, UserModule, RoleModule, CompanyModule, AuditModule, CompanySettingsModule, ScheduleModule, AppointmentModule],
+  imports: [PrismaModule, DashboardModule, AuthModule, CustomerModule, ProfessionalModule, UnitModule, ServiceModule, CategoryModule, ProductModule, UserModule, RoleModule, CompanyModule, AuditModule, CompanySettingsModule, ScheduleModule, AppointmentModule, NotificationsModule],
   controllers: [AppController],
   providers: [AppService],
 })

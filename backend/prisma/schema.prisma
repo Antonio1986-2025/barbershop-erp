@@ -90,6 +90,28 @@ enum ScheduleBlockType {
   PROFESSIONAL
 }
 
+enum NotificationType {
+  APPOINTMENT_CREATED
+  APPOINTMENT_CONFIRMED
+  APPOINTMENT_CANCELLED
+  APPOINTMENT_RESCHEDULED
+  APPOINTMENT_REMINDER
+}
+
+enum NotificationChannel {
+  INTERNAL
+  EMAIL
+  WHATSAPP
+  SMS
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
 model Plan {
   id String @id @default(uuid())
 
@@ -231,6 +253,7 @@ model Company {
   auditLogs        AuditLog[]
   businessHours    BusinessHour[]
   scheduleBlocks   ScheduleBlock[]
+  notifications    Notification[]
 
   @@index([status])
   @@index([createdAt])
@@ -291,6 +314,7 @@ model User {
   roles         UserRole[]
   auditLogs     AuditLog[]
   refreshTokens RefreshToken[]
+  notifications Notification[]
 
   @@unique([email, companyId])
   @@index([companyId])
@@ -489,6 +513,43 @@ model ScheduleBlock {
   @@map("schedule_blocks")
 }
 
+model Notification {
+  id String @id @default(uuid())
+
+  companyId String
+  userId    String?
+  customerId String?
+
+  type    NotificationType
+  channel NotificationChannel @default(INTERNAL)
+
+  title   String
+  message String
+
+  status NotificationStatus @default(PENDING)
+
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  readAt      DateTime?
+
+  metadata String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company  Company?  @relation(fields: [companyId], references: [id])
+  user     User?     @relation(fields: [userId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([customerId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
 model Customer {
   id String @id @default(uuid())
 
@@ -516,6 +577,7 @@ model Customer {
   company       Company        @relation(fields: [companyId], references: [id])
   appointments  Appointment[]
   serviceOrders ServiceOrder[]
+  notifications Notification[]
 
   @@unique([companyId, document])
   @@index([companyId])

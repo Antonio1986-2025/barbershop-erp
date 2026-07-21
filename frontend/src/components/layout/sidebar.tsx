@@ -3,11 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
+import { useEffect, useState } from 'react';
+import { fetchUnreadCount } from '@/lib/notifications';
 
 const links = [
   { href: '/dashboard', label: 'Dashboard', icon: '▦' },
   { href: '/agendamentos', label: 'Agendamentos', icon: '📅' },
   { href: '/agenda', label: 'Agenda', icon: '🗓' },
+  { href: '/notificacoes', label: 'Notificações', icon: '🔔' },
   { href: '/clientes', label: 'Clientes', icon: '👤' },
   { href: '/profissionais', label: 'Profissionais', icon: '✂' },
   { href: '/servicos', label: 'Serviços', icon: '⚙' },
@@ -23,6 +26,16 @@ const links = [
 export function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    fetchUnreadCount().then(setUnread).catch(() => {});
+    const interval = setInterval(() => {
+      fetchUnreadCount().then(setUnread).catch(() => {});
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   return (
     <aside className="flex h-screen w-60 flex-col border-r bg-zinc-50">
@@ -34,6 +47,7 @@ export function Sidebar() {
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
         {links.map((link) => {
           const active = pathname.startsWith(link.href);
+          const isNotif = link.href === '/notificacoes';
           return (
             <Link
               key={link.href}
@@ -45,7 +59,12 @@ export function Sidebar() {
               }`}
             >
               <span className="w-5 text-center">{link.icon}</span>
-              {link.label}
+              <span className="flex-1">{link.label}</span>
+              {isNotif && unread > 0 && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs text-white">
+                  {unread > 99 ? '99+' : unread}
+                </span>
+              )}
             </Link>
           );
         })}
