@@ -80,9 +80,39 @@ enum CashTransactionType {
 }
 
 enum StockMovementType {
-  ENTRY
-  EXIT
+  PURCHASE
+  SALE
+  TRANSFER_IN
+  TRANSFER_OUT
+  CONSUMPTION
   ADJUSTMENT
+  RETURN
+  LOSS
+}
+
+enum PurchaseStatus {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
+
+enum TransferStatus {
+  PENDING
+  APPROVED
+  IN_TRANSIT
+  RECEIVED
+  COMPLETED
+  CANCELLED
+}
+
+enum InventoryStatus {
+  OPEN
+  COUNTING
+  REVIEW
+  APPROVED
+  ADJUSTMENTS_GENERATED
+  CLOSED
+  CANCELLED
 }
 
 enum ScheduleBlockType {
@@ -113,6 +143,19 @@ enum NotificationType {
   APPOINTMENT_CANCELLED
   APPOINTMENT_RESCHEDULED
   APPOINTMENT_REMINDER
+  STOCK_LOW
+  STOCK_ZERO
+  STOCK_NEGATIVE
+  STOCK_INACTIVE
+  STOCK_EXPIRING
+}
+
+enum StockAlertType {
+  LOW_STOCK
+  ZERO_STOCK
+  NEGATIVE_STOCK
+  INACTIVE_PRODUCT
+  EXPIRING_PRODUCT
 }
 
 enum NotificationChannel {
@@ -271,6 +314,13 @@ model Company {
   businessHours    BusinessHour[]
   scheduleBlocks   ScheduleBlock[]
   notifications    Notification[]
+  suppliers        Supplier[]
+  purchases        Purchase[]
+  stocks              Stock[]
+  stockMovements      StockMovement[]
+  transfers           Transfer[]
+  inventoryCounts     InventoryCount[]
+  stockAlerts         StockAlert[]
   financialCategories FinancialCategory[]
   financialAccounts   FinancialAccount[]
   cashClosings        CashClosing[]
@@ -471,6 +521,11 @@ model Unit {
   businessHours    BusinessHour[]
   scheduleBlocks   ScheduleBlock[]
   cashClosings     CashClosing[]
+  purchases        Purchase[]
+  transfersFrom    Transfer[] @relation("transfersFrom")
+  transfersTo      Transfer[] @relation("transfersTo")
+  inventoryCounts  InventoryCount[]
+  stockAlerts      StockAlert[] @relation("UnitStockAlerts")
 
   @@unique([companyId, code])
   @@index([companyId])
@@ -1011,8 +1066,12 @@ model Product {
   company  Company   @relation(fields: [companyId], references: [id])
   category Category? @relation(fields: [categoryId], references: [id])
 
-  stocks    Stock[]
-  movements StockMovement[]
+  stocks        Stock[]
+  movements     StockMovement[]
+  purchaseItems PurchaseItem[]
+  transfers       Transfer[]
+  inventoryItems  InventoryItem[]
+  stockAlerts     StockAlert[] @relation("ProductStockAlerts")
 
   @@unique([companyId, barcode])
   @@index([companyId])
@@ -1025,44 +1084,277 @@ model Product {
 model Stock {
   id String @id @default(uuid())
 
+  companyId String
   unitId    String
   productId String
 
   quantity Decimal @db.Decimal(10, 3)
+  avgCost  Decimal @db.Decimal(10, 2) @default(0)
+  minStock Decimal? @db.Decimal(10, 3)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  createdBy String?
+  updatedBy String?
+
+  company Company @relation(fields: [companyId], references: [id])
   unit    Unit    @relation(fields: [unitId], references: [id])
   product Product @relation(fields: [productId], references: [id])
 
-  @@unique([unitId, productId])
+  @@unique([companyId, unitId, productId])
+  @@index([companyId])
   @@index([unitId])
   @@index([productId])
   @@map("stocks")
 }
 
+model StockAlert {
+  id String @id @default(uuid())
+
+  companyId String
+  unitId    String?
+  productId String?
+
+  type    StockAlertType
+  message String
+  details String?
+
+  resolved  Boolean   @default(false)
+  resolvedAt DateTime?
+  resolvedBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company  @relation(fields: [companyId], references: [id])
+  unit    Unit?    @relation("UnitStockAlerts", fields: [unitId], references: [id])
+  product Product? @relation("ProductStockAlerts", fields: [productId], references: [id])
+
+  @@index([companyId])
+  @@index([unitId])
+  @@index([productId])
+  @@index([type])
+  @@index([resolved])
+  @@index([createdAt])
+  @@map("stock_alerts")
+}
+
 model StockMovement {
   id String @id @default(uuid())
 
+  companyId String
   unitId    String
   productId String
 
   type StockMovementType
 
-  quantity Decimal @db.Decimal(10, 3)
+  quantity  Decimal @db.Decimal(10, 3)
+  unitCost  Decimal? @db.Decimal(10, 2)
+  totalCost Decimal? @db.Decimal(10, 2)
+
+  balanceBefore Decimal @db.Decimal(10, 3)
+  balanceAfter  Decimal @db.Decimal(10, 3)
+
+  avgCostBefore Decimal? @db.Decimal(10, 2)
+  avgCostAfter  Decimal? @db.Decimal(10, 2)
+
+  referenceId   String?
+  referenceType String?
 
   description String?
+  createdBy   String?
 
   createdAt DateTime @default(now())
 
+  company Company @relation(fields: [companyId], references: [id])
   unit    Unit    @relation(fields: [unitId], references: [id])
   product Product @relation(fields: [productId], references: [id])
 
+  @@index([companyId])
   @@index([unitId])
   @@index([productId])
   @@index([type])
+  @@index([referenceId])
   @@map("stock_movements")
+}
+
+model Supplier {
+  id        String   @id @default(uuid())
+  companyId String
+
+  name     String
+  document String?
+  email    String?
+  phone    String?
+  contact  String?
+  notes    String?
+
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  createdBy String?
+  updatedBy String?
+  deletedBy String?
+
+  company   Company    @relation(fields: [companyId], references: [id])
+  purchases Purchase[]
+
+  @@unique([companyId, document])
+  @@index([companyId])
+  @@index([active])
+  @@index([createdAt])
+  @@map("suppliers")
+}
+
+model Purchase {
+  id        String   @id @default(uuid())
+  companyId String
+  supplierId String
+  unitId    String
+
+  invoiceNumber String?
+  status        PurchaseStatus @default(DRAFT)
+
+  totalAmount Decimal @db.Decimal(10, 2)
+  notes        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy String?
+  updatedBy String?
+
+  company  Company   @relation(fields: [companyId], references: [id])
+  supplier Supplier  @relation(fields: [supplierId], references: [id])
+  unit     Unit      @relation(fields: [unitId], references: [id])
+  items    PurchaseItem[]
+
+  @@index([companyId])
+  @@index([supplierId])
+  @@index([unitId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id         String @id @default(uuid())
+  purchaseId String
+  productId  String
+
+  quantity  Decimal @db.Decimal(10, 3)
+  unitCost  Decimal @db.Decimal(10, 2)
+  totalCost Decimal @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@index([purchaseId])
+  @@index([productId])
+  @@map("purchase_items")
+}
+
+model Transfer {
+  id        String         @id @default(uuid())
+  companyId String
+
+  fromUnitId String
+  toUnitId   String
+  productId  String
+
+  quantity Decimal @db.Decimal(10, 3)
+  unitCost Decimal @db.Decimal(10, 2)
+
+  status TransferStatus @default(PENDING)
+
+  notes String?
+
+  createdBy   String
+  approvedBy  String?
+  sentBy      String?
+  receivedBy  String?
+  cancelledBy String?
+
+  createdAt   DateTime  @default(now())
+  approvedAt  DateTime?
+  sentAt      DateTime?
+  receivedAt  DateTime?
+  cancelledAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  company  Company @relation(fields: [companyId], references: [id])
+  fromUnit Unit    @relation("transfersFrom", fields: [fromUnitId], references: [id])
+  toUnit   Unit    @relation("transfersTo", fields: [toUnitId], references: [id])
+  product  Product @relation(fields: [productId], references: [id])
+
+  @@index([companyId])
+  @@index([fromUnitId])
+  @@index([toUnitId])
+  @@index([productId])
+  @@index([status])
+  @@map("transfers")
+}
+
+model InventoryCount {
+  id        String          @id @default(uuid())
+  companyId String
+  unitId    String
+
+  status InventoryStatus @default(OPEN)
+
+  notes String?
+
+  createdBy   String
+  startedBy   String?
+  reviewedBy  String?
+  approvedBy  String?
+  cancelledBy String?
+
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  reviewedAt  DateTime?
+  approvedAt  DateTime?
+  cancelledAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+  unit    Unit    @relation(fields: [unitId], references: [id])
+  items   InventoryItem[]
+
+  @@unique([companyId, unitId, status], name: "unique_open_inventory")
+  @@index([companyId])
+  @@index([unitId])
+  @@index([status])
+  @@map("inventory_counts")
+}
+
+model InventoryItem {
+  id           String @id @default(uuid())
+  inventoryId  String
+  productId    String
+
+  systemQuantity  Decimal @db.Decimal(10, 3)
+  countedQuantity Decimal @db.Decimal(10, 3)
+  difference      Decimal @db.Decimal(10, 3)
+
+  unitCost Decimal @db.Decimal(10, 2)
+
+  notes String?
+
+  createdAt DateTime @default(now())
+
+  inventory InventoryCount @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+  product   Product        @relation(fields: [productId], references: [id])
+
+  @@unique([inventoryId, productId])
+  @@index([inventoryId])
+  @@index([productId])
+  @@map("inventory_items")
 }
 
 model FinancialCategory {

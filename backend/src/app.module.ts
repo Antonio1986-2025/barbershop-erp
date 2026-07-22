@@ -18,6 +18,7 @@ import { RoleModule } from './modules/role/role.module';
 import { CompanyModule } from './modules/company/company.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { CompanySettingsModule } from './modules/company-settings/company-settings.module';
+import { StockModule } from './modules/stock/stock.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
 import { AppointmentModule } from './modules/appointment/appointment.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -50,6 +51,7 @@ import { ObservabilityModule } from './modules/observability/observability.modul
     CompanyModule,
     AuditModule,
     CompanySettingsModule,
+    StockModule,
     ScheduleModule,
     AppointmentModule,
     NotificationsModule,

@@ -18,6 +18,11 @@ export class CreateNotificationDto {
     'APPOINTMENT_CANCELLED',
     'APPOINTMENT_RESCHEDULED',
     'APPOINTMENT_REMINDER',
+    'STOCK_LOW',
+    'STOCK_ZERO',
+    'STOCK_NEGATIVE',
+    'STOCK_INACTIVE',
+    'STOCK_EXPIRING',
   ])
   type: string;
 
