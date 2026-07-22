@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { CacheService } from '../cache/cache.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 
@@ -13,6 +14,7 @@ export class ServiceService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly cache: CacheService,
   ) {}
 
   async findAll(
@@ -43,28 +45,33 @@ export class ServiceService {
     const orderField = query.orderBy ?? 'createdAt';
     const orderDir = query.orderDir ?? 'desc';
 
-    const [data, total] = await Promise.all([
-      this.prisma.service.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { [orderField]: orderDir },
-      }),
-      this.prisma.service.count({ where }),
-    ]);
+    const key = `services:list:${companyId}:${page}:${limit}:${query.search ?? ''}:${query.active ?? ''}`;
+    return this.cache.getOrSet(key, async () => {
+      const [data, total] = await Promise.all([
+        this.prisma.service.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { [orderField]: orderDir },
+        }),
+        this.prisma.service.count({ where }),
+      ]);
 
-    return {
-      data,
-      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    };
+      return {
+        data,
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      };
+    });
   }
 
   async findOne(companyId: string, id: string) {
-    const service = await this.prisma.service.findFirst({
-      where: { id, companyId, deletedAt: null },
+    return this.cache.getOrSet(`service:${companyId}:${id}`, async () => {
+      const service = await this.prisma.service.findFirst({
+        where: { id, companyId, deletedAt: null },
+      });
+      if (!service) throw new NotFoundException('Serviço não encontrado');
+      return service;
     });
-    if (!service) throw new NotFoundException('Serviço não encontrado');
-    return service;
   }
 
   async create(companyId: string, userId: string, dto: CreateServiceDto) {
@@ -80,6 +87,8 @@ export class ServiceService {
         createdBy: userId,
       },
     });
+
+    this.cache.delByPrefix(`services:${companyId}`);
 
     await this.auditService.create({
       companyId,
@@ -107,6 +116,9 @@ export class ServiceService {
         updatedBy: userId,
       },
     });
+
+    this.cache.delByPrefix(`services:${companyId}`);
+    this.cache.del(`service:${companyId}:${id}`);
 
     await this.auditService.create({
       companyId,
@@ -150,6 +162,9 @@ export class ServiceService {
         active: false,
       },
     });
+
+    this.cache.delByPrefix(`services:${companyId}`);
+    this.cache.del(`service:${companyId}:${id}`);
 
     await this.auditService.create({
       companyId,

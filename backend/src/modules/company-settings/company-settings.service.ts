@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { CacheService } from '../cache/cache.service';
 import { UpdateCompanySettingsDto } from './dto/update-company-settings.dto';
 
 @Injectable()
@@ -8,20 +9,24 @@ export class CompanySettingsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly cache: CacheService,
   ) {}
 
   async findOne(companyId: string) {
-    let settings = await this.prisma.companySettings.findUnique({
-      where: { companyId },
-    });
-
-    if (!settings) {
-      settings = await this.prisma.companySettings.create({
-        data: { companyId },
+    const key = `company-settings:${companyId}`;
+    return this.cache.getOrSet(key, async () => {
+      let settings = await this.prisma.companySettings.findUnique({
+        where: { companyId },
       });
-    }
 
-    return settings;
+      if (!settings) {
+        settings = await this.prisma.companySettings.create({
+          data: { companyId },
+        });
+      }
+
+      return settings;
+    });
   }
 
   async update(
@@ -38,6 +43,8 @@ export class CompanySettingsService {
         allowOnlineScheduling: dto.allowOnlineScheduling ?? undefined,
       },
     });
+
+    this.cache.del(`company-settings:${companyId}`);
 
     await this.auditService.create({
       companyId,

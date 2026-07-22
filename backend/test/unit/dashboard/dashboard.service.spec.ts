@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DashboardService } from '../../../src/modules/dashboard/dashboard.service';
+import { CacheService } from '../../../src/modules/cache/cache.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 
 describe('DashboardService', () => {
   let service: DashboardService;
   let prisma: any;
+  let cache: any;
 
   const baseFilter = {
     companyId: 'company-1',
@@ -60,10 +62,13 @@ describe('DashboardService', () => {
       },
     };
 
+    cache = { getOrSet: jest.fn((_key, fn) => fn()) };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         DashboardService,
         { provide: PrismaService, useValue: prisma },
+        { provide: CacheService, useValue: cache },
       ],
     }).compile();
 

@@ -1,16 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import {
-  fetchSummary, fetchFinancial, fetchOperations, fetchProfessionals, fetchServices, fetchStock,
-  fetchOverview, fetchRevenueChart, fetchTopServices, fetchProfessionalsRanking,
-  fetchOccupancy, fetchFinancialAnalysis, fetchStockAnalysis, fetchAlerts,
-} from '@/lib/dashboard';
+import dynamic from 'next/dynamic';
 import { fetchUnits } from '@/lib/units';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, Legend,
-} from 'recharts';
+import { useDashboardOverview, useDashboardRevenueChart, useDashboardTopServices, useDashboardProfessionalsRanking, useDashboardOccupancy, useDashboardFinancialAnalysis, useDashboardStockAnalysis, useDashboardAlerts, useDashboardSummary, useDashboardFinancial, useDashboardOperations, useDashboardProfessionals, useDashboardServices, useDashboardStock } from '@/hooks/use-dashboard';
+
+const RevenueBarChart = dynamic(() => import('@/components/dashboard/dashboard-charts').then(m => m.RevenueBarChart), { ssr: false });
+const OccupancyPieChart = dynamic(() => import('@/components/dashboard/dashboard-charts').then(m => m.OccupancyPieChart), { ssr: false });
+const ServicesBarChart = dynamic(() => import('@/components/dashboard/dashboard-charts').then(m => m.ServicesBarChart), { ssr: false });
+const FinancialPieChart = dynamic(() => import('@/components/dashboard/dashboard-charts').then(m => m.FinancialPieChart), { ssr: false });
 
 function monthStart() {
   const d = new Date();
@@ -19,56 +17,44 @@ function monthStart() {
 }
 function today() { return new Date().toISOString().slice(0, 10) }
 
-const COLORS = ['#059669', '#2563eb', '#d97706', '#dc2626', '#7c3aed', '#0891b2'];
-
 export default function DashboardPage() {
   const [unitId, setUnitId] = useState('');
   const [startDate, setStartDate] = useState(monthStart());
   const [endDate, setEndDate] = useState(today());
   const [units, setUnits] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  const [overview, setOverview] = useState<any>(null);
-  const [revenueChart, setRevenueChart] = useState<any[]>([]);
-  const [topServices, setTopServices] = useState<any[]>([]);
-  const [profRanking, setProfRanking] = useState<any[]>([]);
-  const [occupancy, setOccupancy] = useState<any>(null);
-  const [finAnalysis, setFinAnalysis] = useState<any>(null);
-  const [stockAnalysis, setStockAnalysis] = useState<any>(null);
-  const [alerts, setAlerts] = useState<any[]>([]);
+  const filter = { unitId: unitId || undefined, startDate, endDate };
+  const filterLight = { unitId: unitId || undefined };
 
-  // Legacy data
-  const [summary, setSummary] = useState<any>(null);
-  const [financial, setFinancial] = useState<any>(null);
-  const [operations, setOperations] = useState<any>(null);
-  const [professionals, setProfessionals] = useState<any[]>([]);
-  const [services, setServices] = useState<any[]>([]);
-  const [stockLegacy, setStockLegacy] = useState<any>(null);
-
-  const [error, setError] = useState('');
+  const { data: overview } = useDashboardOverview(filter);
+  const { data: revenueChart } = useDashboardRevenueChart(filter);
+  const { data: topServices } = useDashboardTopServices(filter);
+  const { data: profRanking } = useDashboardProfessionalsRanking(filter);
+  const { data: occupancy } = useDashboardOccupancy(filter);
+  const { data: finAnalysis } = useDashboardFinancialAnalysis(filter);
+  const { data: stockAnalysis } = useDashboardStockAnalysis(filter);
+  const { data: alerts } = useDashboardAlerts(filterLight);
+  const { data: summary } = useDashboardSummary(filter);
+  const { data: financial } = useDashboardFinancial(filter);
+  const { data: operations } = useDashboardOperations(filter);
+  const { data: professionals } = useDashboardProfessionals(filter);
+  const { data: services } = useDashboardServices(filter);
+  const { data: stockLegacy } = useDashboardStock(filter);
 
   useEffect(() => { fetchUnits().then(r => setUnits(r.data ?? r)).catch(() => {}) }, []);
 
-  const filter = { unitId: unitId || undefined, startDate, endDate };
-
-  const load = useCallback(async () => {
-    setLoading(true); setError('');
-    try {
-      const [s, f, o, p, sv, st, ov, rc, ts, pr, oc, fa, sa, al] = await Promise.all([
-        fetchSummary(filter), fetchFinancial(filter), fetchOperations(filter),
-        fetchProfessionals(filter), fetchServices(filter), fetchStock(filter),
-        fetchOverview(filter), fetchRevenueChart(filter), fetchTopServices(filter),
-        fetchProfessionalsRanking(filter), fetchOccupancy(filter),
-        fetchFinancialAnalysis(filter), fetchStockAnalysis(filter), fetchAlerts(filter),
-      ]);
-      setSummary(s); setFinancial(f); setOperations(o); setProfessionals(p); setServices(sv); setStockLegacy(st);
-      setOverview(ov); setRevenueChart(rc); setTopServices(ts); setProfRanking(pr);
-      setOccupancy(oc); setFinAnalysis(fa); setStockAnalysis(sa); setAlerts(al);
-    } catch (e: any) { setError(e.message) }
-    finally { setLoading(false) }
-  }, [unitId, startDate, endDate]);
-
-  useEffect(() => { load() }, [load]);
+  if (!overview && !summary) {
+    return (
+      <div className="mx-auto max-w-7xl p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+        </div>
+        <div className="flex flex-wrap items-end gap-4 rounded-lg border p-4">
+          <p className="text-sm text-zinc-500">Carregando dados...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 p-6">
@@ -92,15 +78,12 @@ export default function DashboardPage() {
           <label className="text-xs font-medium text-zinc-500">Fim</label>
           <input type="date" className="rounded border px-3 py-1.5 text-sm" value={endDate} onChange={e => setEndDate(e.target.value)} />
         </div>
-        <button className="rounded bg-zinc-900 px-4 py-1.5 text-sm text-white hover:bg-zinc-700" onClick={load}>Filtrar</button>
       </div>
 
-      {error && <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
-
       {/* Alerts */}
-      {alerts.length > 0 && (
+      {alerts && alerts.length > 0 && (
         <div className="space-y-2">
-          {alerts.map((a, i) => (
+          {alerts.map((a: any, i: number) => (
             <div key={i} className={`rounded-lg border p-3 text-sm ${
               a.severity === 'critical' ? 'border-red-300 bg-red-50 text-red-700' : 'border-yellow-300 bg-yellow-50 text-yellow-700'
             }`}>
@@ -110,7 +93,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Line 1: Overview Cards */}
+      {/* Overview Cards */}
       {overview && (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <MetricCard label="Faturamento" value={`R$ ${overview.revenueTotal.toFixed(2)}`}
@@ -125,49 +108,14 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Line 2: Revenue Chart + Occupancy */}
+      {/* Charts */}
       <div className="grid gap-6 md:grid-cols-2">
-        {revenueChart.length > 0 && (
-          <div className="rounded-lg border p-4">
-            <h2 className="mb-4 text-lg font-semibold">Receita por Período</h2>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={revenueChart}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Bar dataKey="revenue" fill="#2563eb" name="Receita" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-        {occupancy && (
-          <div className="rounded-lg border p-4">
-            <h2 className="mb-4 text-lg font-semibold">Ocupação da Agenda</h2>
-            <div className="flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie data={[
-                    { name: 'Ocupado', value: occupancy.occupiedSlots },
-                    { name: 'Disponível', value: occupancy.availableSlots },
-                  ]} cx="50%" cy="50%" innerRadius={60} outerRadius={90} dataKey="value" label>
-                    {[0, 1].map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <p className="text-center text-sm text-zinc-600">
-              Ocupação: <strong>{occupancy.occupancyPercentage}%</strong>
-              &nbsp;({occupancy.occupiedSlots}/{occupancy.totalSlots} vagas)
-            </p>
-          </div>
-        )}
+        {revenueChart && <RevenueBarChart data={revenueChart} />}
+        {occupancy && <OccupancyPieChart data={occupancy} />}
       </div>
 
-      {/* Line 3: Professionals Ranking + Top Services */}
       <div className="grid gap-6 md:grid-cols-2">
-        {profRanking.length > 0 && (
+        {profRanking && profRanking.length > 0 && (
           <div className="rounded-lg border p-4">
             <h2 className="mb-4 text-lg font-semibold">Ranking de Profissionais</h2>
             <div className="overflow-x-auto">
@@ -181,7 +129,7 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {profRanking.map((p) => (
+                  {profRanking.map((p: any) => (
                     <tr key={p.professionalId} className="border-b">
                       <td className="py-1 pr-4 font-medium">{p.name}</td>
                       <td className="py-1 pr-4">{p.completed}</td>
@@ -194,23 +142,10 @@ export default function DashboardPage() {
             </div>
           </div>
         )}
-        {topServices.length > 0 && (
-          <div className="rounded-lg border p-4">
-            <h2 className="mb-4 text-lg font-semibold">Serviços mais Vendidos</h2>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={topServices} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Bar dataKey="quantity" fill="#059669" name="Quantidade" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        )}
+        {topServices && <ServicesBarChart data={topServices} />}
       </div>
 
-      {/* Line 4: Financial Analysis + Stock Analysis */}
+      {/* Financial + Stock Analysis */}
       <div className="grid gap-6 md:grid-cols-2">
         {finAnalysis && (
           <div className="rounded-lg border p-4">
@@ -290,18 +225,7 @@ export default function DashboardPage() {
             <span>Saídas: <strong>R$ {financial.exits.toFixed(2)}</strong></span>
             <span>Saldo: <strong className={financial.balance >= 0 ? 'text-green-600' : 'text-red-600'}>R$ {financial.balance.toFixed(2)}</strong></span>
           </div>
-          {financial.payments.length > 0 && (
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie data={financial.payments.map((p: any) => ({ name: p.method, value: p.amount }))}
-                  cx="50%" cy="50%" outerRadius={80} dataKey="value" label>
-                  {financial.payments.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
+          <FinancialPieChart data={financial.payments} />
         </Section>
       )}
 
@@ -320,7 +244,7 @@ export default function DashboardPage() {
         </Section>
       )}
 
-      {professionals.length > 0 && (
+      {professionals && professionals.length > 0 && (
         <Section title="Profissionais (completo)">
           <table className="w-full text-left text-sm">
             <thead><tr className="border-b text-zinc-500"><th className="py-1 pr-4">Nome</th><th className="py-1 pr-4">Atend.</th><th className="py-1">Faturamento</th></tr></thead>
@@ -335,7 +259,7 @@ export default function DashboardPage() {
         </Section>
       )}
 
-      {services.length > 0 && (
+      {services && services.length > 0 && (
         <Section title="Serviços (completo)">
           <table className="w-full text-left text-sm">
             <thead><tr className="border-b text-zinc-500"><th className="py-1 pr-4">Serviço</th><th className="py-1 pr-4">Qtd</th><th className="py-1 pr-4">Receita</th><th className="py-1">Pedidos</th></tr></thead>
@@ -358,7 +282,7 @@ export default function DashboardPage() {
             <span>Qtd: <strong>{stockLegacy.totalQuantity}</strong></span>
             <span>Mov.: <strong>{stockLegacy.movements}</strong></span>
           </div>
-          {stockLegacy.criticalProducts.length > 0 && (
+          {stockLegacy.criticalProducts && stockLegacy.criticalProducts.length > 0 && (
             <div>
               <h3 className="mb-2 text-sm font-semibold text-red-600">Produtos com estoque zerado</h3>
               <table className="w-full text-left text-sm">
@@ -390,7 +314,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function StatusTable({ items }: { items: { status: string; count: number }[] }) {
-  return items.length === 0 ? <p className="text-sm text-zinc-400">Nenhum registro</p> : (
+  return !items || items.length === 0 ? <p className="text-sm text-zinc-400">Nenhum registro</p> : (
     <table className="w-full text-left text-sm">
       <thead><tr className="border-b text-zinc-500"><th className="py-1 pr-4">Status</th><th className="py-1">Qtd</th></tr></thead>
       <tbody>{items.map((i: any) => (

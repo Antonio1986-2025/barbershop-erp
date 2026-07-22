@@ -6,6 +6,7 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
@@ -19,6 +20,7 @@ import { Permissions } from './decorators/permissions.decorator';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('login')
   login(@Body() dto: LoginDto, @Request() req: any) {
     const ip = req.ip ?? req.connection?.remoteAddress;
@@ -26,6 +28,7 @@ export class AuthController {
     return this.authService.login(dto, ip, ua);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @Post('refresh')
   refresh(@Body() dto: RefreshDto, @Request() req: any) {
     const ip = req.ip ?? req.connection?.remoteAddress;

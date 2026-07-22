@@ -1,10 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CacheService } from '../cache/cache.service';
 import { DashboardFilter } from './dto/dashboard-filter.dto';
 
 @Injectable()
 export class DashboardService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cache: CacheService,
+  ) {}
+
+  private cacheKey(method: string, filter: Record<string, any>): string {
+    return `dashboard:${method}:${JSON.stringify(filter)}`;
+  }
 
   private buildWhere(filter: {
     companyId: string;
@@ -41,7 +49,8 @@ export class DashboardService {
   }
 
   async summary(filter: DashboardFilter) {
-    const where = this.buildWhere(filter);
+    return this.cache.getOrSet(this.cacheKey('summary', filter), async () => {
+      const where = this.buildWhere(filter);
 
     const revenueAgg = await this.prisma.payment.aggregate({
       where: { ...where, status: 'PAID' },
@@ -72,10 +81,12 @@ export class DashboardService {
       averageTicket: Number(averageTicket.toFixed(2)),
       customers,
     };
+    });
   }
 
   async financial(filter: DashboardFilter) {
-    const where = this.buildWhere(filter);
+    return this.cache.getOrSet(this.cacheKey('financial', filter), async () => {
+      const where = this.buildWhere(filter);
 
     const payments = await this.prisma.payment.groupBy({
       by: ['paymentMethod'],
@@ -107,10 +118,12 @@ export class DashboardService {
       exits: Number(exits),
       balance: Number(entries) - Number(exits),
     };
+    });
   }
 
   async operations(filter: DashboardFilter) {
-    const where = this.buildWhere(filter);
+    return this.cache.getOrSet(this.cacheKey('operations', filter), async () => {
+      const where = this.buildWhere(filter);
 
     const appointments = await this.prisma.appointment.groupBy({
       by: ['status'],
@@ -134,6 +147,7 @@ export class DashboardService {
         count: s._count,
       })),
     };
+    });
   }
 
   async professionals(filter: DashboardFilter) {

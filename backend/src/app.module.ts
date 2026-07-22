@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { CacheModule } from './modules/cache/cache.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CustomerModule } from './modules/customer/customer.module';
@@ -23,6 +26,15 @@ import { ObservabilityModule } from './modules/observability/observability.modul
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        name: 'default',
+        ttl: 60000,
+        limit: 120,
+        skipIf: () => process.env.NODE_ENV === 'test',
+      },
+    ]),
+    CacheModule,
     PrismaModule,
     ObservabilityModule,
     DashboardModule,
@@ -44,6 +56,12 @@ import { ObservabilityModule } from './modules/observability/observability.modul
     FinancialModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

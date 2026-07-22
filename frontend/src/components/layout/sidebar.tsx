@@ -22,6 +22,7 @@ const links = [
   { href: '/empresas', label: 'Empresas', icon: '🏛' },
   { href: '/auditoria', label: 'Auditoria', icon: '📋' },
   { href: '/configuracoes', label: 'Configurações', icon: '⚙' },
+  { href: '/status', label: 'Status', icon: '📊' },
 ];
 
 export function Sidebar() {

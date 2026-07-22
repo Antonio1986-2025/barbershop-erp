@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { CacheService } from '../cache/cache.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
@@ -13,6 +14,7 @@ export class CategoryService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly cache: CacheService,
   ) {}
 
   async findAll(
@@ -43,28 +45,33 @@ export class CategoryService {
     const orderField = query.orderBy ?? 'createdAt';
     const orderDir = query.orderDir ?? 'desc';
 
-    const [data, total] = await Promise.all([
-      this.prisma.category.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { [orderField]: orderDir },
-      }),
-      this.prisma.category.count({ where }),
-    ]);
+    const key = `categories:list:${companyId}:${page}:${limit}:${query.search ?? ''}:${query.active ?? ''}`;
+    return this.cache.getOrSet(key, async () => {
+      const [data, total] = await Promise.all([
+        this.prisma.category.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { [orderField]: orderDir },
+        }),
+        this.prisma.category.count({ where }),
+      ]);
 
-    return {
-      data,
-      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    };
+      return {
+        data,
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+      };
+    });
   }
 
   async findOne(companyId: string, id: string) {
-    const category = await this.prisma.category.findFirst({
-      where: { id, companyId, deletedAt: null },
+    return this.cache.getOrSet(`category:${companyId}:${id}`, async () => {
+      const category = await this.prisma.category.findFirst({
+        where: { id, companyId, deletedAt: null },
+      });
+      if (!category) throw new NotFoundException('Categoria não encontrada');
+      return category;
     });
-    if (!category) throw new NotFoundException('Categoria não encontrada');
-    return category;
   }
 
   async create(companyId: string, userId: string, dto: CreateCategoryDto) {
@@ -83,6 +90,8 @@ export class CategoryService {
         createdBy: userId,
       },
     });
+
+    this.cache.delByPrefix(`categories:${companyId}`);
 
     await this.auditService.create({
       companyId,
@@ -123,6 +132,9 @@ export class CategoryService {
       data: { ...dto, updatedBy: userId },
     });
 
+    this.cache.delByPrefix(`categories:${companyId}`);
+    this.cache.del(`category:${companyId}:${id}`);
+
     await this.auditService.create({
       companyId,
       userId,
@@ -157,6 +169,9 @@ export class CategoryService {
         active: false,
       },
     });
+
+    this.cache.delByPrefix(`categories:${companyId}`);
+    this.cache.del(`category:${companyId}:${id}`);
 
     await this.auditService.create({
       companyId,

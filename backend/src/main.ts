@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import compression from 'compression';
 import { AppModule } from './app.module';
 import { RequestIdMiddleware } from './modules/observability/request-id.middleware';
 import { LoggingInterceptor } from './modules/observability/logging.interceptor';
@@ -15,7 +16,7 @@ async function bootstrap() {
   });
 
   app.setGlobalPrefix('api', { exclude: ['health', 'health/live', 'health/ready'] });
-
+  app.use(compression());
   app.use(new RequestIdMiddleware().use);
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalFilters(new GlobalExceptionFilter());

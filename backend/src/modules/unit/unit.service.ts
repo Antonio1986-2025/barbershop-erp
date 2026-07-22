@@ -4,19 +4,25 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { CacheService } from '../cache/cache.service';
 import { CreateUnitDto } from './dto/create-unit.dto';
 import { UpdateUnitDto } from './dto/update-unit.dto';
 
 @Injectable()
 export class UnitService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cache: CacheService,
+  ) {}
 
   async findAllSimple(companyId: string) {
-    return this.prisma.unit.findMany({
-      where: { companyId, deletedAt: null, status: 'ACTIVE' },
-      select: { id: true, name: true, code: true },
-      orderBy: { name: 'asc' },
-    });
+    return this.cache.getOrSet(`units:simple:${companyId}`, () =>
+      this.prisma.unit.findMany({
+        where: { companyId, deletedAt: null, status: 'ACTIVE' },
+        select: { id: true, name: true, code: true },
+        orderBy: { name: 'asc' },
+      }),
+    );
   }
 
   async findAll(
@@ -67,11 +73,13 @@ export class UnitService {
   }
 
   async findOne(companyId: string, id: string) {
-    const unit = await this.prisma.unit.findFirst({
-      where: { id, companyId, deletedAt: null },
+    return this.cache.getOrSet(`unit:${companyId}:${id}`, async () => {
+      const unit = await this.prisma.unit.findFirst({
+        where: { id, companyId, deletedAt: null },
+      });
+      if (!unit) throw new NotFoundException('Unidade não encontrada');
+      return unit;
     });
-    if (!unit) throw new NotFoundException('Unidade não encontrada');
-    return unit;
   }
 
   async create(companyId: string, userId: string, dto: CreateUnitDto) {
@@ -81,6 +89,8 @@ export class UnitService {
     if (existing) {
       throw new ConflictException('Já existe uma unidade com este código');
     }
+
+    this.cache.delByPrefix(`units:${companyId}`);
 
     return this.prisma.unit.create({
       data: { ...dto, companyId, createdBy: userId },
@@ -109,6 +119,9 @@ export class UnitService {
       }
     }
 
+    this.cache.delByPrefix(`units:${companyId}`);
+    this.cache.del(`unit:${companyId}:${id}`);
+
     return this.prisma.unit.update({
       where: { id },
       data: { ...dto, updatedBy: userId },
@@ -135,6 +148,9 @@ export class UnitService {
         `A unidade não pode ser excluída porque possui ${reasons.join(', ')}.`,
       );
     }
+
+    this.cache.delByPrefix(`units:${companyId}`);
+    this.cache.del(`unit:${companyId}:${id}`);
 
     return this.prisma.unit.update({
       where: { id },

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ServiceService } from '../../../src/modules/service/service.service';
+import { CacheService } from '../../../src/modules/cache/cache.service';
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { AuditService } from '../../../src/modules/audit/audit.service';
 import { NotFoundException, ConflictException } from '@nestjs/common';
@@ -8,6 +9,7 @@ describe('ServiceService', () => {
   let service: ServiceService;
   let prisma: any;
   let auditService: any;
+  let cache: any;
 
   const mockService = {
     id: 'svc-1',
@@ -40,12 +42,18 @@ describe('ServiceService', () => {
     };
 
     auditService = { create: jest.fn() };
+    cache = {
+      getOrSet: jest.fn((_key, fn) => fn()),
+      del: jest.fn(),
+      delByPrefix: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ServiceService,
         { provide: PrismaService, useValue: prisma },
         { provide: AuditService, useValue: auditService },
+        { provide: CacheService, useValue: cache },
       ],
     }).compile();
 
