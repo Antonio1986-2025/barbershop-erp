@@ -162,7 +162,7 @@ export class AppointmentService {
         description: `Agendamento para ${result.service?.name ?? 'serviço'} em ${new Date(result.startAt).toLocaleDateString('pt-BR')}`,
         interactionAt: new Date().toISOString(),
       })
-      .catch(() => {});
+      .catch(e => console.error('[InteractionService] create:', e.message));
     this.syncCalendarEvent(companyId, result, 'create').catch(() => {});
 
     // 🔹 Abrir comanda (venda) automática se solicitado
@@ -407,10 +407,10 @@ export class AppointmentService {
           description: `Atendimento de ${result.service?.name ?? 'serviço'} concluído`,
           interactionAt: new Date().toISOString(),
         })
-        .catch(() => {});
-      this.automationService
+        .catch(e => console.error('[InteractionService] complete:', e.message));
+        this.automationService
         .onAppointmentCompleted(companyId, result.customerId, id, userId)
-        .catch(() => {});
+        .catch(e => console.error('[Notification] confirm:', e.message));
     }
 
     return result;

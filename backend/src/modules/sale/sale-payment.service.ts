@@ -196,7 +196,7 @@ export class SalePaymentService {
             description: `Venda finalizada. Total: R$ ${Number(sale.total).toFixed(2)}`,
             interactionAt: new Date().toISOString(),
           })
-          .catch(() => {});
+          .catch(e => console.error('[InteractionService] venda:', e.message));
       }
     }
 
@@ -211,7 +211,7 @@ export class SalePaymentService {
           description: `Pagamento de R$ ${Number(dto.amount).toFixed(2)} via ${dto.paymentMethod}`,
           interactionAt: new Date().toISOString(),
         })
-        .catch(() => {});
+        .catch(e => console.error('[InteractionService] pagamento:', e.message));
     }
 
     await this.auditService.create({

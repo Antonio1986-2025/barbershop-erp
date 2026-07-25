@@ -151,7 +151,7 @@ export class CustomerService {
         description: `Cliente ${result.name} cadastrado${result.phone ? ` — tel: ${result.phone}` : ''}`,
         interactionAt: new Date().toISOString(),
       })
-      .catch(() => {});
+      .catch(e => console.error('[InteractionService]', e.message, e.response?.data));
 
     return result;
   }
