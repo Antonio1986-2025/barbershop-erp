@@ -20,8 +20,8 @@ export default function EditarProdutoPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="mx-auto max-w-lg p-6"><p className="text-zinc-500">Carregando...</p></div>;
-  if (error) return <div className="mx-auto max-w-lg p-6"><p className="text-red-600">{error}</p></div>;
+  if (loading) return <div className="mx-auto max-w-lg px-4 py-6 sm:px-6"><p className="text-muted-foreground animate-pulse">Carregando...</p></div>;
+  if (error) return <div className="mx-auto max-w-lg px-4 py-6 sm:px-6"><p className="text-danger">{error}</p></div>;
   if (!product) return null;
 
   return <ProductForm initial={product} />;

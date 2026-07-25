@@ -99,8 +99,10 @@ export default function AgendamentosPage() {
     <div className="mx-auto max-w-6xl space-y-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Agendamentos</h1>
-        <button className="rounded bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-700"
-          onClick={() => router.push('/agendamentos/novo')}>Novo Agendamento</button>
+        <button className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-light transition-colors"
+          onClick={() => router.push('/agendamentos/novo')}>
+          Novo Agendamento
+        </button>
       </div>
 
       {/* Filters */}
@@ -187,7 +189,7 @@ export default function AgendamentosPage() {
                     <button className="rounded bg-gray-50 px-3 py-1 text-xs text-gray-700 hover:bg-gray-100"
                       onClick={() => handleStatusChange(appt, 'COMPLETED')}>Concluir</button>
                   )}
-                  <button className="rounded bg-zinc-50 px-3 py-1 text-xs text-zinc-600 hover:bg-zinc-100"
+                  <button className="rounded bg-muted px-3 py-1 text-xs text-foreground hover:bg-muted/70"
                     onClick={() => handleDelete(appt)}>Excluir</button>
                 </div>
               </div>

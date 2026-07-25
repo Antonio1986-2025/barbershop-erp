@@ -1,0 +1,8 @@
+⨯ Another next dev server is already running.
+
+- Local:        http://localhost:3002
+- PID:          11528
+- Dir:          C:\Users\Admin\Downloads\PROJETOS\barbershop-erp\frontend
+- Log:          .next\dev\logs\next-development.log
+
+Run taskkill /PID 11528 /F to stop it.

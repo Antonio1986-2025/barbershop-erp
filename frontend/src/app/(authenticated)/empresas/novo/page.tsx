@@ -35,8 +35,8 @@ export default function NovaEmpresaPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Nova Empresa</h1>
+    <div className="mx-auto max-w-lg space-y-4 px-4 py-6 sm:space-y-6 sm:px-6">
+      <h1 className="text-xl font-bold sm:text-2xl">Nova Empresa</h1>
       <ErrorBox message={error} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField label="Nome Fantasia *">

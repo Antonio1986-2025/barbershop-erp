@@ -55,11 +55,11 @@ export default function EditarEmpresaPage() {
     finally { setSaving(false) }
   }
 
-  if (loading) return <div className="mx-auto max-w-lg p-6"><p className="text-zinc-500">Carregando...</p></div>;
+  if (loading) return <div className="mx-auto max-w-lg px-4 py-6 sm:px-6"><p className="text-muted-foreground animate-pulse">Carregando...</p></div>;
 
   return (
-    <div className="mx-auto max-w-lg space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Editar Empresa</h1>
+    <div className="mx-auto max-w-lg space-y-4 px-4 py-6 sm:space-y-6 sm:px-6">
+      <h1 className="text-xl font-bold sm:text-2xl">Editar Empresa</h1>
       <ErrorBox message={error} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField label="Nome Fantasia *">
@@ -87,7 +87,7 @@ export default function EditarEmpresaPage() {
 
         {subscription && (
           <div className="rounded-lg border p-4 text-sm">
-            <h3 className="mb-2 font-semibold text-zinc-600">Assinatura</h3>
+            <h3 className="mb-2 font-semibold text-foreground">Assinatura</h3>
             <p>Plano: <strong>{subscription.plan?.name}</strong></p>
             <p>Status: <strong>{subscription.status}</strong></p>
             <p>Início: {new Date(subscription.startDate).toLocaleDateString()}</p>

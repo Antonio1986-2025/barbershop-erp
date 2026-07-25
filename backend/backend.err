@@ -1,0 +1,1 @@
+[31m[Nest] 7908  - [39m23/07/2026, 17:09:06 [31m  ERROR[39m [38;5;3m[HTTP] [39m[31m{"requestId":"faecbcf7-6b06-4f65-838f-34d05b9e4539","method":"POST","path":"/api/auth/refresh","status":401,"duration":"618ms","userId":"anonymous","error":"Refresh token inválido"}[39m

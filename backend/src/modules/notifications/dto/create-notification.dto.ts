@@ -23,6 +23,9 @@ export class CreateNotificationDto {
     'STOCK_NEGATIVE',
     'STOCK_INACTIVE',
     'STOCK_EXPIRING',
+    'SALE_COMPLETED',
+    'SALE_CANCELLED',
+    'SALE_REFUNDED',
   ])
   type: string;
 

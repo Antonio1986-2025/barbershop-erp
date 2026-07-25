@@ -99,7 +99,7 @@ export default function AuditoriaPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Auditoria</h1>
+      <h1 className="text-xl font-bold sm:text-2xl">Auditoria</h1>
       <p className="text-sm text-zinc-500">Registro de ações realizadas no sistema.</p>
 
       <ErrorBox message={error} />
@@ -124,7 +124,7 @@ export default function AuditoriaPage() {
           </select>
         </div>
         <button
-          className="rounded bg-zinc-900 px-4 py-1.5 text-sm text-white hover:bg-zinc-700"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-light transition-colors"
           onClick={handleFilter}
         >
           Filtrar

@@ -6,6 +6,11 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { IntegrationsService } from '../integrations/integrations.service';
+import { CustomerService } from '../customer/customer.service';
+import { PhoneService } from '../customer/phone.service';
+import { SaleService } from '../sale/sale.service';
+import { ServiceOrderService } from '../service-order/service-order.service';
 import { AppointmentFilterDto } from './dto/appointment-filter.dto';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
@@ -20,6 +25,11 @@ export class AppointmentService {
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
     private readonly notificationsService: NotificationsService,
+    private readonly integrationsService: IntegrationsService,
+    private readonly customerService: CustomerService,
+    private readonly saleService: SaleService,
+    private readonly phoneService: PhoneService,
+    private readonly serviceOrderService: ServiceOrderService,
   ) {}
 
   async findAll(companyId: string, filter: AppointmentFilterDto) {
@@ -69,6 +79,28 @@ export class AppointmentService {
     });
     if (!service) throw new NotFoundException('Serviço não encontrado');
 
+    // 🔹 Criar cliente se newCustomerName foi informado (com busca por telefone)
+    let customerId = dto.customerId;
+    if (dto.newCustomerName && dto.newCustomerPhone) {
+      // Primeiro: buscar por telefone para evitar duplicidade
+      const existing = await this.customerService.findByPhone(companyId, dto.newCustomerPhone).catch(() => null);
+      if (existing) {
+        customerId = existing.id;
+      } else {
+        const newCustomer = await this.customerService.create(companyId, userId, {
+          name: dto.newCustomerName,
+          phone: dto.newCustomerPhone,
+        });
+        customerId = newCustomer.id;
+      }
+    } else if (dto.newCustomerName && !dto.newCustomerPhone) {
+      throw new BadRequestException('Informe o telefone do novo cliente');
+    }
+
+    if (!customerId) {
+      throw new BadRequestException('Informe um cliente ou o nome do novo cliente');
+    }
+
     const startAt = new Date(dto.startAt);
     const endAt = new Date(startAt.getTime() + service.durationMinutes * 60000);
 
@@ -92,7 +124,7 @@ export class AppointmentService {
         companyId,
         unitId: dto.unitId,
         professionalId: dto.professionalId,
-        customerId: dto.customerId,
+        customerId,
         serviceId: dto.serviceId,
         startAt,
         endAt,
@@ -103,9 +135,10 @@ export class AppointmentService {
       include: {
         professional: { select: { id: true, name: true } },
         customer: { select: { id: true, name: true } },
-        service: { select: { id: true, name: true } },
+        service: { select: { id: true, name: true, price: true } },
       },
     });
+
     await this.auditService.create({
       companyId,
       userId,
@@ -114,12 +147,42 @@ export class AppointmentService {
       entityId: result.id,
       newData: result as any,
     });
+
     this.notificationsService
       .createFromAppointment(companyId, result, 'APPOINTMENT_CREATED')
       .catch(() => {});
+    this.syncCalendarEvent(companyId, result, 'create').catch(() => {});
+
+    // 🔹 Abrir comanda (venda) automática se solicitado
+    if (dto.createSale !== false) {
+      try {
+        const price = Number((result.service as any)?.price ?? 0);
+        await this.saleService.create(
+          companyId,
+          userId,
+          {
+            unitId: dto.unitId,
+            customerId,
+            notes: `Comanda gerada do agendamento #${result.id.slice(0, 8)}`,
+            items: [
+              {
+                serviceId: dto.serviceId,
+                quantity: 1,
+                unitPrice: price,
+              },
+            ],
+          },
+        );
+      } catch (err) {
+        // falha ao criar comanda não quebra o agendamento
+        console.error('Erro ao criar comanda:', err);
+      }
+    }
+
     return result;
   }
 
+  // ... rest stays the same
   async update(
     companyId: string,
     id: string,
@@ -156,6 +219,7 @@ export class AppointmentService {
       oldData: old as any,
       newData: result as any,
     });
+    this.syncCalendarEvent(companyId, result, 'update').catch(() => {});
     return result;
   }
 
@@ -197,6 +261,7 @@ export class AppointmentService {
     this.notificationsService
       .createFromAppointment(companyId, result, 'APPOINTMENT_CANCELLED')
       .catch(() => {});
+    this.syncCalendarEvent(companyId, result, 'delete').catch(() => {});
     return result;
   }
 
@@ -302,7 +367,7 @@ export class AppointmentService {
       include: {
         professional: { select: { id: true, name: true } },
         customer: { select: { id: true, name: true } },
-        service: { select: { id: true, name: true } },
+        service: { select: { id: true, name: true, price: true } },
       },
     });
     await this.auditService.create({
@@ -319,6 +384,29 @@ export class AppointmentService {
         .createFromAppointment(companyId, result, 'APPOINTMENT_CONFIRMED')
         .catch(() => {});
     }
+
+    // 🧾 Comanda automática: ao concluir agendamento, criar ServiceOrder
+    if (status === 'COMPLETED' && result.service) {
+      const servicePrice = Number(result.service.price) || 0;
+      this.serviceOrderService.create(companyId, userId, {
+        unitId: result.unitId,
+        customerId: result.customerId,
+        professionalId: result.professionalId,
+        appointmentId: id,
+        notes: 'Comanda gerada automaticamente',
+        items: [
+          {
+            serviceId: result.service.id,
+            quantity: 1,
+            unitPrice: servicePrice,
+          },
+        ],
+      }).catch((err) => {
+        // Log do erro mas não quebra o fluxo — agendamento já foi concluído
+        console.error('Erro ao criar ServiceOrder automática:', err.message);
+      });
+    }
+
     return result;
   }
 
@@ -348,5 +436,34 @@ export class AppointmentService {
         unit: { select: { id: true, name: true } },
       },
     });
+  }
+
+  private async syncCalendarEvent(companyId: string, appointment: any, action: 'create' | 'update' | 'delete') {
+    try {
+      const integration = await this.prisma.integration.findFirst({
+        where: { companyId, provider: 'google_calendar', active: true },
+      });
+      if (!integration) return;
+
+      const eventData = {
+        externalId: appointment.externalCalendarId ?? undefined,
+        title: `${appointment.service?.name ?? 'Atendimento'} - ${appointment.customer?.name ?? ''}`,
+        description: `Profissional: ${appointment.professional?.name ?? ''}\nCliente: ${appointment.customer?.name ?? ''}`,
+        start: appointment.startAt,
+        end: appointment.endAt,
+        attendeeEmail: appointment.customer?.email ?? undefined,
+      };
+
+      const result = await this.integrationsService.syncCalendarEvent(companyId, integration.id, action, eventData);
+
+      if ((result?.created || result?.updated) && result?.eventId) {
+        await this.prisma.appointment.update({
+          where: { id: appointment.id },
+          data: { externalCalendarId: result.eventId, externalProvider: 'google_calendar' },
+        });
+      }
+    } catch {
+      // falha na sincronização não quebra o agendamento
+    }
   }
 }

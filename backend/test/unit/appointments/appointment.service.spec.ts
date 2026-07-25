@@ -3,6 +3,7 @@ import { AppointmentService } from '../../../src/modules/appointment/appointment
 import { PrismaService } from '../../../src/prisma/prisma.service';
 import { AuditService } from '../../../src/modules/audit/audit.service';
 import { NotificationsService } from '../../../src/modules/notifications/notifications.service';
+import { IntegrationsService } from '../../../src/modules/integrations/integrations.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 describe('AppointmentService', () => {
@@ -59,6 +60,9 @@ describe('AppointmentService', () => {
         create: jest.fn().mockResolvedValue(mockAppointment),
         update: jest.fn().mockResolvedValue(mockAppointment),
       },
+      integration: {
+        findFirst: jest.fn().mockResolvedValue(null),
+      },
     };
 
     auditService = { create: jest.fn() };
@@ -72,6 +76,7 @@ describe('AppointmentService', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: AuditService, useValue: auditService },
         { provide: NotificationsService, useValue: notificationsService },
+        { provide: IntegrationsService, useValue: { syncCalendarEvent: jest.fn() } },
       ],
     }).compile();
 

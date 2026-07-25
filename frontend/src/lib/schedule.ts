@@ -121,3 +121,25 @@ export async function deleteScheduleBlock(id: string): Promise<void> {
   const res = await fetch(`${API_BASE}/api/schedule/blocks/${id}`, { method: 'DELETE', headers: headers() });
   if (!res.ok) throw new Error(await res.text());
 }
+
+export interface AvailabilityResult {
+  date: string;
+  available: boolean;
+  slots: string[];
+  reason?: string;
+}
+
+export async function fetchAvailability(params: {
+  unitId: string;
+  date: string;
+  professionalId?: string;
+  serviceId?: string;
+}): Promise<AvailabilityResult> {
+  const url = new URL(`${API_BASE}/api/schedule/availability`);
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
+  }
+  const res = await fetch(url.toString(), { headers: headers() });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}

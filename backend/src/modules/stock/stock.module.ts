@@ -13,22 +13,24 @@ import { StockReportController } from './stock-report.controller';
 import { StockReportService } from './stock-report.service';
 import { StockAlertController } from './stock-alert.controller';
 import { StockAlertService } from './stock-alert.service';
+import { StockDashboardController } from './stock-dashboard.controller';
+import { StockDashboardService } from './stock-dashboard.service';
 
 @Module({
   controllers: [
     SupplierController, PurchaseController,
     StockMovementController, TransferController, InventoryController,
-    StockReportController, StockAlertController,
+    StockReportController, StockAlertController, StockDashboardController,
   ],
   providers: [
     SupplierService, PurchaseService,
     StockMovementService, TransferService, InventoryService,
-    StockReportService, StockAlertService,
+    StockReportService, StockAlertService, StockDashboardService,
   ],
   exports: [
     SupplierService, PurchaseService,
     StockMovementService, TransferService, InventoryService,
-    StockReportService, StockAlertService,
+    StockReportService, StockAlertService, StockDashboardService,
   ],
 })
 export class StockModule {}

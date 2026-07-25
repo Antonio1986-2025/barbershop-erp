@@ -58,6 +58,12 @@ enum CashRegisterStatus {
   CLOSED
 }
 
+enum PaymentProviderType {
+  MERCADO_PAGO
+  STRIPE
+  ASAAS
+}
+
 enum PaymentMethod {
   CASH
   CREDIT_CARD
@@ -65,10 +71,13 @@ enum PaymentMethod {
   PIX
   TRANSFER
   OTHER
+  STORE_CREDIT
+  GIFT_CARD
 }
 
 enum PaymentStatus {
   PENDING
+  AUTHORIZED
   PAID
   CANCELED
   REFUNDED
@@ -137,6 +146,26 @@ enum FinancialAccountStatus {
   CANCELLED
 }
 
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum CashbackStatus {
+  PENDING
+  AVAILABLE
+  USED
+  EXPIRED
+}
+
+enum SaleStatus {
+  DRAFT
+  OPEN
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
 enum NotificationType {
   APPOINTMENT_CREATED
   APPOINTMENT_CONFIRMED
@@ -148,6 +177,9 @@ enum NotificationType {
   STOCK_NEGATIVE
   STOCK_INACTIVE
   STOCK_EXPIRING
+  SALE_COMPLETED
+  SALE_CANCELLED
+  SALE_REFUNDED
 }
 
 enum StockAlertType {
@@ -168,6 +200,102 @@ enum NotificationChannel {
 enum NotificationStatus {
   PENDING
   SENT
+  FAILED
+  READ
+}
+
+enum ConversationChannel {
+  WHATSAPP
+}
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum IntegrationLogDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum IntegrationLogStatus {
+  SUCCESS
+  FAILED
+}
+
+enum AutomationExecutionStatus {
+  SUCCESS
+  FAILED
+  SKIPPED
+}
+
+enum CampaignType {
+  WHATSAPP
+  EMAIL
+  SMS
+  PUSH
+  INTERNAL
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  CANCELLED
+}
+
+enum InteractionType {
+  CALL
+  WHATSAPP
+  EMAIL
+  SMS
+  VISIT
+  NOTE
+  SYSTEM
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskType {
+  FOLLOW_UP
+  CALLBACK
+  APPOINTMENT
+  SALE
+  COLLECTION
+  REMINDER
+  OTHER
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum CampaignRecipientStatus {
+  PENDING
+  SENT
+  DELIVERED
   FAILED
   READ
 }
@@ -316,6 +444,18 @@ model Company {
   notifications    Notification[]
   suppliers        Supplier[]
   purchases        Purchase[]
+  sales               Sale[]
+  coupons             Coupon[]
+  cashbackTransactions CashbackTransaction[]
+  loyaltyPrograms     LoyaltyProgram[]
+  loyaltyPoints       LoyaltyPoints[]
+  customerSegments    CustomerSegment[]
+  customerTags        CustomerTag[]
+  campaigns           Campaign[]
+  customerInteractions CustomerInteraction[]
+  customerTasks        CustomerTask[]
+  conversations        Conversation[]
+  integrations         Integration[]
   stocks              Stock[]
   stockMovements      StockMovement[]
   transfers           Transfer[]
@@ -516,6 +656,7 @@ model Unit {
   cashRegisters    CashRegister[]
   payments         Payment[]
   cashTransactions CashTransaction[]
+  sales            Sale[]
   stocks           Stock[]
   stockMovements   StockMovement[]
   businessHours    BusinessHour[]
@@ -626,6 +767,205 @@ model Notification {
   @@map("notifications")
 }
 
+model CustomerSegment {
+  id String @id @default(uuid())
+
+  companyId String
+
+  name        String
+  description String?
+  rules       String   // JSON
+  color       String?
+  active      Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company  Company    @relation(fields: [companyId], references: [id])
+  campaigns Campaign[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@index([active])
+  @@map("customer_segments")
+}
+
+model Campaign {
+  id String @id @default(uuid())
+
+  companyId String
+  segmentId String?
+
+  name            String
+  description     String?
+  type            CampaignType
+  status          CampaignStatus @default(DRAFT)
+  messageTemplate String?
+
+  scheduledAt DateTime?
+  sentAt      DateTime?
+
+  totalRecipients Int @default(0)
+  sentCount       Int @default(0)
+  deliveredCount  Int @default(0)
+  failedCount     Int @default(0)
+  readCount       Int @default(0)
+
+  createdBy  String
+  approvedBy String?
+
+  startedAt  DateTime?
+  finishedAt DateTime?
+
+  templateVariables String?
+  metadata          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company  Company            @relation(fields: [companyId], references: [id])
+  segment  CustomerSegment?   @relation(fields: [segmentId], references: [id])
+  recipients CampaignRecipient[]
+  interactions CustomerInteraction[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("campaigns")
+}
+
+model CampaignRecipient {
+  id         String   @id @default(uuid())
+  campaignId String
+  customerId String
+
+  status CampaignRecipientStatus @default(PENDING)
+
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  readAt      DateTime?
+  errorMessage      String?
+  externalMessageId String?
+  retryCount        Int @default(0)
+  lastAttemptAt     DateTime?
+
+  createdAt DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@unique([campaignId, customerId])
+  @@index([campaignId])
+  @@index([customerId])
+  @@index([status])
+  @@map("campaign_recipients")
+}
+
+model CustomerInteraction {
+  id String @id @default(uuid())
+
+  companyId     String
+  customerId    String
+  campaignId    String?
+  appointmentId String?
+  saleId        String?
+
+  type        InteractionType
+  subject     String
+  description String?
+  metadata    String?
+
+  interactionAt DateTime @default(now())
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  company  Company   @relation(fields: [companyId], references: [id])
+  customer Customer  @relation(fields: [customerId], references: [id])
+  campaign Campaign? @relation(fields: [campaignId], references: [id])
+
+  @@index([companyId])
+  @@index([customerId])
+  @@index([type])
+  @@index([campaignId])
+  @@index([interactionAt])
+  @@map("customer_interactions")
+}
+
+model CustomerTask {
+  id String @id @default(uuid())
+
+  companyId  String
+  customerId String
+  assignedTo String
+
+  type     TaskType
+  priority TaskPriority @default(MEDIUM)
+  status   TaskStatus @default(OPEN)
+
+  sourceType String?
+  sourceId   String?
+
+  title       String
+  description String?
+  dueDate     DateTime?
+
+  completedAt DateTime?
+  completedBy String?
+
+  metadata String?
+
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company  Company  @relation(fields: [companyId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([companyId])
+  @@index([customerId])
+  @@index([assignedTo])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@map("customer_tasks")
+}
+
+model CustomerTag {
+  id String @id @default(uuid())
+
+  companyId String
+
+  name  String
+  color String?
+
+  createdAt DateTime @default(now())
+
+  company    Company                  @relation(fields: [companyId], references: [id])
+  assignments CustomerTagAssignment[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
+  @@map("customer_tags")
+}
+
+model CustomerTagAssignment {
+  id         String @id @default(uuid())
+  customerId String
+  tagId      String
+  createdBy  String?
+
+  createdAt DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  tag      CustomerTag @relation(fields: [tagId], references: [id])
+
+  @@unique([customerId, tagId])
+  @@index([customerId])
+  @@index([tagId])
+  @@map("customer_tag_assignments")
+}
+
 model Customer {
   id String @id @default(uuid())
 
@@ -634,6 +974,7 @@ model Customer {
   name     String
   email    String?
   phone    String?
+  phoneNormalized String?
   document String?
 
   birthDate DateTime?
@@ -654,8 +995,17 @@ model Customer {
   appointments  Appointment[]
   serviceOrders ServiceOrder[]
   notifications Notification[]
+  sales             Sale[]
+  cashbackTxns      CashbackTransaction[]
+  loyaltyPointsRef  LoyaltyPoints[]
+  tagAssignments    CustomerTagAssignment[]
+  campaignReceipts  CampaignRecipient[]
+  interactions      CustomerInteraction[]
+  tasks             CustomerTask[]
+  conversations     Conversation[]
 
   @@unique([companyId, document])
+  @@unique([companyId, phoneNormalized])
   @@index([companyId])
   @@index([name])
   @@index([phone])
@@ -748,6 +1098,7 @@ model Service {
   company           Company            @relation(fields: [companyId], references: [id])
   appointments      Appointment[]
   serviceOrderItems ServiceOrderItem[]
+  saleItems         SaleItem[]
 
   @@index([companyId])
   @@index([name])
@@ -774,6 +1125,9 @@ model Appointment {
   cancellationReason String?
   cancelledAt        DateTime?
   cancelledBy        String?
+
+  externalCalendarId  String?
+  externalProvider    String?
 
   rescheduledFromId String? @unique
   rescheduledTo     Appointment? @relation("RescheduledAppointments")
@@ -825,6 +1179,8 @@ model ServiceOrder {
   discount Decimal @default(0) @db.Decimal(10, 2)
   total    Decimal @db.Decimal(10, 2)
 
+  couponId String?
+
   notes String?
 
   createdAt DateTime  @default(now())
@@ -840,9 +1196,12 @@ model ServiceOrder {
   appointment  Appointment? @relation(fields: [appointmentId], references: [id])
   customer     Customer     @relation(fields: [customerId], references: [id])
   professional Professional @relation(fields: [professionalId], references: [id])
+  coupon       Coupon?      @relation(fields: [couponId], references: [id])
 
   items    ServiceOrderItem[]
   payments Payment[]
+
+  sale Sale?
 
   @@index([companyId])
   @@index([unitId])
@@ -856,21 +1215,28 @@ model ServiceOrderItem {
   id String @id @default(uuid())
 
   serviceOrderId String
-  serviceId      String
+  serviceId      String?
+  productId      String?
 
   quantity Int @default(1)
 
-  unitPrice  Decimal @db.Decimal(10, 2)
-  totalPrice Decimal @db.Decimal(10, 2)
+  unitPrice      Decimal @db.Decimal(10, 2)
+  discountAmount Decimal @default(0) @db.Decimal(10, 2)
+  totalPrice     Decimal @db.Decimal(10, 2)
+
+  serviceName String?
+  productName String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   serviceOrder ServiceOrder @relation(fields: [serviceOrderId], references: [id])
-  service      Service      @relation(fields: [serviceId], references: [id])
+  service      Service?     @relation(fields: [serviceId], references: [id])
+  product      Product?     @relation(fields: [productId], references: [id])
 
   @@index([serviceOrderId])
   @@index([serviceId])
+  @@index([productId])
   @@map("service_order_items")
 }
 
@@ -914,14 +1280,25 @@ model Payment {
   companyId String
   unitId    String
 
-  serviceOrderId String
+  serviceOrderId String?
+  saleId         String?
 
   amount Decimal @db.Decimal(10, 2)
 
   paymentMethod PaymentMethod
   status        PaymentStatus @default(PENDING)
 
-  paidAt DateTime?
+  paidAt     DateTime?
+  refundedAt DateTime?
+
+  externalPaymentId String?
+  provider          String?
+  providerStatus    String?
+  paymentUrl        String?
+  pixCode           String?
+
+  gatewayTransactionId String?
+  gatewayResponse      String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -929,13 +1306,15 @@ model Payment {
   company Company @relation(fields: [companyId], references: [id])
   unit    Unit    @relation(fields: [unitId], references: [id])
 
-  serviceOrder ServiceOrder @relation(fields: [serviceOrderId], references: [id])
+  serviceOrder ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
+  sale         Sale?         @relation(fields: [saleId], references: [id])
 
   transactions CashTransaction[]
 
   @@index([companyId])
   @@index([unitId])
   @@index([serviceOrderId])
+  @@index([saleId])
   @@index([status])
   @@map("payments")
 }
@@ -982,6 +1361,8 @@ enum AuditAction {
   PAY
   CANCEL
   CLOSE_CASH
+  GENERATE_SALE
+  GENERATE_REFUND
 }
 
 model AuditLog {
@@ -1069,9 +1450,11 @@ model Product {
   stocks        Stock[]
   movements     StockMovement[]
   purchaseItems PurchaseItem[]
+  serviceOrderItems ServiceOrderItem[]
   transfers       Transfer[]
   inventoryItems  InventoryItem[]
   stockAlerts     StockAlert[] @relation("ProductStockAlerts")
+  saleItems       SaleItem[]
 
   @@unique([companyId, barcode])
   @@index([companyId])
@@ -1079,6 +1462,185 @@ model Product {
   @@index([name])
   @@index([active])
   @@map("products")
+}
+
+model Coupon {
+  id String @id @default(uuid())
+
+  companyId String
+
+  code          String
+  discountType  DiscountType
+  discountValue Decimal @db.Decimal(10, 2)
+  minPurchaseValue Decimal? @db.Decimal(10, 2)
+  maxUses       Int?
+  expiresAt     DateTime?
+  active        Boolean @default(true)
+  usedCount     Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  serviceOrders ServiceOrder[]
+  sales         Sale[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+  @@index([active])
+  @@index([expiresAt])
+  @@map("coupons")
+}
+
+model Sale {
+  id String @id @default(uuid())
+
+  companyId String
+  unitId    String
+  customerId String?
+
+  serviceOrderId String? @unique
+
+  status     SaleStatus @default(DRAFT)
+
+  subtotal       Decimal @db.Decimal(10, 2)
+  discountAmount Decimal @default(0) @db.Decimal(10, 2)
+  total          Decimal @db.Decimal(10, 2)
+
+  couponId String?
+
+  notes String?
+
+  createdBy   String
+  updatedBy   String?
+  cancelledBy String?
+  refundedBy  String?
+
+  cancelledAt   DateTime?
+  cancelledReason String?
+  refundedAt    DateTime?
+  refundReason  String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  company  Company   @relation(fields: [companyId], references: [id])
+  unit     Unit      @relation(fields: [unitId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+  serviceOrder ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
+  coupon       Coupon?       @relation(fields: [couponId], references: [id])
+
+  items            SaleItem[]
+  payments         Payment[]
+  cashbackTxns     CashbackTransaction[]
+  loyaltyPointsRef LoyaltyPoints[]
+
+  @@index([companyId])
+  @@index([unitId])
+  @@index([customerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("sales")
+}
+
+model CashbackTransaction {
+  id String @id @default(uuid())
+
+  companyId  String
+  saleId     String
+  customerId String
+
+  amount  Decimal @db.Decimal(10, 2)
+  rate    Decimal @db.Decimal(5, 2)
+  status  CashbackStatus @default(PENDING)
+
+  expiresAt  DateTime?
+  usedAt     DateTime?
+  usedInSaleId String?
+
+  createdAt DateTime @default(now())
+
+  company  Company @relation(fields: [companyId], references: [id])
+  sale     Sale    @relation(fields: [saleId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([companyId])
+  @@index([customerId])
+  @@index([saleId])
+  @@index([status])
+  @@map("cashback_transactions")
+}
+
+model LoyaltyProgram {
+  id String @id @default(uuid())
+
+  companyId String @unique
+
+  name            String
+  pointsPerAmount Decimal @db.Decimal(10, 2)
+  minAmount       Decimal @default(0) @db.Decimal(10, 2)
+  active          Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@map("loyalty_programs")
+}
+
+model LoyaltyPoints {
+  id String @id @default(uuid())
+
+  companyId  String
+  customerId String
+  saleId     String?
+
+  points      Int
+  type        String    // EARNED | REDEEMED | EXPIRED | CANCELLED
+  description String?
+
+  createdAt DateTime @default(now())
+
+  company  Company  @relation(fields: [companyId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+  sale     Sale?    @relation(fields: [saleId], references: [id])
+
+  @@index([companyId])
+  @@index([customerId])
+  @@index([saleId])
+  @@index([type])
+  @@map("loyalty_points")
+}
+
+model SaleItem {
+  id     String @id @default(uuid())
+  saleId String
+
+  productId String?
+  serviceId String?
+
+  productName    String
+  productBarcode String?
+  serviceName    String?
+
+  quantity     Decimal @db.Decimal(10, 3)
+  unitPrice    Decimal @db.Decimal(10, 2)
+  costPrice    Decimal @db.Decimal(10, 2)
+  totalPrice   Decimal @db.Decimal(10, 2)
+  discountAmount Decimal @default(0) @db.Decimal(10, 2)
+
+  createdAt DateTime @default(now())
+
+  sale    Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id])
+  service Service? @relation(fields: [serviceId], references: [id])
+
+  @@index([saleId])
+  @@index([productId])
+  @@index([serviceId])
+  @@map("sale_items")
 }
 
 model Stock {
@@ -1440,4 +2002,163 @@ model CashClosing {
   @@index([unitId])
   @@index([closedAt])
   @@map("cash_closings")
+}
+
+model AutomationExecution {
+  id String @id @default(uuid())
+
+  eventName    String
+  ruleName     String
+  sourceModule String
+  payload      String?
+  status       AutomationExecutionStatus
+  error        String?
+  durationMs   Int?
+  retryCount   Int @default(0)
+
+  executedAt DateTime @default(now())
+
+  @@index([eventName])
+  @@index([ruleName])
+  @@index([status])
+  @@index([executedAt])
+  @@map("automation_executions")
+}
+
+enum ConversationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model Conversation {
+  id String @id @default(uuid())
+
+  companyId  String
+  customerId String
+
+  channel  ConversationChannel
+  status   ConversationStatus @default(OPEN)
+  priority ConversationPriority @default(NORMAL)
+
+  assignedToId String?
+
+  firstResponseAt   DateTime?
+  lastAgentMessageAt DateTime?
+  lastMessageAt     DateTime?
+  assignedAt        DateTime?
+  closedAt          DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company  Company  @relation(fields: [companyId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  messages ConversationMessage[]
+  notes    ConversationNote[]
+  tags     ConversationTag[]
+
+  @@unique([companyId, customerId, channel, status], name: "unique_open_conversation")
+  @@index([companyId])
+  @@index([customerId])
+  @@index([status])
+  @@index([priority])
+  @@index([assignedToId])
+  @@map("conversations")
+}
+
+model ConversationNote {
+  id             String   @id @default(uuid())
+  conversationId String
+  userId         String
+  content        String
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("conversation_notes")
+}
+
+model ConversationTag {
+  id             String @id @default(uuid())
+  conversationId String
+  tag            String
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, tag])
+  @@index([conversationId])
+  @@map("conversation_tags")
+}
+
+model ConversationMessage {
+  id String @id @default(uuid())
+
+  conversationId String
+  direction      MessageDirection
+  content        String
+  externalId     String?
+  status         MessageStatus @default(SENT)
+  metadata       String?
+
+  createdAt DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([direction])
+  @@index([externalId])
+  @@map("conversation_messages")
+}
+
+model Integration {
+  id String @id @default(uuid())
+
+  companyId String
+
+  type        String
+  name        String
+  credentials String?
+  active      Boolean @default(true)
+
+  provider   String?
+  version    String?   @default("v1")
+  webhookSecret String?
+
+  lastUsedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company    @relation(fields: [companyId], references: [id])
+  logs    IntegrationLog[]
+
+  @@index([companyId])
+  @@index([type])
+  @@index([active])
+  @@map("integrations")
+}
+
+model IntegrationLog {
+  id String @id @default(uuid())
+
+  integrationId String
+  eventName     String
+  direction     IntegrationLogDirection
+  payload       String?
+  status        IntegrationLogStatus
+  error         String?
+
+  processedAt DateTime @default(now())
+
+  integration Integration @relation(fields: [integrationId], references: [id])
+
+  @@index([integrationId])
+  @@index([eventName])
+  @@index([direction])
+  @@index([status])
+  @@map("integration_logs")
 }

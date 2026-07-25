@@ -104,7 +104,28 @@ npm run dev                  # http://localhost:3000
 
 ## Execução via Docker
 
-> **Nota:** A configuração Docker está pendente. Veja `docs/deployment.md` para detalhes.
+```bash
+# Subir tudo (PostgreSQL + backend + frontend + seed)
+docker compose up -d
+
+# Acessar
+# Frontend: http://localhost:3000
+# Backend:  http://localhost:3001
+```
+
+Na primeira execução, o serviço `db-init` roda automaticamente:
+- Instala dependências
+- Gera o Prisma Client
+- Aplica migrations (`prisma db push`)
+- Popula dados de exemplo (`seed`)
+
+Usuários de teste criados pelo seed:
+
+| Email | Senha | Papel |
+|---|---|---|
+| admin@demo.com | 123456 | Administrador |
+| operador@demo.com | 123456 | Operador |
+| visualizador@demo.com | 123456 | Visualização |
 
 ---
 
@@ -116,8 +137,8 @@ npm run dev                  # http://localhost:3000
 |---|---|
 | `npm run start:dev` | Iniciar em modo desenvolvimento |
 | `npm run build` | Compilar TypeScript |
-| `npm run test:unit` | Testes unitários (185) |
-| `npm run test:e2e` | Testes de integração (112) |
+| `npm run test:unit` | Testes unitários (381) |
+| `npm run test:e2e` | Testes de integração |
 | `npm run test:coverage` | Cobertura de testes |
 | `npm run lint` | Verificar ESLint |
 
@@ -137,8 +158,8 @@ npm run dev                  # http://localhost:3000
 ```bash
 # Todos os testes do backend
 cd backend
-npm run test:unit            # 185 testes unitários
-npm run test:e2e             # 112 testes de integração
+npm run test:unit            # 381 testes unitários
+npm run test:e2e             # Testes de integração
 npm run test:coverage        # Com cobertura (mínimo 80%)
 
 # Testes do frontend

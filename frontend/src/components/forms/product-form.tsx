@@ -6,6 +6,7 @@ import { createProduct, updateProduct } from '@/lib/products';
 import { fetchCategories } from '@/lib/categories';
 import { FormField } from '@/components/forms/form-field';
 import { FormActions } from '@/components/forms/form-actions';
+import { CurrencyInput } from '@/components/forms/currency-input';
 import { ErrorBox } from '@/components/crud/error-box';
 import type { Product } from '@/lib/products';
 import type { Category } from '@/lib/categories';
@@ -63,7 +64,7 @@ export function ProductForm({ initial }: ProductFormProps) {
 
   return (
     <div className="mx-auto max-w-lg space-y-6 p-6">
-      <h1 className="text-2xl font-bold">{isEdit ? 'Editar Produto' : 'Novo Produto'}</h1>
+      <h1 className="text-xl font-bold sm:text-2xl">{isEdit ? 'Editar Produto' : 'Novo Produto'}</h1>
       <ErrorBox message={error} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField label="Nome *">
@@ -80,10 +81,10 @@ export function ProductForm({ initial }: ProductFormProps) {
         </FormField>
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Preço de Custo (R$) *">
-            <input type="number" step="0.01" min="0" className="w-full rounded border px-3 py-1.5" value={form.costPrice} onChange={(e) => set('costPrice', e.target.value)} required />
+            <CurrencyInput value={form.costPrice} onChange={(v) => set('costPrice', String(v / 100))} placeholder="0,00" required />
           </FormField>
           <FormField label="Preço de Venda (R$) *">
-            <input type="number" step="0.01" min="0" className="w-full rounded border px-3 py-1.5" value={form.salePrice} onChange={(e) => set('salePrice', e.target.value)} required />
+            <CurrencyInput value={form.salePrice} onChange={(v) => set('salePrice', String(v / 100))} placeholder="0,00" required />
           </FormField>
         </div>
         <FormActions backTo="/produtos" saving={saving} />

@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsDateString, IsArray } from 'class-validator';
+import { IsString, IsOptional, IsDateString, IsBoolean } from 'class-validator';
 
 export class CreateAppointmentDto {
   @IsString()
@@ -7,8 +7,9 @@ export class CreateAppointmentDto {
   @IsString()
   professionalId: string;
 
+  @IsOptional()
   @IsString()
-  customerId: string;
+  customerId?: string;
 
   @IsString()
   serviceId: string;
@@ -19,4 +20,18 @@ export class CreateAppointmentDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  // 🔹 Criar novo cliente automaticamente
+  @IsOptional()
+  @IsString()
+  newCustomerName?: string;
+
+  @IsOptional()
+  @IsString()
+  newCustomerPhone?: string;
+
+  // 🔹 Abrir comanda (venda) automaticamente
+  @IsOptional()
+  @IsBoolean()
+  createSale?: boolean;
 }

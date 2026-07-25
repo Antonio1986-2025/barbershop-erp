@@ -23,7 +23,20 @@ import { ScheduleModule } from './modules/schedule/schedule.module';
 import { AppointmentModule } from './modules/appointment/appointment.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { FinancialModule } from './modules/financial/financial.module';
+import { SaleModule } from './modules/sale/sale.module';
+import { CashModule } from './modules/cash/cash.module';
+import { CouponModule } from './modules/coupon/coupon.module';
+import { CashbackModule } from './modules/cashback/cashback.module';
+import { LoyaltyModule } from './modules/loyalty/loyalty.module';
+import { CrmModule } from './modules/crm/crm.module';
+import { CampaignModule } from './modules/campaign/campaign.module';
+import { InteractionModule } from './modules/interaction/interaction.module';
+import { TaskModule } from './modules/task/task.module';
+import { AutomationModule } from './modules/automation/automation.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { ConversationsModule } from './modules/conversations/conversations.module';
 import { ObservabilityModule } from './modules/observability/observability.module';
+import { ServiceOrderModule } from './modules/service-order/service-order.module';
 
 @Module({
   imports: [
@@ -52,10 +65,23 @@ import { ObservabilityModule } from './modules/observability/observability.modul
     AuditModule,
     CompanySettingsModule,
     StockModule,
+    SaleModule,
+    CashModule,
+    CouponModule,
+    CashbackModule,
+    LoyaltyModule,
+    CrmModule,
+    CampaignModule,
+    InteractionModule,
+    TaskModule,
+    AutomationModule,
+    IntegrationsModule,
+    ConversationsModule,
     ScheduleModule,
     AppointmentModule,
     NotificationsModule,
     FinancialModule,
+    ServiceOrderModule,
   ],
   controllers: [AppController],
   providers: [

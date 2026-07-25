@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { PhoneService } from './phone.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 
@@ -9,6 +10,7 @@ export class CustomerService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly phoneService: PhoneService,
   ) {}
 
   async findAll(
@@ -17,6 +19,7 @@ export class CustomerService {
       page?: number;
       limit?: number;
       search?: string;
+      phone?: string;
       active?: string;
       orderBy?: string;
       orderDir?: 'asc' | 'desc';
@@ -32,11 +35,16 @@ export class CustomerService {
       where.active = query.active === 'true';
     }
 
-    if (query.search) {
+    if (query.phone) {
+      // Busca por telefone normalizado
+      const norm = this.phoneService.normalize(query.phone);
+      where.phoneNormalized = norm;
+    } else if (query.search) {
       const s = query.search;
       where.OR = [
         { name: { contains: s, mode: 'insensitive' } },
         { phone: { contains: s, mode: 'insensitive' } },
+        { phoneNormalized: { contains: s, mode: 'insensitive' } },
         { document: { contains: s, mode: 'insensitive' } },
         { email: { contains: s, mode: 'insensitive' } },
       ];
@@ -61,6 +69,20 @@ export class CustomerService {
     };
   }
 
+  /**
+   * Busca um cliente ativo pelo telefone normalizado na empresa.
+   * Usado pelo fluxo telefone-primeiro.
+   */
+  async findByPhone(companyId: string, phone: string) {
+    const norm = this.phoneService.normalize(phone);
+    if (!norm) throw new BadRequestException('Telefone inválido');
+
+    const customer = await this.prisma.customer.findFirst({
+      where: { companyId, phoneNormalized: norm, deletedAt: null, active: true },
+    });
+    return customer;
+  }
+
   async findOne(companyId: string, id: string) {
     const customer = await this.prisma.customer.findFirst({
       where: { id, companyId, deletedAt: null },
@@ -70,10 +92,41 @@ export class CustomerService {
   }
 
   async create(companyId: string, userId: string, dto: CreateCustomerDto) {
+    // Normalizar telefone
+    const normalizedPhone = this.phoneService.normalize(dto.phone);
+
+    if (!this.phoneService.isValid(dto.phone)) {
+      throw new BadRequestException('Telefone inválido. Informe um número com DDD.');
+    }
+
+    // Verificar duplicidade por telefone na mesma empresa
+    const existing = await this.prisma.customer.findFirst({
+      where: {
+        companyId,
+        phoneNormalized: normalizedPhone,
+        deletedAt: null,
+        active: true,
+      },
+    });
+
+    if (existing) {
+      // Regra: não criar duplicata — retornar existente
+      // O frontend deve informar o usuário
+      throw new ConflictException(
+        `Já existe um cliente com este telefone: ${existing.name}. Utilize o cadastro existente.`,
+      );
+    }
+
     const result = await this.prisma.customer.create({
       data: {
-        ...dto,
+        name: dto.name,
+        phone: this.phoneService.format(dto.phone),
+        phoneNormalized: normalizedPhone,
+        email: dto.email,
+        document: dto.document,
         birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
+        notes: dto.notes,
+        active: dto.active ?? true,
         companyId,
         createdBy: userId,
       },
@@ -98,13 +151,39 @@ export class CustomerService {
     dto: UpdateCustomerDto,
   ) {
     const old = await this.findOne(companyId, id);
+
+    const data: any = { ...dto, updatedBy: userId };
+
+    // Se telefone foi alterado, normalizar e verificar duplicidade
+    if (dto.phone && dto.phone !== old.phone) {
+      const normalizedPhone = this.phoneService.normalize(dto.phone);
+      data.phoneNormalized = normalizedPhone;
+      data.phone = this.phoneService.format(dto.phone);
+
+      const existing = await this.prisma.customer.findFirst({
+        where: {
+          companyId,
+          phoneNormalized: normalizedPhone,
+          id: { not: id },
+          deletedAt: null,
+          active: true,
+        },
+      });
+
+      if (existing) {
+        throw new ConflictException(
+          `Este telefone já pertence a ${existing.name}.`,
+        );
+      }
+    }
+
+    if (dto.birthDate) {
+      data.birthDate = new Date(dto.birthDate);
+    }
+
     const result = await this.prisma.customer.update({
       where: { id },
-      data: {
-        ...dto,
-        birthDate: dto.birthDate ? new Date(dto.birthDate) : undefined,
-        updatedBy: userId,
-      },
+      data,
     });
 
     await this.auditService.create({

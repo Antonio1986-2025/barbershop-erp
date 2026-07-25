@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import Link from 'next/link';
 
 type HealthResponse = {
   status: string;
@@ -14,59 +13,69 @@ export default function Home() {
   const [data, setData] = useState<HealthResponse | null>(null);
 
   useEffect(() => {
-    fetch('http://localhost:3001/health')
+    fetch(`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/health`)
       .then((res) => res.json())
       .then(setData)
       .catch(() => setData(null));
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-8 p-8">
-      <h1 className="text-2xl font-bold">Barbershop ERP</h1>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-background px-4 py-12">
+      <div className="animate-fade-in text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary mb-4 shadow-lg">
+          <span className="text-3xl">💈</span>
+        </div>
+        <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Barbershop ERP</h1>
+        <p className="mt-2 text-muted-foreground">
+          Sistema de gestão para barbearias
+        </p>
+      </div>
 
       {user && (
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-zinc-500">
+        <div className="flex flex-col items-center gap-4 sm:flex-row animate-fade-in">
+          <span className="text-sm text-muted-foreground">
             {user.name} — {user.companyName}
           </span>
-          <Link
-            href="/dashboard"
-            className="rounded bg-zinc-900 px-3 py-1 text-sm text-white hover:bg-zinc-700"
-          >
-            Dashboard
-          </Link>
-          <button
-            onClick={logout}
-            className="rounded border px-3 py-1 text-sm hover:bg-zinc-100"
-          >
-            Sair
-          </button>
+          <div className="flex gap-3">
+            <a
+              href="/dashboard"
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-light transition-colors"
+            >
+              Dashboard
+            </a>
+            <button
+              onClick={logout}
+              className="rounded-md border border-border bg-card-bg px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              Sair
+            </button>
+          </div>
         </div>
       )}
 
       {!user && (
-        <Link
+        <a
           href="/login"
-          className="rounded bg-zinc-900 px-4 py-2 text-white hover:bg-zinc-700"
+          className="rounded-md bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary-light transition-colors animate-fade-in"
         >
           Entrar
-        </Link>
+        </a>
       )}
 
-      <div className="rounded-lg border p-6 text-center">
-        <h2 className="text-lg font-semibold">API Status</h2>
+      <div className="w-full max-w-sm rounded-xl border border-border bg-card-bg p-6 text-center shadow-sm animate-fade-in">
+        <h2 className="text-base font-semibold text-foreground">API Status</h2>
         {data ? (
           <div className="mt-4 space-y-2">
-            <p>
+            <p className="text-sm text-muted-foreground">
               Status:{' '}
-              <span className="font-medium text-green-600">{data.status}</span>
+              <span className="font-medium text-success">{data.status}</span>
             </p>
-            <p>
-              Service: <span className="font-medium">{data.service}</span>
+            <p className="text-sm text-muted-foreground">
+              Service: <span className="font-medium text-foreground">{data.service}</span>
             </p>
           </div>
         ) : (
-          <p className="mt-4 text-zinc-500">Conectando...</p>
+          <p className="mt-4 text-sm text-muted-foreground animate-pulse">Conectando...</p>
         )}
       </div>
     </div>

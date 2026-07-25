@@ -1,8 +1,11 @@
+import 'reflect-metadata';
 import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 import * as argon2 from 'argon2';
+import { Prisma } from '@prisma/client';
+import { PhoneService } from '../src/modules/customer/phone.service';
 
 async function seed() {
   const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL! });
@@ -10,18 +13,23 @@ async function seed() {
   const prisma = new PrismaClient({ adapter });
   await prisma.$connect();
 
+  console.log('🌱 Iniciando seed...');
+
   const hash = await argon2.hash('123456');
 
+  // ── Plan ──
   const plan = await prisma.plan.upsert({
     where: { code: 'basic' },
     update: {},
     create: { code: 'basic', name: 'Básico' },
   });
 
+  // ── Subscription ──
   const subscription = await prisma.subscription.create({
     data: { planId: plan.id, status: 'ACTIVE', startDate: new Date() },
   });
 
+  // ── Company ──
   const company = await prisma.company.upsert({
     where: { document: '00000000000191' },
     update: {},
@@ -31,68 +39,331 @@ async function seed() {
       tradeName: 'Demo Barbershop',
       document: '00000000000191',
       email: 'demo@barbershop.com',
+      phone: '(11) 99999-9999',
     },
   });
 
-  const role = await prisma.role.upsert({
+  // ── Units ──
+  const unitMatriz = await prisma.unit.upsert({
+    where: { companyId_code: { companyId: company.id, code: 'MATRIZ' } },
+    update: {},
+    create: {
+      companyId: company.id,
+      name: 'Matriz',
+      code: 'MATRIZ',
+      phone: '(11) 3000-0000',
+      email: 'matriz@demo.com',
+      city: 'São Paulo',
+      state: 'SP',
+    },
+  });
+
+  const unitFilial = await prisma.unit.upsert({
+    where: { companyId_code: { companyId: company.id, code: 'FILIAL' } },
+    update: {},
+    create: {
+      companyId: company.id,
+      name: 'Filial Centro',
+      code: 'FILIAL',
+      phone: '(11) 3000-0001',
+      city: 'São Paulo',
+      state: 'SP',
+    },
+  });
+
+  // ── Role ──
+  const roleAdmin = await prisma.role.upsert({
     where: { slug: 'admin' },
     update: {},
     create: { name: 'Administrador', slug: 'admin' },
   });
-
-  const userRecord = await prisma.user.findFirst({
-    where: { email: 'admin@demo.com', companyId: company.id },
-  });
-
-  let userId: string;
-
-  if (userRecord) {
-    await prisma.user.update({
-      where: { id: userRecord.id },
-      data: { passwordHash: hash },
-    });
-    userId = userRecord.id;
-  } else {
-    const newUser = await prisma.user.create({
-      data: {
-        companyId: company.id,
-        name: 'Admin',
-        email: 'admin@demo.com',
-        passwordHash: hash,
-      },
-    });
-    userId = newUser.id;
-  }
-
-  await prisma.userRole.upsert({
-    where: { userId_roleId: { userId, roleId: role.id } },
+  const roleOperator = await prisma.role.upsert({
+    where: { slug: 'operator' },
     update: {},
-    create: { userId, roleId: role.id },
+    create: { name: 'Operador', slug: 'operator' },
+  });
+  const roleViewer = await prisma.role.upsert({
+    where: { slug: 'viewer' },
+    update: {},
+    create: { name: 'Visualização', slug: 'viewer' },
   });
 
-  const permSlugs = ['users.view', 'users.create', 'users.update', 'users.delete', 'companies.view', 'companies.create', 'companies.update', 'companies.delete', 'audit.view', 'company_settings.view', 'company_settings.update', 'schedule.view', 'schedule.create', 'schedule.update', 'schedule.delete', 'notifications.view', 'notifications.create', 'notifications.update', 'financial.view', 'financial.create', 'financial.update', 'financial.delete', 'financial.close_cash', 'dashboard.view', 'dashboard.analytics'];
-  for (const slug of permSlugs) {
+  // ── Permissions ──
+  const allPerms = [
+    'users.view', 'users.create', 'users.update', 'users.delete',
+    'companies.view', 'companies.create', 'companies.update', 'companies.delete',
+    'audit.view', 'company_settings.view', 'company_settings.update',
+    'schedule.view', 'schedule.create', 'schedule.update', 'schedule.delete',
+    'notifications.view', 'notifications.create', 'notifications.update',
+    'financial.view', 'financial.create', 'financial.update', 'financial.delete', 'financial.close_cash',
+    'dashboard.view', 'dashboard.analytics',
+    'stock.view', 'stock.create', 'stock.update', 'stock.delete',
+    'products.view', 'products.create', 'products.update', 'products.delete',
+    'customers.view', 'customers.create', 'customers.update', 'customers.delete',
+    'sales.view', 'sales.create', 'sales.update', 'sales.delete',
+    'crm.view', 'crm.create', 'crm.update', 'crm.delete',
+  ];
+  for (const slug of allPerms) {
     const perm = await prisma.permission.upsert({
       where: { slug },
       update: {},
-      create: { name: slug.replace('.', ' '), slug, module: 'users' },
+      create: { name: slug.replace('.', ' '), slug, module: slug.split('.')[0] },
     });
-    await prisma.rolePermission
-      .upsert({
+    for (const role of [roleAdmin, roleOperator]) {
+      await prisma.rolePermission.upsert({
         where: { roleId_permissionId: { roleId: role.id, permissionId: perm.id } },
         update: {},
         create: { roleId: role.id, permissionId: perm.id },
-      })
-      .catch(() => {});
+      }).catch(() => {});
+    }
+    if (slug.endsWith('.view')) {
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: roleViewer.id, permissionId: perm.id } },
+        update: {},
+        create: { roleId: roleViewer.id, permissionId: perm.id },
+      }).catch(() => {});
+    }
   }
 
-  console.log('Seed concluído');
-  console.log({ email: 'admin@demo.com', password: '123456' });
+  // ── Users ──
+  async function createUser(name: string, email: string, roleId: string) {
+    const existing = await prisma.user.findFirst({ where: { email, companyId: company.id } });
+    if (existing) {
+      await prisma.user.update({ where: { id: existing.id }, data: { passwordHash: hash } });
+      return existing.id;
+    }
+    const user = await prisma.user.create({
+      data: { companyId: company.id, name, email, passwordHash: hash },
+    });
+    await prisma.userRole.upsert({
+      where: { userId_roleId: { userId: user.id, roleId } },
+      update: {}, create: { userId: user.id, roleId },
+    });
+    return user.id;
+  }
+
+  const adminId = await createUser('Admin', 'admin@demo.com', roleAdmin.id);
+  const operId = await createUser('Operador', 'operador@demo.com', roleOperator.id);
+  await createUser('Visualizador', 'visualizador@demo.com', roleViewer.id);
+
+  // ── Categories ──
+  const catPomadas = await prisma.category.upsert({
+    where: { companyId_name: { companyId: company.id, name: 'Pomadas' } },
+    update: {}, create: { companyId: company.id, name: 'Pomadas' },
+  });
+  const catShampoos = await prisma.category.upsert({
+    where: { companyId_name: { companyId: company.id, name: 'Shampoos' } },
+    update: {}, create: { companyId: company.id, name: 'Shampoos' },
+  });
+  const catBebidas = await prisma.category.upsert({
+    where: { companyId_name: { companyId: company.id, name: 'Bebidas' } },
+    update: {}, create: { companyId: company.id, name: 'Bebidas' },
+  });
+  const catCosmeticos = await prisma.category.upsert({
+    where: { companyId_name: { companyId: company.id, name: 'Cosméticos' } },
+    update: {}, create: { companyId: company.id, name: 'Cosméticos' },
+  });
+
+  // ── Products ──
+  const productsData = [
+    { name: 'Pomada Modeladora 100g', barcode: '78910001', costPrice: 18.50, salePrice: 39.90, categoryId: catPomadas.id },
+    { name: 'Pomada Matte 80g', barcode: '78910002', costPrice: 22.00, salePrice: 44.90, categoryId: catPomadas.id },
+    { name: 'Shampoo Antiqueda 200ml', barcode: '78910003', costPrice: 15.00, salePrice: 35.00, categoryId: catShampoos.id },
+    { name: 'Shampoo Matizador 200ml', barcode: '78910004', costPrice: 28.00, salePrice: 55.00, categoryId: catShampoos.id },
+    { name: 'Condicionador 200ml', barcode: '78910005', costPrice: 12.00, salePrice: 29.90, categoryId: catShampoos.id },
+    { name: 'Cerveja Long Neck', barcode: '78910006', costPrice: 4.00, salePrice: 8.00, categoryId: catBebidas.id },
+    { name: 'Refrigerante Lata', barcode: '78910007', costPrice: 3.50, salePrice: 6.00, categoryId: catBebidas.id },
+    { name: 'Água Mineral 500ml', barcode: '78910008', costPrice: 1.50, salePrice: 3.00, categoryId: catBebidas.id },
+    { name: 'Óleo Capilar 30ml', barcode: '78910009', costPrice: 25.00, salePrice: 49.90, categoryId: catCosmeticos.id },
+    { name: 'Finalizador 150ml', barcode: '78910010', costPrice: 20.00, salePrice: 42.00, categoryId: catCosmeticos.id },
+  ];
+
+  const productIds: string[] = [];
+  for (const p of productsData) {
+    const product = await prisma.product.upsert({
+      where: { companyId_barcode: { companyId: company.id, barcode: p.barcode! } },
+      update: {},
+      create: { ...p, companyId: company.id },
+    });
+    productIds.push(product.id);
+
+    await prisma.stock.upsert({
+      where: { companyId_unitId_productId: { companyId: company.id, unitId: unitMatriz.id, productId: product.id } },
+      update: {},
+      create: { companyId: company.id, unitId: unitMatriz.id, productId: product.id, quantity: 50, avgCost: p.costPrice, minStock: 5 },
+    });
+    await prisma.stock.upsert({
+      where: { companyId_unitId_productId: { companyId: company.id, unitId: unitFilial.id, productId: product.id } },
+      update: {},
+      create: { companyId: company.id, unitId: unitFilial.id, productId: product.id, quantity: 20, avgCost: p.costPrice, minStock: 3 },
+    });
+  }
+
+  // ── Services ──
+  const servicesData = [
+    { name: 'Corte Masculino', durationMinutes: 30, price: 50 },
+    { name: 'Barba', durationMinutes: 20, price: 30 },
+    { name: 'Corte + Barba', durationMinutes: 45, price: 70 },
+    { name: 'Hidratação Capilar', durationMinutes: 40, price: 80 },
+    { name: 'Sobrancelha', durationMinutes: 15, price: 25 },
+    { name: 'Pigmentação Capilar', durationMinutes: 60, price: 120 },
+  ];
+  for (const svc of servicesData) {
+    await prisma.service.create({
+      data: { ...svc, companyId: company.id, commissionType: 'PERCENTAGE', commissionValue: 40 },
+    }).catch(() => {});
+  }
+
+  // ── Professionals ──
+  const profsData = [
+    { name: 'Carlos Silva', email: 'carlos@demo.com', phone: '(11) 91111-0001' },
+    { name: 'Ana Oliveira', email: 'ana@demo.com', phone: '(11) 91111-0002' },
+    { name: 'Pedro Santos', email: 'pedro@demo.com', phone: '(11) 91111-0003' },
+  ];
+  for (const prof of profsData) {
+    const p = await prisma.professional.upsert({
+      where: { companyId_document: { companyId: company.id, document: prof.email } },
+      update: {},
+      create: { ...prof, document: prof.email, companyId: company.id, commissionRate: 40 },
+    });
+    await prisma.professionalUnit.upsert({
+      where: { professionalId_unitId: { professionalId: p.id, unitId: unitMatriz.id } },
+      update: {}, create: { professionalId: p.id, unitId: unitMatriz.id },
+    });
+  }
+
+  // ── Customers ──
+  const phoneService = new PhoneService();
+
+  const customersData = [
+    { name: 'João Pereira', email: 'joao@email.com', phone: '(11) 92222-0001', birthDate: new Date('1990-05-15') },
+    { name: 'Maria Lima', email: 'maria@email.com', phone: '(11) 92222-0002', birthDate: new Date('1988-12-20') },
+    { name: 'Lucas Costa', email: 'lucas@email.com', phone: '(11) 92222-0003', birthDate: new Date('1995-08-10') },
+    { name: 'Fernanda Souza', email: 'fernanda@email.com', phone: '(11) 92222-0004' },
+    { name: 'Rafael Oliveira', email: 'rafael@email.com', phone: '(11) 92222-0005' },
+  ];
+  for (const c of customersData) {
+    const normalized = phoneService.normalize(c.phone);
+    // Buscar por email (document) para idempotência com seed anterior
+    // ou por telefone normalizado (regra atual)
+    const existing = await prisma.customer.findFirst({
+      where: {
+        companyId: company.id,
+        OR: [
+          { document: c.email },
+          { phoneNormalized: normalized },
+        ],
+        deletedAt: null,
+      },
+    });
+    if (!existing) {
+      await prisma.customer.create({
+        data: {
+          name: c.name,
+          email: c.email,
+          phone: phoneService.format(c.phone),
+          phoneNormalized: normalized,
+          document: c.email,
+          birthDate: c.birthDate,
+          companyId: company.id,
+        },
+      });
+      console.log(`  Cliente criado: ${c.name}`);
+    } else if (!existing.phoneNormalized) {
+      // Atualizar cliente existente com phoneNormalized
+      await prisma.customer.update({
+        where: { id: existing.id },
+        data: {
+          phone: phoneService.format(c.phone),
+          phoneNormalized: normalized,
+        },
+      });
+      console.log(`  Cliente atualizado: ${existing.name} — phoneNormalized preenchido`);
+    } else {
+      console.log(`  Cliente já existe: ${existing.name}`);
+    }
+  }
+
+  // ── Suppliers ──
+  const suppliersData = [
+    { name: 'Distribuidora de Produtos Ltda', email: 'contato@distribuidora.com', phone: '(11) 3333-0001', document: '11111111000111' },
+    { name: 'Cosméticos Premium SA', email: 'vendas@cosmeticospremium.com', phone: '(11) 3333-0002', document: '22222222000122' },
+  ];
+  for (const s of suppliersData) {
+    await prisma.supplier.upsert({
+      where: { companyId_document: { companyId: company.id, document: s.document } },
+      update: {},
+      create: { ...s, companyId: company.id },
+    });
+  }
+
+  // ── Purchases ──
+  const supplier1 = await prisma.supplier.findFirst({ where: { companyId: company.id } });
+  if (supplier1) {
+    await prisma.purchase.create({
+      data: {
+        companyId: company.id, supplierId: supplier1.id, unitId: unitMatriz.id,
+        status: 'CONFIRMED', totalAmount: 350, createdBy: adminId,
+        invoiceNumber: 'NF-0001',
+        items: {
+          create: [
+            { productId: productIds[0], quantity: 10, unitCost: 18.50, totalCost: 185 },
+            { productId: productIds[2], quantity: 10, unitCost: 15.00, totalCost: 150 },
+          ],
+        },
+      },
+    });
+  }
+
+  // ── Loyalty Program ──
+  const loyaltyExisting = await prisma.loyaltyProgram.findUnique({ where: { companyId: company.id } });
+  if (!loyaltyExisting) {
+    await prisma.loyaltyProgram.create({
+      data: { companyId: company.id, name: 'Programa de Fidelidade', pointsPerAmount: 10, minAmount: 0 },
+    });
+  }
+
+  // ── Financial Categories ──
+  await prisma.financialCategory.upsert({
+    where: { companyId_name_type: { companyId: company.id, name: 'Vendas', type: 'INCOME' } },
+    update: {},
+    create: { companyId: company.id, name: 'Vendas', type: 'INCOME' },
+  });
+
+  // ── CRM Segments ──
+  const vipRules = JSON.stringify([{ field: 'totalSpent', operator: 'gte', value: 500 }]);
+  await prisma.customerSegment.upsert({
+    where: { companyId_name: { companyId: company.id, name: 'VIP' } },
+    update: {},
+    create: { companyId: company.id, name: 'VIP', rules: vipRules, color: '#gold' },
+  });
+  const activeRules = JSON.stringify([{ field: 'totalPurchases', operator: 'gte', value: 1 }]);
+  await prisma.customerSegment.upsert({
+    where: { companyId_name: { companyId: company.id, name: 'Ativo' } },
+    update: {},
+    create: { companyId: company.id, name: 'Ativo', rules: activeRules, color: '#green' },
+  });
+
+  // ── Coupons ──
+  await prisma.coupon.create({
+    data: { companyId: company.id, code: 'BEMVINDO10', discountType: 'PERCENTAGE', discountValue: 10, minPurchaseValue: 30, maxUses: 100 },
+  }).catch(() => {});
+  await prisma.coupon.create({
+    data: { companyId: company.id, code: 'PRIMEIRACORTE', discountType: 'FIXED', discountValue: 15, maxUses: 50 },
+  }).catch(() => {});
+
+  console.log('');
+  console.log('✅ Seed concluído!');
+  console.log('');
+  console.log('📧 admin@demo.com / 123456  (admin)');
+  console.log('📧 operador@demo.com / 123456');
+  console.log('📧 visualizador@demo.com / 123456');
+  console.log('');
 
   await prisma.$disconnect();
 }
 
 seed().catch((e) => {
-  console.error(e);
+  console.error('❌ Seed falhou:', e);
   process.exit(1);
 });

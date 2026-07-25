@@ -16,13 +16,13 @@ graph TB
     subgraph Backend["Backend (NestJS 11)"]
         REST["REST API<br/>/api/*"]
         Guards["Guards<br/>JWT + RBAC + Throttler"]
-        Modules["19 Módulos"]
+        Modules["32 Módulos"]
         Cache["CacheService<br/>In-memory"]
         Observability["Observability<br/>Health + Logging"]
     end
 
     subgraph Database["PostgreSQL + Prisma ORM"]
-        DB[(Database<br/>28 modelos)]
+        DB[(Database<br/>62 modelos)]
         Migrations["Migrations"]
         Seed["Seed Data"]
     end
@@ -79,7 +79,7 @@ graph LR
     Support --> Core
 ```
 
-### Lista completa (19 módulos)
+### Lista completa (32 módulos)
 
 | Módulo | Responsabilidade |
 |---|---|
@@ -91,12 +91,25 @@ graph LR
 | `professional` | CRUD de profissionais |
 | `service` | CRUD de serviços |
 | `category` | CRUD de categorias de produtos |
-| `product` | CRUD de produtos, estoque |
+| `product` | CRUD de produtos |
+| `stock` | Estoque, compras, fornecedores, movimentações, transferências, inventário, relatórios, alertas, dashboard |
+| `sale` | PDV, vendas, pagamentos, dashboard de vendas |
+| `cash` | Controle de caixa, abertura, fechamento, suprimento, sangria |
+| `coupon` | Cupons de desconto |
+| `cashback` | Cashback em vendas |
+| `loyalty` | Programa de fidelidade e pontos |
+| `financial` | Contas a pagar/receber, fluxo de caixa, fechamento |
+| `crm` | Perfil 360°, segmentação, dashboard CRM |
+| `campaign` | Campanhas de marketing (WhatsApp, email, SMS) |
+| `interaction` | Interações com clientes |
+| `task` | Tarefas e follow-ups |
+| `automation` | Automações baseadas em eventos |
+| `integrations` | Integrações externas (MercadoPago, WhatsApp) |
+| `conversations` | Conversas multicanal (WhatsApp) |
 | `unit` | CRUD de unidades/filiais |
 | `user` | CRUD de usuários, vínculo com papéis |
 | `company` | CRUD de empresas |
 | `company-settings` | Configurações da empresa (logo, cores) |
-| `financial` | Contas a pagar/receber, fluxo de caixa |
 | `notifications` | Notificações push/in-app |
 | `audit` | Logs de auditoria de todas as ações |
 | `observability` | Health checks, request ID, logging |

@@ -45,38 +45,38 @@ export default function DashboardPage() {
 
   if (!overview && !summary) {
     return (
-      <div className="mx-auto max-w-7xl p-6">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <h1 className="text-xl font-bold sm:text-2xl">Dashboard</h1>
         </div>
-        <div className="flex flex-wrap items-end gap-4 rounded-lg border p-4">
-          <p className="text-sm text-zinc-500">Carregando dados...</p>
+        <div className="flex flex-wrap items-end gap-4 rounded-lg border border-border bg-card-bg p-4">
+          <p className="text-sm text-muted-foreground">Carregando dados...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
+    <div className="mx-auto max-w-7xl space-y-4 px-4 py-6 sm:space-y-6 sm:px-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">Dashboard</h1>
       </div>
 
-      <div className="flex flex-wrap items-end gap-4 rounded-lg border p-4">
+      <div className="flex flex-wrap gap-3 rounded-lg border border-border bg-card-bg p-4 sm:gap-4">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-500">Unidade</label>
-          <select className="rounded border px-3 py-1.5 text-sm" value={unitId} onChange={e => setUnitId(e.target.value)}>
+          <label className="text-xs font-medium text-muted-foreground">Unidade</label>
+          <select className="rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" value={unitId} onChange={e => setUnitId(e.target.value)}>
             <option value="">Todas</option>
             {units.map((u: any) => <option key={u.id} value={u.id}>{u.name}</option>)}
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-500">Início</label>
-          <input type="date" className="rounded border px-3 py-1.5 text-sm" value={startDate} onChange={e => setStartDate(e.target.value)} />
+          <label className="text-xs font-medium text-muted-foreground">Início</label>
+          <input type="date" className="rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" value={startDate} onChange={e => setStartDate(e.target.value)} />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-zinc-500">Fim</label>
-          <input type="date" className="rounded border px-3 py-1.5 text-sm" value={endDate} onChange={e => setEndDate(e.target.value)} />
+          <label className="text-xs font-medium text-muted-foreground">Fim</label>
+          <input type="date" className="rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" value={endDate} onChange={e => setEndDate(e.target.value)} />
         </div>
       </div>
 
@@ -86,7 +86,7 @@ export default function DashboardPage() {
           {alerts.map((a: any, i: number) => (
             <div key={i} className={`rounded-lg border p-3 text-sm ${
               a.severity === 'critical' ? 'border-red-300 bg-red-50 text-red-700' : 'border-yellow-300 bg-yellow-50 text-yellow-700'
-            }`}>
+            } animate-fade-in`} style={{ animationDelay: `${i * 50}ms` }}>
               <span className="font-medium">{a.type}:</span> {a.message}
             </div>
           ))}
@@ -95,7 +95,7 @@ export default function DashboardPage() {
 
       {/* Overview Cards */}
       {overview && (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
           <MetricCard label="Faturamento" value={`R$ ${overview.revenueTotal.toFixed(2)}`}
             sub={overview.revenueGrowth >= 0 ? `+${overview.revenueGrowth}%` : `${overview.revenueGrowth}%`}
             positive={overview.revenueGrowth >= 0} />
@@ -301,16 +301,16 @@ export default function DashboardPage() {
 
 function MetricCard({ label, value, sub, positive }: { label: string; value: string | number; sub?: string; positive?: boolean }) {
   return (
-    <div className="rounded-lg border p-4">
-      <p className="text-sm text-zinc-500">{label}</p>
-      <p className="mt-1 text-xl font-bold">{value}</p>
-      {sub && <p className={`text-xs ${positive !== undefined ? (positive ? 'text-green-600' : 'text-red-600') : 'text-zinc-400'}`}>{sub}</p>}
+    <div className="rounded-lg border border-border bg-card-bg p-3 sm:p-4 transition-shadow hover:shadow-sm">
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+      <p className="mt-1 text-lg font-bold sm:text-xl text-foreground">{value}</p>
+      {sub && <p className={`text-xs mt-0.5 ${positive !== undefined ? (positive ? 'text-success' : 'text-danger') : 'text-muted-foreground'}`}>{sub}</p>}
     </div>
   );
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return <div className="rounded-lg border p-4"><h2 className="mb-4 text-lg font-semibold">{title}</h2>{children}</div>;
+  return <div className="rounded-lg border border-border bg-card-bg p-4 sm:p-6 animate-fade-in"><h2 className="mb-4 text-base font-semibold sm:text-lg">{title}</h2>{children}</div>;
 }
 
 function StatusTable({ items }: { items: { status: string; count: number }[] }) {

@@ -69,7 +69,7 @@ export function ProfessionalForm({ initial }: ProfessionalFormProps) {
 
   return (
     <div className="mx-auto max-w-lg space-y-6 p-6">
-      <h1 className="text-2xl font-bold">{isEdit ? 'Editar Profissional' : 'Novo Profissional'}</h1>
+      <h1 className="text-xl font-bold sm:text-2xl">{isEdit ? 'Editar Profissional' : 'Novo Profissional'}</h1>
       <ErrorBox message={error} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField label="Nome *">

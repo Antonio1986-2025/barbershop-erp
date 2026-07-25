@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createService, updateService } from '@/lib/services';
 import { FormField } from '@/components/forms/form-field';
 import { FormActions } from '@/components/forms/form-actions';
+import { CurrencyInput } from '@/components/forms/currency-input';
 import { ErrorBox } from '@/components/crud/error-box';
 import type { Service } from '@/lib/services';
 
@@ -59,7 +60,7 @@ export function ServiceForm({ initial }: ServiceFormProps) {
 
   return (
     <div className="mx-auto max-w-lg space-y-6 p-6">
-      <h1 className="text-2xl font-bold">{isEdit ? 'Editar Serviço' : 'Novo Serviço'}</h1>
+      <h1 className="text-xl font-bold sm:text-2xl">{isEdit ? 'Editar Serviço' : 'Novo Serviço'}</h1>
       <ErrorBox message={error} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField label="Nome *">
@@ -73,7 +74,7 @@ export function ServiceForm({ initial }: ServiceFormProps) {
             <input type="number" min="1" className="w-full rounded border px-3 py-1.5" value={form.durationMinutes} onChange={(e) => set('durationMinutes', e.target.value)} required />
           </FormField>
           <FormField label="Preço (R$) *">
-            <input type="number" step="0.01" min="0" className="w-full rounded border px-3 py-1.5" value={form.price} onChange={(e) => set('price', e.target.value)} required />
+            <CurrencyInput value={form.price} onChange={(v) => set('price', String(v / 100))} placeholder="0,00" required />
           </FormField>
         </div>
         <div className="grid grid-cols-2 gap-4">

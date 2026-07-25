@@ -26,6 +26,7 @@ export class CustomerController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
+    @Query('phone') phone?: string,
     @Query('active') active?: string,
     @Query('orderBy') orderBy?: string,
     @Query('orderDir') orderDir?: 'asc' | 'desc',
@@ -34,9 +35,31 @@ export class CustomerController {
       page: page ? Number(page) : undefined,
       limit: limit ? Number(limit) : undefined,
       search,
+      phone,
       active,
       orderBy,
       orderDir,
+    });
+  }
+
+  /**
+   * Endpoint de busca unificado para fluxo telefone-primeiro.
+   * Se phone for informado, busca por telefone normalizado.
+   * Caso contrário, funciona como search genérico.
+   */
+  @Get('search')
+  search(
+    @Request() req: any,
+    @Query('phone') phone?: string,
+    @Query('q') q?: string,
+  ) {
+    if (phone) {
+      return this.customerService.findByPhone(req.user.companyId, phone);
+    }
+    // Fallback: primeira página com search
+    return this.customerService.findAll(req.user.companyId, {
+      search: q,
+      limit: 10,
     });
   }
 

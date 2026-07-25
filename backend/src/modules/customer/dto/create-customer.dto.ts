@@ -4,13 +4,12 @@ export class CreateCustomerDto {
   @IsString()
   name: string;
 
-  @IsOptional()
   @IsString()
-  email?: string;
+  phone: string;
 
   @IsOptional()
   @IsString()
-  phone?: string;
+  email?: string;
 
   @IsOptional()
   @IsString()

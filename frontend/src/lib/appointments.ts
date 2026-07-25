@@ -95,10 +95,13 @@ export async function fetchAppointmentsCalendar(params: {
 export async function createAppointment(data: {
   unitId: string;
   professionalId: string;
-  customerId: string;
+  customerId?: string;
   serviceId: string;
   startAt: string;
   notes?: string;
+  newCustomerName?: string;
+  newCustomerPhone?: string;
+  createSale?: boolean;
 }): Promise<Appointment> {
   const res = await fetch(`${API_BASE}/api/appointments`, {
     method: 'POST',

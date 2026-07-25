@@ -67,6 +67,19 @@ export async function fetchCustomer(id: string): Promise<Customer> {
   return res.json();
 }
 
+/**
+ * Busca um cliente pelo telefone (fluxo telefone-primeiro).
+ * Retorna o cliente se existir, ou null se não encontrar.
+ */
+export async function fetchCustomerByPhone(phone: string): Promise<Customer | null> {
+  const res = await fetch(`${API_BASE}/api/customers/search?phone=${encodeURIComponent(phone)}`, {
+    headers: headers(),
+  });
+  if (res.status === 404 || res.status === 400) return null;
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 export async function createCustomer(
   data: Partial<Customer>,
 ): Promise<Customer> {

@@ -198,7 +198,7 @@ export class DashboardService {
       _count: true,
     });
 
-    const serviceIds = data.map((d) => d.serviceId);
+    const serviceIds = data.map((d) => d.serviceId).filter((id): id is string => id !== null);
     const services = await this.prisma.service.findMany({
       where: { id: { in: serviceIds } },
       select: { id: true, name: true },
@@ -208,7 +208,7 @@ export class DashboardService {
 
     return data.map((d) => ({
       serviceId: d.serviceId,
-      name: svcMap.get(d.serviceId) ?? 'Desconhecido',
+      name: d.serviceId ? (svcMap.get(d.serviceId) ?? 'Desconhecido') : 'Serviço Removido',
       quantity: Number(d._sum.quantity),
       revenue: Number(d._sum.totalPrice),
       orders: d._count,
@@ -435,7 +435,7 @@ export class DashboardService {
       take: 10,
     });
 
-    const svcIds = data.map((d) => d.serviceId);
+    const svcIds = data.map((d) => d.serviceId).filter((id): id is string => id !== null);
     const svcs = await this.prisma.service.findMany({
       where: { id: { in: svcIds } },
       select: { id: true, name: true },
@@ -444,7 +444,7 @@ export class DashboardService {
 
     return data.map((d) => ({
       serviceId: d.serviceId,
-      name: map.get(d.serviceId) ?? 'Desconhecido',
+      name: d.serviceId ? (map.get(d.serviceId) ?? 'Desconhecido') : 'Serviço Removido',
       quantity: Number(d._sum.quantity),
       revenue: Number(d._sum.totalPrice),
     }));

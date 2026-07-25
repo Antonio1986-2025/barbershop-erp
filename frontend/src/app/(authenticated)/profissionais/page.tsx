@@ -37,10 +37,10 @@ export default function ProfissionaisPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-6">
+    <div className="mx-auto max-w-5xl space-y-4 px-4 py-6 sm:space-y-6 sm:px-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Profissionais</h1>
-        <button className="rounded bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-700"
+        <button className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-light transition-colors"
           onClick={() => router.push('/profissionais/novo')}>Novo Profissional</button>
       </div>
       <SearchBar placeholder="Buscar por nome, telefone ou documento..." value={search}
