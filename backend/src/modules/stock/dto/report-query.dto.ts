@@ -39,6 +39,10 @@ export class ReportQueryDto {
   @IsOptional()
   @IsString()
   format?: string;
+
+  @IsOptional()
+  @IsString()
+  detail?: string;
 }
 
 export class KardexQueryDto {

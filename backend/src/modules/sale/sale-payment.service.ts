@@ -309,12 +309,28 @@ export class SalePaymentService {
     const productItems = sale.items.filter((i: any) => i.productId);
 
     for (const item of productItems) {
+      // Busca o custo medio atual para registrar como snapshot na saida
+      const stock = await this.prisma.stock.findUnique({
+        where: {
+          companyId_unitId_productId: {
+            companyId,
+            unitId: sale.unitId,
+            productId: item.productId,
+          },
+        },
+        select: { avgCost: true },
+      });
+      const unitCost = stock ? Number(stock.avgCost) : 0;
+      const totalCost = unitCost * Number(item.quantity);
+
       await this.stockMovementService.recordMovement({
         companyId,
         unitId: sale.unitId,
         productId: item.productId,
         type: StockMovementType.SALE,
         quantity: Number(item.quantity),
+        unitCost,
+        totalCost,
         referenceId: sale.id,
         referenceType: 'sale',
         description: `Venda ${sale.id} - ${item.productName}`,

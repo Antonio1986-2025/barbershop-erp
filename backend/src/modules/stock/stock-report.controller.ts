@@ -41,7 +41,9 @@ export class StockReportController {
   @Get('valuation')
   async valuation(@Req() req: any, @Query() query: ReportQueryDto, @Res() res: Response) {
     const data = await this.reportService.valuation(req.user.companyId, query);
-    await this.respond(res, data.byUnit, query.format, 'valorizacao-estoque');
+    const isDetail = query.detail === 'true';
+    const exportData = isDetail ? (data.byProduct ?? []) : (data.byUnit ?? []);
+    await this.respond(res, exportData, query.format, 'valorizacao-estoque');
   }
 
   @Get('low-stock')

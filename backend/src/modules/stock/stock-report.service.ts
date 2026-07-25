@@ -235,7 +235,7 @@ export class StockReportService {
     return { data: rows, period: { startDate, endDate, days: daysDiff } };
   }
 
-  async valuation(companyId: string, query: { unitId?: string; categoryId?: string }) {
+  async valuation(companyId: string, query: { unitId?: string; categoryId?: string; detail?: string | boolean }) {
     const where: any = { companyId };
     if (query.unitId) where.unitId = query.unitId;
     if (query.categoryId) {
@@ -247,11 +247,43 @@ export class StockReportService {
       include: {
         unit: { select: { id: true, name: true } },
         product: {
-          select: { id: true, name: true, barcode: true, salePrice: true, costPrice: true },
+          select: { id: true, name: true, barcode: true, salePrice: true, costPrice: true, category: { select: { id: true, name: true } } },
         },
       },
     });
 
+    // Se detail=true, retorna por produto (valuation detalhado)
+    if (query.detail) {
+      const items = stocks.map((s) => {
+        const qty = Number(s.quantity);
+        const avgCost = Number(s.avgCost);
+        const costValue = qty * avgCost;
+        const saleValue = qty * Number(s.product.salePrice);
+        return {
+          productId: s.productId,
+          productName: s.product.name,
+          productBarcode: s.product.barcode,
+          categoryId: s.product.category?.id,
+          categoryName: s.product.category?.name,
+          unitId: s.unitId,
+          unitName: s.unit.name,
+          quantity: qty,
+          avgCost,
+          costValue: Math.round(costValue * 100) / 100,
+          saleValue: Math.round(saleValue * 100) / 100,
+          potentialProfit: Math.round((saleValue - costValue) * 100) / 100,
+        };
+      });
+
+      const grandTotal = items.reduce((sum, i) => sum + i.costValue, 0);
+      return {
+        byProduct: items,
+        grandTotal: Math.round(grandTotal * 100) / 100,
+        totalItems: items.length,
+      };
+    }
+
+    // Agregado por unidade (comportamento original)
     const byUnit: Record<string, any> = {};
     let grandTotal = 0;
 
