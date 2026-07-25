@@ -10,9 +10,10 @@ import { FinancialModule } from '../financial/financial.module';
 import { CashbackModule } from '../cashback/cashback.module';
 import { LoyaltyModule } from '../loyalty/loyalty.module';
 import { AutomationModule } from '../automation/automation.module';
+import { InteractionModule } from '../interaction/interaction.module';
 
 @Module({
-  imports: [StockModule, FinancialModule, CashbackModule, LoyaltyModule, AutomationModule],
+  imports: [StockModule, FinancialModule, CashbackModule, LoyaltyModule, AutomationModule, InteractionModule],
   controllers: [SaleController, PaymentController, SaleDashboardController],
   providers: [SaleService, SalePaymentService, SaleDashboardService],
   exports: [SaleService, SalePaymentService],

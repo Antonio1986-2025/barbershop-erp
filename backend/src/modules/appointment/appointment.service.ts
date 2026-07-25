@@ -10,6 +10,8 @@ import { IntegrationsService } from '../integrations/integrations.service';
 import { CustomerService } from '../customer/customer.service';
 import { PhoneService } from '../customer/phone.service';
 import { SaleService } from '../sale/sale.service';
+import { InteractionService } from '../interaction/interaction.service';
+import { AutomationService } from '../automation/automation.service';
 import { AppointmentFilterDto } from './dto/appointment-filter.dto';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
@@ -28,6 +30,8 @@ export class AppointmentService {
     private readonly customerService: CustomerService,
     private readonly saleService: SaleService,
     private readonly phoneService: PhoneService,
+    private readonly interactionService: InteractionService,
+    private readonly automationService: AutomationService,
   ) {}
 
   async findAll(companyId: string, filter: AppointmentFilterDto) {
@@ -148,6 +152,16 @@ export class AppointmentService {
 
     this.notificationsService
       .createFromAppointment(companyId, result, 'APPOINTMENT_CREATED')
+      .catch(() => {});
+    this.interactionService
+      .create(companyId, userId, {
+        customerId,
+        appointmentId: result.id,
+        type: 'NOTE',
+        subject: 'Agendamento criado',
+        description: `Agendamento para ${result.service?.name ?? 'serviço'} em ${new Date(result.startAt).toLocaleDateString('pt-BR')}`,
+        interactionAt: new Date().toISOString(),
+      })
       .catch(() => {});
     this.syncCalendarEvent(companyId, result, 'create').catch(() => {});
 
@@ -380,6 +394,22 @@ export class AppointmentService {
     if (status === 'CONFIRMED') {
       this.notificationsService
         .createFromAppointment(companyId, result, 'APPOINTMENT_CONFIRMED')
+        .catch(() => {});
+    }
+
+    if (status === 'COMPLETED' && result.customerId) {
+      this.interactionService
+        .create(companyId, userId, {
+          customerId: result.customerId,
+          appointmentId: id,
+          type: 'VISIT',
+          subject: 'Atendimento concluído',
+          description: `Atendimento de ${result.service?.name ?? 'serviço'} concluído`,
+          interactionAt: new Date().toISOString(),
+        })
+        .catch(() => {});
+      this.automationService
+        .onAppointmentCompleted(companyId, result.customerId, id, userId)
         .catch(() => {});
     }
 

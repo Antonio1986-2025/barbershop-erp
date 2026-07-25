@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, ConflictException }
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { PhoneService } from './phone.service';
+import { InteractionService } from '../interaction/interaction.service';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 
@@ -11,6 +12,7 @@ export class CustomerService {
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
     private readonly phoneService: PhoneService,
+    private readonly interactionService: InteractionService,
   ) {}
 
   async findAll(
@@ -140,6 +142,16 @@ export class CustomerService {
       entityId: result.id,
       newData: result as any,
     });
+
+    this.interactionService
+      .create(companyId, userId, {
+        customerId: result.id,
+        type: 'NOTE',
+        subject: 'Cliente cadastrado',
+        description: `Cliente ${result.name} cadastrado${result.phone ? ` — tel: ${result.phone}` : ''}`,
+        interactionAt: new Date().toISOString(),
+      })
+      .catch(() => {});
 
     return result;
   }

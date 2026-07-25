@@ -11,6 +11,7 @@ import { FinancialService } from '../financial/financial.service';
 import { CashbackService } from '../cashback/cashback.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
 import { AutomationService } from '../automation/automation.service';
+import { InteractionService } from '../interaction/interaction.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { StockMovementType } from '@prisma/client';
 
@@ -27,6 +28,7 @@ export class SalePaymentService {
     private readonly cashbackService: CashbackService,
     private readonly loyaltyService: LoyaltyService,
     private readonly automationService: AutomationService,
+    private readonly interactionService: InteractionService,
   ) {}
 
   async findBySale(companyId: string, saleId: string) {
@@ -183,6 +185,33 @@ export class SalePaymentService {
         title: 'Venda concluída',
         message: `Venda ${saleId} finalizada. Total: R$ ${Number(sale.total).toFixed(2)}`,
       });
+
+      if (sale.customerId) {
+        this.interactionService
+          .create(companyId, userId, {
+            customerId: sale.customerId,
+            saleId,
+            type: 'NOTE',
+            subject: 'Venda concluída',
+            description: `Venda finalizada. Total: R$ ${Number(sale.total).toFixed(2)}`,
+            interactionAt: new Date().toISOString(),
+          })
+          .catch(() => {});
+      }
+    }
+
+    // Interaction para pagamento confirmado (todo pagamento, mesmo parcial)
+    if (sale.customerId) {
+      this.interactionService
+        .create(companyId, userId, {
+          customerId: sale.customerId,
+          saleId,
+          type: 'NOTE',
+          subject: 'Pagamento confirmado',
+          description: `Pagamento de R$ ${Number(dto.amount).toFixed(2)} via ${dto.paymentMethod}`,
+          interactionAt: new Date().toISOString(),
+        })
+        .catch(() => {});
     }
 
     await this.auditService.create({
