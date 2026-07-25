@@ -10,7 +10,6 @@ import { IntegrationsService } from '../integrations/integrations.service';
 import { CustomerService } from '../customer/customer.service';
 import { PhoneService } from '../customer/phone.service';
 import { SaleService } from '../sale/sale.service';
-import { ServiceOrderService } from '../service-order/service-order.service';
 import { AppointmentFilterDto } from './dto/appointment-filter.dto';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
@@ -29,7 +28,6 @@ export class AppointmentService {
     private readonly customerService: CustomerService,
     private readonly saleService: SaleService,
     private readonly phoneService: PhoneService,
-    private readonly serviceOrderService: ServiceOrderService,
   ) {}
 
   async findAll(companyId: string, filter: AppointmentFilterDto) {
@@ -367,7 +365,7 @@ export class AppointmentService {
       include: {
         professional: { select: { id: true, name: true } },
         customer: { select: { id: true, name: true } },
-        service: { select: { id: true, name: true, price: true } },
+        service: { select: { id: true, name: true } },
       },
     });
     await this.auditService.create({
@@ -383,28 +381,6 @@ export class AppointmentService {
       this.notificationsService
         .createFromAppointment(companyId, result, 'APPOINTMENT_CONFIRMED')
         .catch(() => {});
-    }
-
-    // 🧾 Comanda automática: ao concluir agendamento, criar ServiceOrder
-    if (status === 'COMPLETED' && result.service) {
-      const servicePrice = Number(result.service.price) || 0;
-      this.serviceOrderService.create(companyId, userId, {
-        unitId: result.unitId,
-        customerId: result.customerId,
-        professionalId: result.professionalId,
-        appointmentId: id,
-        notes: 'Comanda gerada automaticamente',
-        items: [
-          {
-            serviceId: result.service.id,
-            quantity: 1,
-            unitPrice: servicePrice,
-          },
-        ],
-      }).catch((err) => {
-        // Log do erro mas não quebra o fluxo — agendamento já foi concluído
-        console.error('Erro ao criar ServiceOrder automática:', err.message);
-      });
     }
 
     return result;
