@@ -113,12 +113,58 @@ export class SalePaymentService {
       },
     });
 
+    // 1️⃣ Criar CashTransaction para TODO pagamento em dinheiro (não só no completo)
+    if (CASH_METHODS.includes(dto.paymentMethod)) {
+      const register = await this.prisma.cashRegister.findFirst({
+        where: { companyId, unitId: sale.unitId, status: 'OPEN' },
+      });
+      if (register) {
+        await this.prisma.cashTransaction.create({
+          data: {
+            companyId,
+            unitId: sale.unitId,
+            cashRegisterId: register.id,
+            paymentId: payment.id,
+            type: 'ENTRY',
+            amount: Number(dto.amount),
+            description: `Pagamento ${payment.id.slice(0, 8)} - Venda ${saleId.slice(0, 8)}`,
+          },
+        });
+
+        await this.auditService.create({
+          companyId,
+          userId,
+          action: 'CREATE',
+          entity: 'CashTransaction',
+          entityId: payment.id,
+          newData: {
+            saleId,
+            paymentId: payment.id,
+            amount: Number(dto.amount),
+            type: 'ENTRY',
+          } as any,
+        });
+      }
+    }
+
+    // 2️⃣ Criar FinancialAccount na PRIMEIRA parcela (idempotente)
+    const existingAccount = await this.prisma.financialAccount.findFirst({
+      where: {
+        companyId,
+        description: `Venda ${saleId}`,
+        type: 'RECEIVABLE',
+      },
+    });
+    if (!existingAccount) {
+      await this.createFinancialRecords(companyId, sale, userId);
+    }
+
+    // 3️⃣ Ações exclusivas do pagamento COMPLETO
     if (willComplete) {
       await this.deductStock(companyId, sale, userId);
-      await this.createFinancialRecords(companyId, sale, [payment], userId);
 
       if (sale.customerId) {
-        await this.cashbackService.generate(companyId, saleId, sale.customerId, Number(sale.total));
+        await this.cashbackService.generate(companyId, saleId, sale.customerId, Number(sale.total), userId);
         await this.loyaltyService.earn(companyId, sale.customerId, saleId, Number(sale.total));
         await this.automationService.onSalePaid({
           companyId, saleId, customerId: sale.customerId, userId,
@@ -280,7 +326,6 @@ export class SalePaymentService {
   private async createFinancialRecords(
     companyId: string,
     sale: any,
-    payments: any[],
     userId: string,
   ) {
     const categoryId = await this.getOrCreateSalesCategory(companyId, userId);
@@ -294,36 +339,14 @@ export class SalePaymentService {
       paidAt: new Date().toISOString(),
     });
 
-    for (const payment of payments) {
-      if (CASH_METHODS.includes(payment.paymentMethod)) {
-        const register = await this.prisma.cashRegister.findFirst({
-          where: { companyId, unitId: sale.unitId, status: 'OPEN' },
-        });
-
-        if (register) {
-          await this.prisma.cashTransaction.create({
-            data: {
-              companyId,
-              unitId: sale.unitId,
-              cashRegisterId: register.id,
-              paymentId: payment.id,
-              type: 'ENTRY',
-              amount: Number(payment.amount),
-              description: `Venda ${sale.id}`,
-            },
-          });
-
-          await this.auditService.create({
-            companyId,
-            userId,
-            action: 'CREATE',
-            entity: 'CashTransaction',
-            entityId: payment.id,
-            newData: { saleId: sale.id, amount: Number(payment.amount), type: 'ENTRY' } as any,
-          });
-        }
-      }
-    }
+    await this.auditService.create({
+      companyId,
+      userId,
+      action: 'CREATE',
+      entity: 'FinancialAccount',
+      entityId: sale.id,
+      newData: { saleId: sale.id, amount: Number(sale.total), type: 'RECEIVABLE' } as any,
+    });
   }
 
   private async getOrCreateSalesCategory(companyId: string, userId: string): Promise<string> {

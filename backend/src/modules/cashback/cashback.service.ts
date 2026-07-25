@@ -28,7 +28,7 @@ export class CashbackService {
     });
   }
 
-  async generate(companyId: string, saleId: string, customerId: string, total: number) {
+  async generate(companyId: string, saleId: string, customerId: string, total: number, userId: string) {
     const amount = Math.round(total * GENERATION_RATE * 100) / 100;
     if (amount <= 0) return null;
 
@@ -42,7 +42,7 @@ export class CashbackService {
     });
 
     await this.auditService.create({
-      companyId, userId: '', action: 'CREATE', entity: 'CashbackTransaction',
+      companyId, userId, action: 'CREATE', entity: 'CashbackTransaction',
       entityId: result.id,
       newData: { saleId, customerId, amount, rate: GENERATION_RATE } as any,
     });
