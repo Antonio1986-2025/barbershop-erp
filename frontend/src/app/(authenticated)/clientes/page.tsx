@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import { fetchCustomers, deleteCustomer } from '@/lib/customers';
 import { DataTable } from '@/components/crud/data-table';
 import { SearchBar } from '@/components/crud/search-bar';
-import { Pagination } from '@/components/crud/pagination';
 import { ErrorBox } from '@/components/crud/error-box';
+import { Pagination } from '@/components/crud/pagination';
+import { useToast } from '@/components/ui/toast';
 import type { Customer } from '@/lib/customers';
 
 export default function ClientesPage() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [data, setData] = useState<Customer[]>([]);
   const [meta, setMeta] = useState({ page: 1, limit: 10, total: 0, totalPages: 0 });
   const [search, setSearch] = useState('');
@@ -31,9 +33,15 @@ export default function ClientesPage() {
   function handleSearch() { setPage(1); load() }
 
   async function handleDelete(item: Customer) {
-    if (!confirm(`Excluir cliente "${item.name}"?`)) return;
-    try { await deleteCustomer(item.id); load() }
-    catch (e: any) { setError(e.message) }
+    if (window.confirm(`Excluir cliente "${item.name}"?`)) {
+      try {
+        await deleteCustomer(item.id);
+        load();
+        addToast('SUCCESS', `Cliente "${item.name}" excluído com sucesso`);
+      } catch {
+        addToast('ERROR', `Erro ao excluir cliente "${item.name}"`);
+      }
+    }
   }
 
   return (

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Sidebar } from '@/components/layout/sidebar';
+import { ToastProvider } from '@/components/ui/toast';
+import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 
 export default function AuthenticatedLayout({
   children,
@@ -64,7 +66,12 @@ export default function AuthenticatedLayout({
         </header>
 
         <main className="flex-1 overflow-y-auto">
-          {children}
+          <ToastProvider>
+            <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-6">
+              <Breadcrumbs />
+              {children}
+            </div>
+          </ToastProvider>
         </main>
       </div>
     </div>
