@@ -11,6 +11,7 @@ interface NavLink {
   label: string;
   icon: string;
   adminOnly?: boolean;
+  barberOnly?: boolean;
 }
 
 const allLinks: NavLink[] = [
@@ -35,6 +36,12 @@ const allLinks: NavLink[] = [
   { href: '/auditoria', label: 'Auditoria', icon: 'clipboard-list', adminOnly: true },
   { href: '/configuracoes', label: 'Configurações', icon: 'settings', adminOnly: true },
   { href: '/status', label: 'Status', icon: 'activity', adminOnly: true },
+  // Barber-only links
+  { href: '/barber/dashboard', label: 'Dashboard Barber', icon: 'grid', barberOnly: true },
+  { href: '/barber/agenda', label: 'Minha Agenda', icon: 'calendar-days', barberOnly: true },
+  { href: '/barber/service-orders', label: 'Minhas Comandas', icon: 'clipboard-list', barberOnly: true },
+  { href: '/barber/sales', label: 'Minhas Vendas', icon: 'shopping-cart', barberOnly: true },
+  { href: '/barber/profile', label: 'Meu Perfil', icon: 'users', barberOnly: true },
 ];
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -100,10 +107,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
         {allLinks.filter((link) => {
-          // BARBER: hide admin-only links
+          // BARBER: hide admin-only links, show barber links instead
           const isBarber = user?.roles?.includes('barber');
           if (isBarber && link.adminOnly) return false;
-          return true;
+          // Show barber links only to barber role
+          if (link.barberOnly && !isBarber) return false;
+          if (!link.barberOnly) return true;
+          return isBarber;
         }).map((link) => {
           const active = pathname === link.href || 
             (link.href !== '/dashboard' && pathname.startsWith(link.href));

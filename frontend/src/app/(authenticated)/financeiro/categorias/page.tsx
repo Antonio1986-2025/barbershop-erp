@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react';
 import { fetchCategories, createCategory, updateCategory, deleteCategory } from '@/lib/finance';
 import type { FinancialCategory } from '@/lib/finance';
 import { ErrorBox } from '@/components/crud/error-box';
+import { useToast } from '@/components/ui/toast';
 
 export default function CategoriasPage() {
+  const { addToast } = useToast();
   const [data, setData] = useState<FinancialCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<string | null>(null);
   const [formName, setFormName] = useState('');

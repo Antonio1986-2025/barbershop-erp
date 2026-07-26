@@ -13,6 +13,7 @@ import type { Appointment } from '@/lib/appointments';
 import { fetchUnits } from '@/lib/units';
 import { fetchProfessionals } from '@/lib/professionals';
 import { ErrorBox } from '@/components/crud/error-box';
+import { useToast } from '@/components/ui/toast';
 import WeeklyCalendar from '@/components/agenda/weekly-calendar';
 import type { Unit } from '@/lib/units';
 import type { Professional } from '@/lib/professionals';
@@ -38,6 +39,7 @@ function toISODate(d: Date): string {
 
 export default function AgendaPage() {
   const router = useRouter();
+  const { addToast } = useToast();
 
   // ── Shared data ──
   const [units, setUnits] = useState<Unit[]>([]);
@@ -163,12 +165,12 @@ export default function AgendaPage() {
   }
 
   async function handleDeleteHour(id: string) {
-    if (!confirm('Excluir este horário?')) return;
+    if (window.confirm('Excluir este horário?')) { addToast('SUCCESS', 'Horário excluído'); }
     try { await deleteBusinessHour(id); loadHoursBlocks() } catch (e: any) { setError(e.message) }
   }
 
   async function handleDeleteBlock(id: string) {
-    if (!confirm('Excluir este bloqueio?')) return;
+    if (window.confirm('Excluir este bloqueio?')) { addToast('SUCCESS', 'Bloqueio excluído'); }
     try { await deleteScheduleBlock(id); loadHoursBlocks() } catch (e: any) { setError(e.message) }
   }
 

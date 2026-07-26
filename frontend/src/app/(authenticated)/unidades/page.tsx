@@ -7,10 +7,12 @@ import { DataTable } from '@/components/crud/data-table';
 import { SearchBar } from '@/components/crud/search-bar';
 import { Pagination } from '@/components/crud/pagination';
 import { ErrorBox } from '@/components/crud/error-box';
+import { useToast } from '@/components/ui/toast';
 import type { Unit } from '@/lib/units';
 
 export default function UnidadesPage() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [data, setData] = useState<Unit[]>([]);
   const [meta, setMeta] = useState({ page: 1, limit: 10, total: 0, totalPages: 0 });
   const [search, setSearch] = useState('');
@@ -31,9 +33,10 @@ export default function UnidadesPage() {
   function handleSearch() { setPage(1); load() }
 
   async function handleDelete(item: Unit) {
-    if (!confirm(`Excluir unidade "${item.name}"?`)) return;
-    try { await deleteUnit(item.id); load() }
-    catch (e: any) { setError(e.message) }
+    if (window.confirm(`Excluir unidade "${item.name}"?`)) {
+      try { await deleteUnit(item.id); load(); addToast('SUCCESS', 'Unidade excluída'); }
+      catch (e: any) { addToast('ERROR', e.message) }
+    }
   }
 
   return (

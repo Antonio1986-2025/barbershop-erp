@@ -6,9 +6,11 @@ import { fetchCategories } from '@/lib/finance';
 import { ACCOUNT_STATUS_LABELS, ACCOUNT_STATUS_COLORS } from '@/lib/finance';
 import type { FinancialAccount, FinancialCategory } from '@/lib/finance';
 import { Pagination } from '@/components/crud/pagination';
+import { useToast } from '@/components/ui/toast';
 import { ErrorBox } from '@/components/crud/error-box';
 
 export default function ContasPage() {
+  const { addToast } = useToast();
   const [data, setData] = useState<FinancialAccount[]>([]);
   const [meta, setMeta] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
   const [page, setPage] = useState(1);

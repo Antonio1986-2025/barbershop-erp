@@ -7,10 +7,12 @@ import { DataTable } from '@/components/crud/data-table';
 import { SearchBar } from '@/components/crud/search-bar';
 import { Pagination } from '@/components/crud/pagination';
 import { ErrorBox } from '@/components/crud/error-box';
+import { useToast } from '@/components/ui/toast';
 import type { User } from '@/lib/users';
 
 export default function UsuariosPage() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [data, setData] = useState<User[]>([]);
   const [meta, setMeta] = useState({ page: 1, limit: 10, total: 0, totalPages: 0 });
   const [search, setSearch] = useState('');
@@ -31,9 +33,10 @@ export default function UsuariosPage() {
   function handleSearch() { setPage(1); load() }
 
   async function handleDelete(item: User) {
-    if (!confirm(`Desativar usuário "${item.name}"?`)) return;
-    try { await deleteUser(item.id); load() }
-    catch (e: any) { setError(e.message) }
+    if (window.confirm(`Desativar usuário "${item.name}"?`)) {
+          try { await deleteUser(item.id); load(); addToast('SUCCESS', 'Usuário desativado'); }
+          catch (e: any) { addToast('ERROR', e.message) }
+        }
   }
 
   return (

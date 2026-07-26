@@ -10,6 +10,7 @@ import { fetchProfessionals } from '@/lib/professionals';
 import { fetchUnits } from '@/lib/units';
 import { fetchServices } from '@/lib/services';
 import { ErrorBox } from '@/components/crud/error-box';
+import { useToast } from '@/components/ui/toast';
 import type { Customer } from '@/lib/customers';
 import type { Professional } from '@/lib/professionals';
 import type { Unit } from '@/lib/units';
@@ -17,6 +18,7 @@ import type { Service } from '@/lib/services';
 
 export default function AgendamentosPage() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [data, setData] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -88,9 +90,10 @@ export default function AgendamentosPage() {
   }
 
   async function handleDelete(appt: Appointment) {
-    if (!confirm(`Excluir agendamento de ${appt.customer.name}?`)) return;
-    try { await deleteAppointment(appt.id); load() }
-    catch (e: any) { setError(e.message) }
+    if (window.confirm(`Excluir agendamento de ${appt.customer.name}?`)) {
+      try { await deleteAppointment(appt.id); load(); addToast('SUCCESS', 'Agendamento excluído'); }
+      catch (e: any) { addToast('ERROR', e.message) }
+    }
   }
 
   const activeStatuses = ['SCHEDULED', 'CONFIRMED', 'IN_PROGRESS'];

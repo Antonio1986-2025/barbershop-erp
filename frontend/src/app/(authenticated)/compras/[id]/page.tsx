@@ -5,9 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { fetchPurchase, confirmPurchase, cancelPurchase, PURCHASE_STATUS_LABELS, PURCHASE_STATUS_COLORS } from '@/lib/purchases';
 import type { Purchase } from '@/lib/purchases';
 import { ErrorBox } from '@/components/crud/error-box';
+import { useToast } from '@/components/ui/toast';
 
 export default function DetalheCompraPage() {
   const params = useParams(); const router = useRouter();
+  const { addToast } = useToast();
   const id = params.id as string;
   const [purchase, setPurchase] = useState<Purchase | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +26,7 @@ export default function DetalheCompraPage() {
   useEffect(() => { load() }, [id]);
 
   async function handleConfirm() {
-    if (!confirm('Confirmar esta compra? O estoque será atualizado.')) return;
+    if (window.confirm('Confirmar esta compra? O estoque será atualizado.')) { addToast('SUCCESS', 'Compra confirmada'); }
     setActionLoading(true); setError('');
     try { await confirmPurchase(id); load() }
     catch (e: any) { setError(e.message) }

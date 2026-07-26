@@ -6,11 +6,13 @@ import { fetchCompanies, deleteCompany } from '@/lib/companies';
 import { DataTable } from '@/components/crud/data-table';
 import { SearchBar } from '@/components/crud/search-bar';
 import { Pagination } from '@/components/crud/pagination';
+import { useToast } from '@/components/ui/toast';
 import { ErrorBox } from '@/components/crud/error-box';
 import type { Company } from '@/lib/companies';
 
 export default function EmpresasPage() {
   const router = useRouter();
+  const { addToast } = useToast();
   const [data, setData] = useState<Company[]>([]);
   const [meta, setMeta] = useState({ page: 1, limit: 10, total: 0, totalPages: 0 });
   const [search, setSearch] = useState('');
@@ -31,9 +33,10 @@ export default function EmpresasPage() {
   function handleSearch() { setPage(1); load() }
 
   async function handleDelete(item: Company) {
-    if (!confirm(`Desativar empresa "${item.corporateName}"?`)) return;
-    try { await deleteCompany(item.id); load() }
-    catch (e: any) { setError(e.message) }
+    if (window.confirm(`Desativar empresa "${item.corporateName}"?`)) {
+          try { await deleteCompany(item.id); load(); addToast('SUCCESS', 'Empresa desativada'); }
+          catch (e: any) { addToast('ERROR', e.message) }
+        }
   }
 
   return (
