@@ -42,6 +42,9 @@ const allLinks: NavLink[] = [
   { href: '/barber/service-orders', label: 'Minhas Comandas', icon: 'clipboard-list', barberOnly: true },
   { href: '/barber/sales', label: 'Minhas Vendas', icon: 'shopping-cart', barberOnly: true },
   { href: '/barber/profile', label: 'Meu Perfil', icon: 'users', barberOnly: true },
+  { href: '/barber/commissions', label: 'Minhas Comissões', icon: 'dollar-sign', barberOnly: true },
+  // Admin commission management
+  { href: '/commission', label: 'Comissões', icon: 'dollar-sign', adminOnly: true },
 ];
 
 function Icon({ name, className }: { name: string; className?: string }) {
