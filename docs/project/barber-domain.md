@@ -297,7 +297,7 @@ Se a venda for cancelada:
 - **Comissão não paga:** Não é gerada
 - O estorno da venda já reverte cashback, loyalty e estoque — a comissão deve seguir o mesmo fluxo
 
-#### 6.8 Estornos
+#### 6.9 Estornos
 
 Se a venda for estornada (reembolso):
 
@@ -600,35 +600,22 @@ Total: 67h (~4 semanas)
                                  │                      │
                                  │ CashTransaction      │
                                  │ FinancialAccount     │
-                                 │ (não muda —          │
-                                 │  não depende de      │
-                                 │  quem atendeu)       │
+                                 │ (já implementado)    │
                                  └──────────┬───────────┘
-                                          │
-                                          ▼
-                                 ┌─────────────────────┐
-                                 │     COMISSÃO         │  ← NOVO
-                                 │                      │
-                                 │ Calculada na         │
-                                 │ finalização da       │
-                                 │ venda                │
-                                 │                      │
-                                 │ Fluxo:               │
-                                 │ PENDING → APPROVED   │
-                                 │        → PAID        │
-                                 │        → CANCELLED   │
-                                 └─────────────────────┘
-
-Integrações:
-
-Agenda ──────→ Atendimento: agendamento vira atendimento
-Atendimento ──→ Service Order: serviços executados são registrados
-Service Order ─→ Venda: itens da service order viram itens da venda
-Venda ────────→ Pagamento: valor total é pago
-Venda ────────→ Comissão: ao finalizar, calcula comissão do barbeiro
-Profissional ─→ Comissão: regras de comissão vêm do cadastro do profissional
+                                            │
+                                            ▼
+                                    ┌─────────────────────┐
+                                    │     COMISSÃO         │
+                                    │                      │
+                                    │ Commission (NOVA)    │
+                                    │ professionalId       │
+                                    │ saleId, amount, rate │
+                                    │ status (PENDING/     │
+                                    │ APPROVED/PAID/       │
+                                    │ CANCELLED)           │
+                                    └─────────────────────┘
 ```
 
 ---
 
-*Documento de domínio — Barbeiro v1.1 | Aprovado para implementação*
+*Documento gerado automaticamente por Hermes Agent — Domínio do Barbeiro v1.1*

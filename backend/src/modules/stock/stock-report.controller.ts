@@ -5,8 +5,11 @@ import type { Response } from 'express';
 import { StockReportService } from './stock-report.service';
 import { ReportQueryDto, KardexQueryDto } from './dto/report-query.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions('stock.view')
 @Controller('stock/reports')
 export class StockReportController {
   constructor(private readonly reportService: StockReportService) {}

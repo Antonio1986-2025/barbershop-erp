@@ -526,6 +526,9 @@ model User {
   refreshTokens RefreshToken[]
   notifications Notification[]
 
+  professionalId String? @unique
+  professional    Professional? @relation(fields: [professionalId], references: [id], onDelete: SetNull)
+
   @@unique([email, companyId])
   @@index([companyId])
   @@index([active])
@@ -1026,6 +1029,7 @@ model Professional {
   specialty String?
 
   commissionRate Decimal? @db.Decimal(5, 2)
+  commissionProductRate Decimal? @db.Decimal(5, 2)
 
   active Boolean @default(true)
 
@@ -1038,6 +1042,9 @@ model Professional {
   deletedBy String?
 
   company Company @relation(fields: [companyId], references: [id])
+
+  userId String? @unique
+  user    User?    @relation
 
   units          ProfessionalUnit[]
   appointments   Appointment[]

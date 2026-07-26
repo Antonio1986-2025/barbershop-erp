@@ -37,6 +37,7 @@ import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { ConversationsModule } from './modules/conversations/conversations.module';
 import { ObservabilityModule } from './modules/observability/observability.module';
 import { ServiceOrderModule } from './modules/service-order/service-order.module';
+import { BarberModule } from './modules/barber/barber.module';
 
 @Module({
   imports: [
@@ -82,6 +83,7 @@ import { ServiceOrderModule } from './modules/service-order/service-order.module
     NotificationsModule,
     FinancialModule,
     ServiceOrderModule,
+    BarberModule,
   ],
   controllers: [AppController],
   providers: [

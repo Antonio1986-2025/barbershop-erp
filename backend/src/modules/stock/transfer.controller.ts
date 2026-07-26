@@ -5,8 +5,11 @@ import {
 import { TransferService } from './transfer.service';
 import { CreateTransferDto, TransferQueryDto } from './dto/create-transfer.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions('stock.view')
 @Controller('stock/transfers')
 export class TransferController {
   constructor(private readonly transferService: TransferService) {}

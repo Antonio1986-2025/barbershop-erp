@@ -5,8 +5,11 @@ import {
 import { StockMovementService } from './stock-movement.service';
 import { AdjustStockDto, StockMovementQueryDto } from './dto/adjust-stock.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions('stock.view')
 @Controller('stock')
 export class StockMovementController {
   constructor(private readonly stockMovementService: StockMovementService) {}

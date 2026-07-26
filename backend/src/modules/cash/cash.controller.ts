@@ -7,8 +7,11 @@ import { OpenCashDto } from './dto/open-cash.dto';
 import { CloseCashDto } from './dto/close-cash.dto';
 import { CashTransactionDto } from './dto/cash-transaction.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions('financial.view')
 @Controller('cash')
 export class CashController {
   constructor(private readonly cashService: CashService) {}

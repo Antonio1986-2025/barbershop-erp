@@ -6,8 +6,11 @@ import { SupplierService } from './supplier.service';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions('stock.view')
 @Controller('suppliers')
 export class SupplierController {
   constructor(private readonly supplierService: SupplierService) {}

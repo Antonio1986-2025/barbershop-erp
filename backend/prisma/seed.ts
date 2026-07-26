@@ -87,6 +87,11 @@ async function seed() {
     update: {},
     create: { name: 'Visualização', slug: 'viewer' },
   });
+  const roleBarber = await prisma.role.upsert({
+    where: { slug: 'barber' },
+    update: {},
+    create: { name: 'Barbeiro', slug: 'barber' },
+  });
 
   // ── Permissions ──
   const allPerms = [
@@ -103,6 +108,17 @@ async function seed() {
     'sales.view', 'sales.create', 'sales.update', 'sales.delete',
     'crm.view', 'crm.create', 'crm.update', 'crm.delete',
   ];
+
+  // BARBER only gets view permissions for their domain
+  const barberPerms = [
+    'dashboard.view',
+    'schedule.view', 'schedule.create', 'schedule.update',
+    'customers.view', 'customers.create',
+    'sales.view', 'sales.create',
+    'crm.view',
+    'notifications.view',
+  ];
+
   for (const slug of allPerms) {
     const perm = await prisma.permission.upsert({
       where: { slug },
@@ -114,6 +130,14 @@ async function seed() {
         where: { roleId_permissionId: { roleId: role.id, permissionId: perm.id } },
         update: {},
         create: { roleId: role.id, permissionId: perm.id },
+      }).catch(() => {});
+    }
+    // BARBER gets specific permissions
+    if (barberPerms.includes(slug)) {
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: roleBarber.id, permissionId: perm.id } },
+        update: {},
+        create: { roleId: roleBarber.id, permissionId: perm.id },
       }).catch(() => {});
     }
     if (slug.endsWith('.view')) {
@@ -145,6 +169,7 @@ async function seed() {
   const adminId = await createUser('Admin', 'admin@demo.com', roleAdmin.id);
   const operId = await createUser('Operador', 'operador@demo.com', roleOperator.id);
   await createUser('Visualizador', 'visualizador@demo.com', roleViewer.id);
+  const barberUserId = await createUser('Barbeiro', 'barber@demo.com', roleBarber.id);
 
   // ── Categories ──
   const catPomadas = await prisma.category.upsert({
@@ -229,6 +254,21 @@ async function seed() {
     await prisma.professionalUnit.upsert({
       where: { professionalId_unitId: { professionalId: p.id, unitId: unitMatriz.id } },
       update: {}, create: { professionalId: p.id, unitId: unitMatriz.id },
+    });
+  }
+
+  // Link barber user to Pedro Santos professional
+  const pedroProf = await prisma.professional.findFirst({
+    where: { companyId: company.id, email: 'pedro@demo.com' },
+  });
+  if (pedroProf && barberUserId) {
+    await prisma.user.update({
+      where: { id: barberUserId },
+      data: { professionalId: pedroProf.id },
+    });
+    await prisma.professional.update({
+      where: { id: pedroProf.id },
+      data: { userId: barberUserId },
     });
   }
 
@@ -352,8 +392,146 @@ async function seed() {
     data: { companyId: company.id, code: 'PRIMEIRACORTE', discountType: 'FIXED', discountValue: 15, maxUses: 50 },
   }).catch(() => {});
 
-  console.log('');
-  console.log('✅ Seed concluído!');
+  // ── Barber Demo Data (Pedro Santos) ──
+  const pedro = await prisma.professional.findFirst({ where: { email: 'pedro@demo.com' } });
+  const servCorte = await prisma.service.findFirst({ where: { companyId: company.id, name: { contains: 'Corte' } } });
+  const servBarba = await prisma.service.findFirst({ where: { companyId: company.id, name: { contains: 'Barba' } } });
+  const servCorteBarba = await prisma.service.findFirst({ where: { companyId: company.id, name: { contains: 'Corte + Barba' } } });
+  const servHidratacao = await prisma.service.findFirst({ where: { companyId: company.id, name: { contains: 'Hidratação' } } });
+  const servPigmentacao = await prisma.service.findFirst({ where: { companyId: company.id, name: { contains: 'Pigmentação' } } });
+  const pedroCustomers = await prisma.customer.findMany({ where: { companyId: company.id }, take: 4 });
+
+  const now = new Date();
+  const day = now.getDate();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+
+  if (pedro && pedroCustomers.length >= 2) {
+    // Past appointments (completed)
+    const pastDates = [
+      new Date(year, month, day - 3, 9, 0),
+      new Date(year, month, day - 3, 10, 0),
+      new Date(year, month, day - 2, 14, 0),
+      new Date(year, month, day - 1, 8, 30),
+      new Date(year, month, day - 1, 11, 0),
+      new Date(year, month, day - 1, 15, 0),
+    ];
+    const pastServices = [servCorte, servBarba, servCorteBarba, servHidratacao, servCorte, servPigmentacao];
+    const pastPrices = [50, 30, 70, 80, 50, 120];
+
+    for (let i = 0; i < pastDates.length; i++) {
+      const service = pastServices[i] || servCorte;
+      const price = pastPrices[i] || 50;
+      const customer = pedroCustomers[i % pedroCustomers.length];
+      const endAt = new Date(pastDates[i].getTime() + 60 * 60000);
+
+      // Create appointment as COMPLETED
+      const apt = await prisma.appointment.create({
+        data: {
+          companyId: company.id,
+          unitId: unitMatriz.id,
+          customerId: customer.id,
+          professionalId: pedro.id,
+          serviceId: service?.id ?? servCorte?.id ?? '',
+          startAt: pastDates[i],
+          endAt,
+          status: 'COMPLETED',
+          createdBy: barberUserId,
+        },
+      }).catch(() => null);
+      if (!apt) continue;
+
+      // Create service order
+      const so = await prisma.serviceOrder.create({
+        data: {
+          companyId: company.id,
+          unitId: unitMatriz.id,
+          customerId: customer.id,
+          professionalId: pedro.id,
+          status: 'COMPLETED',
+          subtotal: price,
+          discount: 0,
+          total: price,
+          startedAt: pastDates[i],
+          finishedAt: endAt,
+          createdBy: barberUserId,
+        },
+      }).catch(() => null);
+      if (!so) continue;
+
+      // Add service order item
+      await prisma.serviceOrderItem.create({
+        data: {
+          serviceOrderId: so.id,
+          serviceId: service?.id ?? servCorte?.id ?? '',
+          quantity: 1,
+          unitPrice: price,
+          totalPrice: price,
+        },
+      }).catch(() => {});
+
+      // Create sale
+      const sale = await prisma.sale.create({
+        data: {
+          companyId: company.id,
+          unitId: unitMatriz.id,
+          customerId: customer.id,
+          serviceOrderId: so.id,
+          status: 'PAID',
+          subtotal: price,
+          discountAmount: 0,
+          total: price,
+          createdBy: barberUserId,
+        },
+      }).catch(() => null);
+      if (!sale) continue;
+
+      // Payment
+      await prisma.payment.create({
+        data: {
+          companyId: company.id,
+          unitId: unitMatriz.id,
+          serviceOrderId: so.id,
+          saleId: sale.id,
+          amount: price,
+          paymentMethod: 'CASH',
+          status: 'PAID',
+          paidAt: pastDates[i],
+        },
+      }).catch(() => {});
+    }
+
+    // Today's appointments (scheduled)
+    const todaySlots = [
+      new Date(year, month, day, 9, 0),
+      new Date(year, month, day, 10, 0),
+      new Date(year, month, day, 11, 0),
+      new Date(year, month, day, 14, 0),
+      new Date(year, month, day, 15, 30),
+    ];
+    const todayServices = [servCorte, servBarba, servCorteBarba, servHidratacao, servCorte];
+
+    for (let i = 0; i < todaySlots.length; i++) {
+      const svc = todayServices[i] || servCorte;
+      const customerIdx = (i + 2) % pedroCustomers.length;
+      if (i < pedroCustomers.length) {
+        await prisma.appointment.create({
+          data: {
+            companyId: company.id,
+            unitId: unitMatriz.id,
+            customerId: pedroCustomers[customerIdx].id,
+            professionalId: pedro.id,
+            serviceId: svc?.id ?? servCorte?.id ?? '',
+            startAt: todaySlots[i],
+            endAt: new Date(todaySlots[i].getTime() + 60 * 60000),
+            status: i < 2 ? 'SCHEDULED' : i < 4 ? 'CONFIRMED' : 'SCHEDULED',
+            createdBy: barberUserId,
+          },
+        }).catch(() => {});
+      }
+    }
+  }
+
   console.log('');
   console.log('📧 admin@demo.com / 123456  (admin)');
   console.log('📧 operador@demo.com / 123456');

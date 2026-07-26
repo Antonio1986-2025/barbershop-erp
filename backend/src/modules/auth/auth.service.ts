@@ -49,6 +49,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       companyId: user.companyId,
+      professionalId: user.professionalId ?? undefined,
     };
 
     const permissions: string[] = [];
@@ -89,6 +90,7 @@ export class AuthService {
         email: user.email,
         companyId: user.companyId,
         companyName: user.company.corporateName,
+        professionalId: user.professionalId ?? undefined,
         roles,
         permissions: [...new Set(permissions)],
       },

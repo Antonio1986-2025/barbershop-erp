@@ -10,30 +10,31 @@ interface NavLink {
   href: string;
   label: string;
   icon: string;
+  adminOnly?: boolean;
 }
 
-const links: NavLink[] = [
+const allLinks: NavLink[] = [
   { href: '/dashboard', label: 'Dashboard', icon: 'grid' },
   { href: '/pdv', label: 'PDV', icon: 'shopping-cart' },
-  { href: '/caixa', label: 'Caixa', icon: 'wallet' },
+  { href: '/caixa', label: 'Caixa', icon: 'wallet', adminOnly: true },
   { href: '/agendamentos', label: 'Agendamentos', icon: 'calendar' },
   { href: '/agenda', label: 'Agenda', icon: 'calendar-days' },
   { href: '/notificacoes', label: 'Notificações', icon: 'bell' },
-  { href: '/financeiro/contas', label: 'Financeiro', icon: 'dollar-sign' },
+  { href: '/financeiro/contas', label: 'Financeiro', icon: 'dollar-sign', adminOnly: true },
   { href: '/clientes', label: 'Clientes', icon: 'users' },
   { href: '/profissionais', label: 'Profissionais', icon: 'scissors' },
   { href: '/servicos', label: 'Serviços', icon: 'wrench' },
   { href: '/categorias', label: 'Categorias', icon: 'folder' },
   { href: '/produtos', label: 'Produtos', icon: 'package' },
-  { href: '/estoque', label: 'Estoque', icon: 'bar-chart' },
-  { href: '/compras', label: 'Compras', icon: 'download' },
-  { href: '/fornecedores', label: 'Fornecedores', icon: 'building' },
-  { href: '/unidades', label: 'Unidades', icon: 'map-pin' },
-  { href: '/usuarios', label: 'Usuários', icon: 'shield' },
-  { href: '/empresas', label: 'Empresas', icon: 'briefcase' },
-  { href: '/auditoria', label: 'Auditoria', icon: 'clipboard-list' },
-  { href: '/configuracoes', label: 'Configurações', icon: 'settings' },
-  { href: '/status', label: 'Status', icon: 'activity' },
+  { href: '/estoque', label: 'Estoque', icon: 'bar-chart', adminOnly: true },
+  { href: '/compras', label: 'Compras', icon: 'download', adminOnly: true },
+  { href: '/fornecedores', label: 'Fornecedores', icon: 'building', adminOnly: true },
+  { href: '/unidades', label: 'Unidades', icon: 'map-pin', adminOnly: true },
+  { href: '/usuarios', label: 'Usuários', icon: 'shield', adminOnly: true },
+  { href: '/empresas', label: 'Empresas', icon: 'briefcase', adminOnly: true },
+  { href: '/auditoria', label: 'Auditoria', icon: 'clipboard-list', adminOnly: true },
+  { href: '/configuracoes', label: 'Configurações', icon: 'settings', adminOnly: true },
+  { href: '/status', label: 'Status', icon: 'activity', adminOnly: true },
 ];
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -98,7 +99,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-2">
-        {links.map((link) => {
+        {allLinks.filter((link) => {
+          // BARBER: hide admin-only links
+          const isBarber = user?.roles?.includes('barber');
+          if (isBarber && link.adminOnly) return false;
+          return true;
+        }).map((link) => {
           const active = pathname === link.href || 
             (link.href !== '/dashboard' && pathname.startsWith(link.href));
           const isNotif = link.href === '/notificacoes';

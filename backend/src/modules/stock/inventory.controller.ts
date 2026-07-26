@@ -7,8 +7,11 @@ import {
   CreateInventoryDto, AddInventoryItemDto, UpdateInventoryItemDto, InventoryQueryDto,
 } from './dto/inventory.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions('stock.view')
 @Controller('stock/inventory')
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}

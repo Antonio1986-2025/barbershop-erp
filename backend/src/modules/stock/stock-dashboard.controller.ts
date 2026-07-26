@@ -1,8 +1,11 @@
 import { Controller, Get, Request, UseGuards } from '@nestjs/common';
 import { StockDashboardService } from './stock-dashboard.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions('stock.view')
 @Controller('stock/dashboard')
 export class StockDashboardController {
   constructor(private readonly stockDashboardService: StockDashboardService) {}

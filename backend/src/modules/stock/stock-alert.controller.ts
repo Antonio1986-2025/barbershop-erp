@@ -5,8 +5,11 @@ import {
 import { StockAlertService } from './stock-alert.service';
 import { StockAlertQueryDto } from './dto/stock-alert-query.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions('stock.view')
 @Controller('stock/alerts')
 export class StockAlertController {
   constructor(private readonly stockAlertService: StockAlertService) {}

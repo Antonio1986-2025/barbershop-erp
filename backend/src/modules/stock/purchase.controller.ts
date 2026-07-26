@@ -6,8 +6,11 @@ import { PurchaseService } from './purchase.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { AddPurchaseItemDto } from './dto/add-purchase-item.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@Permissions('stock.view')
 @Controller('purchases')
 export class PurchaseController {
   constructor(private readonly purchaseService: PurchaseService) {}
