@@ -1538,8 +1538,8 @@ model Sale {
   serviceOrder ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
   coupon       Coupon?       @relation(fields: [couponId], references: [id])
 
+  payments       Payment[]
   items            SaleItem[]
-  payments         Payment[]
   cashbackTxns     CashbackTransaction[]
   loyaltyPointsRef LoyaltyPoints[]
 
@@ -2168,4 +2168,75 @@ model IntegrationLog {
   @@index([direction])
   @@index([status])
   @@map("integration_logs")
+}
+
+enum CommissionStatus {
+  PENDING
+  APPROVED
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+enum CommissionItemType {
+  SERVICE
+  PRODUCT
+}
+
+model Commission {
+  id String @id @default(uuid())
+
+  companyId      String
+  unitId         String
+  saleId         String?
+  serviceOrderId String?
+  professionalId String
+
+  totalServiceAmount Decimal? @db.Decimal(10, 2)
+  totalProductAmount Decimal? @db.Decimal(10, 2)
+  commissionAmount   Decimal  @db.Decimal(10, 2)
+
+  rateApplied  Decimal? @db.Decimal(5, 2)
+  rateType     String?
+
+  status CommissionStatus @default(PENDING)
+
+  approvedAt DateTime?
+  approvedBy String?
+  paidAt     DateTime?
+  paidBy     String?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items CommissionItem[]
+
+  @@index([companyId])
+  @@index([professionalId])
+  @@index([saleId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("commissions")
+}
+
+model CommissionItem {
+  id String @id @default(uuid())
+
+  commissionId String
+  saleItemId   String?
+
+  itemType  CommissionItemType
+  itemName  String
+  quantity  Int
+
+  itemAmount       Decimal @db.Decimal(10, 2)
+  rate             Decimal @db.Decimal(5, 2)
+  commissionAmount Decimal @db.Decimal(10, 2)
+
+  commission Commission @relation(fields: [commissionId], references: [id])
+
+  @@index([commissionId])
+  @@map("commission_items")
 }

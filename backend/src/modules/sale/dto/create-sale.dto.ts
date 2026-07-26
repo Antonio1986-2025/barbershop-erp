@@ -31,6 +31,10 @@ export class CreateSaleDto {
 
   @IsOptional()
   @IsString()
+  serviceOrderId?: string;
+
+  @IsOptional()
+  @IsString()
   notes?: string;
 
   @IsArray()

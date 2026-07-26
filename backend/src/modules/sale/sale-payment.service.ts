@@ -12,6 +12,7 @@ import { CashbackService } from '../cashback/cashback.service';
 import { LoyaltyService } from '../loyalty/loyalty.service';
 import { AutomationService } from '../automation/automation.service';
 import { InteractionService } from '../interaction/interaction.service';
+import { CommissionService } from '../commission/commission.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { StockMovementType } from '@prisma/client';
 
@@ -29,6 +30,7 @@ export class SalePaymentService {
     private readonly loyaltyService: LoyaltyService,
     private readonly automationService: AutomationService,
     private readonly interactionService: InteractionService,
+    private readonly commissionService: CommissionService,
   ) {}
 
   async findBySale(companyId: string, saleId: string) {
@@ -185,6 +187,11 @@ export class SalePaymentService {
         title: 'Venda concluída',
         message: `Venda ${saleId} finalizada. Total: R$ ${Number(sale.total).toFixed(2)}`,
       });
+
+      // Calculate commission automatically
+      this.commissionService.calculateForSale(companyId, saleId).catch((err) =>
+        console.error('[Commission] Error calculating commission for sale', saleId, err?.message),
+      );
 
       if (sale.customerId) {
         this.interactionService

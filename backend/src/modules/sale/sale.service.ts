@@ -120,6 +120,7 @@ export class SaleService {
         companyId,
         unitId: dto.unitId,
         customerId: dto.customerId,
+        serviceOrderId: dto.serviceOrderId,
         notes: dto.notes,
         subtotal,
         total,
@@ -265,6 +266,12 @@ export class SaleService {
           },
         },
       },
+    });
+
+    // Cancel any pending commissions when sale is cancelled
+    await this.prisma.commission.updateMany({
+      where: { saleId: id, companyId, status: { notIn: ['CANCELLED', 'REFUNDED'] } },
+      data: { status: 'CANCELLED', notes: reason || 'Venda cancelada automaticamente' },
     });
 
     await this.auditService.create({
