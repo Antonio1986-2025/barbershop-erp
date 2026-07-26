@@ -43,6 +43,13 @@ export class CashService {
       exits,
       currentBalance: Number(register.openingAmount) + entries - exits,
       notes: register.notes,
+      transactions: register.transactions.map(t => ({
+        id: t.id,
+        type: t.type,
+        amount: Number(t.amount),
+        description: t.description,
+        createdAt: t.createdAt,
+      })),
       transactionCount: register.transactions.length,
     };
   }

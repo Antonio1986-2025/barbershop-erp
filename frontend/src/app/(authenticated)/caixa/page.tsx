@@ -104,7 +104,7 @@ export default function CaixaPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-4 sm:p-6">
       <div className="flex items-center justify-between">
-        h1 className="text-xl font-bold sm:text-2xl"
+        <h1 className="text-xl font-bold sm:text-2xl">Caixa</h1>
         <select className="rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary max-w-[200px]"
           value={selectedUnit} onChange={e => { setSelectedUnit(e.target.value); resetAllForms() }}>
           <option value="">Selecione a unidade</option>
@@ -157,14 +157,14 @@ export default function CaixaPage() {
           <div className="rounded-lg border">
             <div className="border-b bg-zinc-50 px-4 py-2">
               <h2 className="text-sm font-semibold text-zinc-600">
-                Movimentações ({summary.transactionCount})
+                Movimentações ({(summary.transactionCount ?? 0)})
               </h2>
             </div>
-            {summary.transactions.length === 0 ? (
+            {(summary.transactions ?? []).length === 0 ? (
               <p className="p-4 text-sm text-muted-foreground">Nenhuma movimentação.</p>
             ) : (
               <div className="divide-y">
-                {summary.transactions.map(t => (
+                {(summary.transactions ?? []).map(t => (
                   <div key={t.id} className="flex items-center justify-between px-4 py-2.5">
                     <div>
                       <p className="text-sm">{t.description}</p>
