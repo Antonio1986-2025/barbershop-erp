@@ -48,6 +48,12 @@ export class AuthController {
     return this.authService.me(req.user.id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  profile(@Request() req: any) {
+    return this.authService.me(req.user.id);
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin')
   @Get('admin-only')

@@ -14,9 +14,15 @@ export class DashboardController {
     return {
       companyId: req.user.companyId,
       unitId: query.unitId || undefined,
-      startDate: query.startDate || undefined,
-      endDate: query.endDate || undefined,
+      startDate: query.startDate || new Date(Date.now() - 30 * 86400000).toISOString(),
+      endDate: query.endDate || new Date().toISOString(),
     };
+  }
+
+  @Get()
+  @Permissions('dashboard.view')
+  index(@Request() req: any, @Query() query: any) {
+    return this.dashboardService.summary(this.extractFilter(req, query));
   }
 
   @Get('summary')
