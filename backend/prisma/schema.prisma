@@ -2176,6 +2176,7 @@ enum CommissionStatus {
   PAID
   CANCELLED
   REFUNDED
+  REJECTED
 }
 
 enum CommissionItemType {
@@ -2203,8 +2204,13 @@ model Commission {
 
   approvedAt DateTime?
   approvedBy String?
+  rejectedAt DateTime?
+  rejectedBy String?
+  rejectReason String?
   paidAt     DateTime?
   paidBy     String?
+
+  closingId String?
 
   notes String?
 
@@ -2218,6 +2224,7 @@ model Commission {
   @@index([saleId])
   @@index([status])
   @@index([createdAt])
+  @@index([closingId])
   @@map("commissions")
 }
 
@@ -2239,4 +2246,35 @@ model CommissionItem {
 
   @@index([commissionId])
   @@map("commission_items")
+}
+
+model CommissionClosing {
+  id String @id @default(uuid())
+
+  companyId String
+  unitId    String
+
+  periodStart DateTime
+  periodEnd   DateTime
+
+  totalCommissionAmount Decimal @default(0) @db.Decimal(10, 2)
+  totalCommissions      Int     @default(0)
+  totalBarbers          Int     @default(0)
+
+  status CommissionStatus @default(APPROVED)
+
+  approvedAt DateTime?
+  approvedBy String?
+  paidAt     DateTime?
+  paidBy     String?
+
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("commission_closings")
 }

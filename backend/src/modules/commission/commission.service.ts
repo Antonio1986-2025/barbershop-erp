@@ -258,4 +258,92 @@ export class CommissionService {
 
     return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
   }
+
+  /** Approve a commission (manager only) */
+  async approve(companyId: string, id: string, userId: string) {
+    const commission = await this.prisma.commission.findFirst({
+      where: { id, companyId, status: 'PENDING' },
+    });
+    if (!commission) throw new Error('Comissão não encontrada ou já processada');
+
+    return this.prisma.commission.update({
+      where: { id },
+      data: { status: 'APPROVED', approvedAt: new Date(), approvedBy: userId },
+    });
+  }
+
+  /** Reject a commission (manager only) */
+  async reject(companyId: string, id: string, userId: string, reason: string) {
+    const commission = await this.prisma.commission.findFirst({
+      where: { id, companyId, status: 'PENDING' },
+    });
+    if (!commission) throw new Error('Comissão não encontrada ou já processada');
+    if (!reason) throw new Error('Motivo da rejeição é obrigatório');
+
+    return this.prisma.commission.update({
+      where: { id },
+      data: { status: 'REJECTED', rejectedAt: new Date(), rejectedBy: userId, rejectReason: reason },
+    });
+  }
+
+  /** Close a period: creates a CommissionClosing and marks all APPROVED commissions as PAID */
+  async closePeriod(
+    companyId: string,
+    unitId: string,
+    userId: string,
+    dto: { periodStart: string; periodEnd: string; notes?: string },
+  ) {
+    const start = new Date(dto.periodStart);
+    const end = new Date(dto.periodEnd);
+
+    const commissions = await this.prisma.commission.findMany({
+      where: { companyId, unitId, status: 'APPROVED', createdAt: { gte: start, lte: end } },
+    });
+
+    if (commissions.length === 0) throw new Error('Nenhuma comissão aprovada no período');
+
+    const totalAmount = commissions.reduce((s, c) => s + Number(c.commissionAmount), 0);
+    const barberIds = new Set(commissions.map((c) => c.professionalId));
+
+    const closing = await this.prisma.commissionClosing.create({
+      data: {
+        companyId,
+        unitId,
+        periodStart: start,
+        periodEnd: end,
+        totalCommissionAmount: totalAmount,
+        totalCommissions: commissions.length,
+        totalBarbers: barberIds.size,
+        status: 'PAID',
+        paidAt: new Date(),
+        paidBy: userId,
+        notes: dto.notes,
+      },
+    });
+
+    // Mark all commissions as PAID and link to closing
+    await this.prisma.commission.updateMany({
+      where: { id: { in: commissions.map((c) => c.id) } },
+      data: { status: 'PAID', closingId: closing.id, paidAt: new Date(), paidBy: userId },
+    });
+
+    this.logger.log(`Closing created: ${commissions.length} commissions, R$${totalAmount}, ${barberIds.size} barbers`);
+    return closing;
+  }
+
+  /** List closings */
+  async findAllClosings(companyId: string, query: { page?: number; limit?: number }) {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
+    const [data, total] = await Promise.all([
+      this.prisma.commissionClosing.findMany({
+        where: { companyId },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.commissionClosing.count({ where: { companyId } }),
+    ]);
+    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+  }
 }
