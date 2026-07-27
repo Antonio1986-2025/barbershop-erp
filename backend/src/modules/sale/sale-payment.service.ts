@@ -189,9 +189,7 @@ export class SalePaymentService {
       });
 
       // Calculate commission automatically
-      this.commissionService.calculateForSale(companyId, saleId).catch((err) =>
-        console.error('[Commission] Error calculating commission for sale', saleId, err?.message),
-      );
+      this.commissionService.calculateForSale(companyId, saleId).catch(() => {});
 
       if (sale.customerId) {
         this.interactionService
@@ -203,7 +201,7 @@ export class SalePaymentService {
             description: `Venda finalizada. Total: R$ ${Number(sale.total).toFixed(2)}`,
             interactionAt: new Date().toISOString(),
           })
-          .catch(e => console.error('[InteractionService] venda:', e.message));
+          .catch(() => {});
       }
     }
 
@@ -218,7 +216,7 @@ export class SalePaymentService {
           description: `Pagamento de R$ ${Number(dto.amount).toFixed(2)} via ${dto.paymentMethod}`,
           interactionAt: new Date().toISOString(),
         })
-        .catch(e => console.error('[InteractionService] pagamento:', e.message));
+        .catch(() => {});
     }
 
     await this.auditService.create({

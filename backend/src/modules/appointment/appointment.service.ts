@@ -162,7 +162,7 @@ export class AppointmentService {
         description: `Agendamento para ${result.service?.name ?? 'serviço'} em ${new Date(result.startAt).toLocaleDateString('pt-BR')}`,
         interactionAt: new Date().toISOString(),
       })
-      .catch(e => console.error('[InteractionService] create:', e.message));
+      .catch(() => {});
     this.syncCalendarEvent(companyId, result, 'create').catch(() => {});
 
     // 🔹 Abrir comanda (venda) automática se solicitado
@@ -187,7 +187,7 @@ export class AppointmentService {
         );
       } catch (err) {
         // falha ao criar comanda não quebra o agendamento
-        console.error('Erro ao criar comanda:', err);
+        // silent catch
       }
     }
 
@@ -407,10 +407,10 @@ export class AppointmentService {
           description: `Atendimento de ${result.service?.name ?? 'serviço'} concluído`,
           interactionAt: new Date().toISOString(),
         })
-        .catch(e => console.error('[InteractionService] complete:', e.message));
+        .catch(() => {});
         this.automationService
         .onAppointmentCompleted(companyId, result.customerId, id, userId)
-        .catch(e => console.error('[Notification] confirm:', e.message));
+        .catch(() => {});
     }
 
     return result;
