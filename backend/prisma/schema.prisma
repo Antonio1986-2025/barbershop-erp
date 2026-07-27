@@ -681,8 +681,9 @@ model Unit {
 model BusinessHour {
   id String @id @default(uuid())
 
-  companyId String
-  unitId    String
+  companyId      String
+  unitId         String
+  professionalId String?
 
   dayOfWeek Int
   startTime String
@@ -696,9 +697,9 @@ model BusinessHour {
   company Company @relation(fields: [companyId], references: [id])
   unit    Unit    @relation(fields: [unitId], references: [id])
 
-  @@unique([unitId, dayOfWeek])
   @@index([companyId])
   @@index([unitId])
+  @@index([professionalId])
   @@index([dayOfWeek])
   @@map("business_hours")
 }

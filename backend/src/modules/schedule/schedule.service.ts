@@ -195,21 +195,33 @@ export class ScheduleService {
   ) {
     const dayOfWeek = new Date(date + 'T12:00:00Z').getUTCDay();
 
-    const hours = await this.prisma.businessHour.findMany({
-      where: { companyId, unitId, dayOfWeek, active: true },
+    // 1. Find business hours (unit-level)
+    const unitHours = await this.prisma.businessHour.findMany({
+      where: { companyId, unitId, professionalId: null, dayOfWeek, active: true },
     });
 
-    if (hours.length === 0)
+    if (unitHours.length === 0)
       return {
-        date,
-        available: false,
-        slots: [],
-        reason: 'Unidade não abre neste dia',
+        date, available: false, slots: [],
+        reason: 'A unidade não abre neste dia',
       };
+
+    // 2. If professional is specified, check professional-specific hours
+    let effectiveHours = unitHours;
+    if (professionalId) {
+      const profHours = await this.prisma.businessHour.findMany({
+        where: { companyId, unitId, professionalId, dayOfWeek, active: true },
+      });
+      // Professional hours override unit hours when set
+      if (profHours.length > 0) {
+        effectiveHours = profHours;
+      }
+    }
 
     const dayStart = new Date(`${date}T00:00:00Z`);
     const dayEnd = new Date(`${date}T23:59:59Z`);
 
+    // 3. Fetch blocks
     const blocks = await this.prisma.scheduleBlock.findMany({
       where: {
         companyId,
@@ -220,6 +232,7 @@ export class ScheduleService {
       },
     });
 
+    // 4. Fetch existing appointments
     const appointments = await this.prisma.appointment.findMany({
       where: {
         companyId,
@@ -232,6 +245,7 @@ export class ScheduleService {
       select: { startAt: true, endAt: true },
     });
 
+    // 5. Determine service duration
     let duration = 60;
     if (serviceId) {
       const service = await this.prisma.service.findUnique({
@@ -241,33 +255,52 @@ export class ScheduleService {
       if (service) duration = service.durationMinutes;
     }
 
+    // 6. Generate slots for each period
     const slots: string[] = [];
-    for (const h of hours) {
+    const interval = 15; // minutes between slot starts
+    let reason = '';
+
+    for (const h of effectiveHours) {
       const [hStart, mStart] = h.startTime.split(':').map(Number);
       const [hEnd, mEnd] = h.endTime.split(':').map(Number);
-      const startMin = hStart * 60 + mStart;
-      const endMin = hEnd * 60 + mEnd;
+      const periodStart = hStart * 60 + mStart;
+      const periodEnd = hEnd * 60 + mEnd;
 
-      for (let m = startMin; m + duration <= endMin; m += 15) {
+      // Check if service fits at all in this period
+      if (duration > periodEnd - periodStart) {
+        reason = `O serviço selecionado (${duration} min) não cabe no expediente disponível (${h.startTime}-${h.endTime})`;
+        continue;
+      }
+
+      for (let m = periodStart; m + duration <= periodEnd; m += interval) {
         const slotStart = new Date(
           `${date}T${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}:00Z`,
         );
         const slotEnd = new Date(slotStart.getTime() + duration * 60000);
 
+        // Check block conflicts
         const blocked = blocks.some(
           (b) => slotStart < b.endAt && slotEnd > b.startAt,
         );
         if (blocked) continue;
 
+        // Check appointment conflicts
         const conflicted = appointments.some(
           (a) => slotStart < a.endAt && slotEnd > a.startAt,
         );
-        if (conflicted) continue;
+        if (conflicted) {
+          if (!reason) reason = 'Existe outro atendimento neste horário';
+          continue;
+        }
 
         slots.push(slotStart.toISOString());
       }
     }
 
-    return { date, available: slots.length > 0, slots };
+    if (slots.length === 0 && !reason) {
+      reason = 'Todos os horários estão ocupados';
+    }
+
+    return { date, available: slots.length > 0, slots, reason: reason || undefined };
   }
 }

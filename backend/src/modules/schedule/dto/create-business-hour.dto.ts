@@ -11,6 +11,10 @@ export class CreateBusinessHourDto {
   @IsString()
   unitId: string;
 
+  @IsOptional()
+  @IsString()
+  professionalId?: string;
+
   @IsInt()
   @Min(0)
   @Max(6)
