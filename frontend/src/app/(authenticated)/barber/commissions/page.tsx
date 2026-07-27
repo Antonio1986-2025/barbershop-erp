@@ -3,17 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { fetchCommissions, type Commission } from '@/lib/commission';
 import { ErrorBox } from '@/components/crud/error-box';
 import { Pagination } from '@/components/crud/pagination';
-import { useToast } from '@/components/ui/toast';
-
-const STATUS_LABELS: Record<string, string> = {
-  PENDING: 'Pendente',
-  APPROVED: 'Aprovada',
-  PAID: 'Paga',
-  REJECTED: 'Rejeitada',
-  CANCELLED: 'Cancelada',
-};
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-700',
@@ -26,14 +18,12 @@ const STATUS_COLORS: Record<string, string> = {
 export default function BarberCommissionsPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const { addToast } = useToast();
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Commission[]>([]);
   const [meta, setMeta] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [period, setPeriod] = useState('month');
 
   useEffect(() => {
     if (!user) return;
@@ -41,18 +31,13 @@ export default function BarberCommissionsPage() {
     load();
   }, [user, page, statusFilter]);
 
-  async function load() {
+  function load() {
     setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      let url = `/api/commission?page=${page}`;
-      if (statusFilter) url += `&status=${statusFilter}`;
-      const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-      const d = await r.json();
-      setData(d.data ?? []);
-      setMeta(d.meta ?? { page: 1, limit: 20, total: 0, totalPages: 0 });
-    } catch (e: any) { setError(e.message) }
-    finally { setLoading(false) }
+    setError('');
+    fetchCommissions({ page, status: statusFilter || undefined })
+      .then((r) => { setData(r.data); setMeta(r.meta); })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   }
 
   const summary = {
@@ -67,8 +52,8 @@ export default function BarberCommissionsPage() {
   if (error) return <ErrorBox message={error} />;
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Minhas Comissões</h1>
+    <div className="space-y-6 px-4 py-6 sm:px-6">
+      <h1 className="text-xl font-bold sm:text-2xl">Minhas Comissões</h1>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -81,12 +66,6 @@ export default function BarberCommissionsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <select value={period} onChange={(e) => setPeriod(e.target.value)}
-          className="rounded-md border border-border bg-card-bg px-3 py-1.5 text-sm">
-          <option value="today">Hoje</option>
-          <option value="week">Esta Semana</option>
-          <option value="month">Este Mês</option>
-        </select>
         <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           className="rounded-md border border-border bg-card-bg px-3 py-1.5 text-sm">
           <option value="">Todos os status</option>
@@ -113,7 +92,7 @@ export default function BarberCommissionsPage() {
               </tr>
             </thead>
             <tbody>
-              {data.map((c: any) => (
+              {data.map((c) => (
                 <tr key={c.id} className="border-b border-border/50 hover:bg-muted/20">
                   <td className="p-3">{new Date(c.createdAt).toLocaleDateString('pt-BR')}</td>
                   <td className="p-3">R$ {Number(c.totalServiceAmount || c.totalProductAmount || 0).toFixed(2)}</td>

@@ -14,13 +14,16 @@ import { ServiceService } from './service.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('services')
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 
   @Get()
+  @Permissions('services.view')
   findAll(
     @Request() req: any,
     @Query('page') page?: string,
@@ -41,16 +44,19 @@ export class ServiceController {
   }
 
   @Get(':id')
+  @Permissions('services.view')
   findOne(@Request() req: any, @Param('id') id: string) {
     return this.serviceService.findOne(req.user.companyId, id);
   }
 
   @Post()
+  @Permissions('services.create')
   create(@Request() req: any, @Body() dto: CreateServiceDto) {
     return this.serviceService.create(req.user.companyId, req.user.id, dto);
   }
 
   @Patch(':id')
+  @Permissions('services.update')
   update(
     @Request() req: any,
     @Param('id') id: string,
@@ -60,6 +66,7 @@ export class ServiceController {
   }
 
   @Delete(':id')
+  @Permissions('services.delete')
   remove(@Request() req: any, @Param('id') id: string) {
     return this.serviceService.remove(req.user.companyId, id, req.user.id);
   }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createUser } from '@/lib/users';
+import { getToken } from '@/lib/auth';
 import { FormField } from '@/components/forms/form-field';
 import { FormActions } from '@/components/forms/form-actions';
 import { ErrorBox } from '@/components/crud/error-box';
@@ -18,7 +19,7 @@ export default function NovoUsuarioPage() {
 
   useEffect(() => {
     const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-    const token = localStorage.getItem('barbershop_access_token');
+    const token = getToken();
     fetch(`${API}/api/roles`, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
       .then(setRoles)

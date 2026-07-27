@@ -3,8 +3,19 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { getToken } from '@/lib/auth';
 import { ErrorBox } from '@/components/crud/error-box';
 import { Pagination } from '@/components/crud/pagination';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+
+function apiHeaders() {
+  const token = getToken();
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
 
 export default function BarberSalesPage() {
   const { user } = useAuth();
@@ -25,14 +36,15 @@ export default function BarberSalesPage() {
   async function load() {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const url = filter ? `/api/barber/sales?page=${page}&status=${filter}` : `/api/barber/sales?page=${page}`;
-      const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      const url = filter
+        ? `${API_BASE}/api/barber/sales?page=${page}&status=${filter}`
+        : `${API_BASE}/api/barber/sales?page=${page}`;
+      const r = await fetch(url, { headers: apiHeaders() });
       const d = await r.json();
       setData(d.data ?? []);
       setMeta(d.meta ?? { page: 1, limit: 10, total: 0, totalPages: 0 });
-    } catch (e: any) { setError(e.message) }
-    finally { setLoading(false) }
+    } catch (e: any) { setError(e.message); }
+    finally { setLoading(false); }
   }
 
   const statusColors: Record<string, string> = {
@@ -44,9 +56,9 @@ export default function BarberSalesPage() {
   if (error) return <ErrorBox message={error} />;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-4 py-6 sm:px-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Minhas Vendas</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">Minhas Vendas</h1>
         <select value={filter} onChange={(e) => { setFilter(e.target.value); setPage(1); }}
           className="rounded-md border border-border bg-card-bg px-3 py-1.5 text-sm">
           <option value="">Todas</option>
@@ -59,25 +71,25 @@ export default function BarberSalesPage() {
       {data.length === 0 ? (
         <div className="flex justify-center py-12"><p className="text-muted-foreground">Nenhuma venda encontrada.</p></div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-muted-foreground">
-                <th className="pb-2 font-medium">Cliente</th>
-                <th className="pb-2 font-medium">Status</th>
-                <th className="pb-2 font-medium text-right">Total</th>
-                <th className="pb-2 font-medium">Data</th>
+              <tr className="border-b border-border bg-muted/30 text-left">
+                <th className="p-3 font-medium">Cliente</th>
+                <th className="p-3 font-medium">Status</th>
+                <th className="p-3 font-medium text-right">Total</th>
+                <th className="p-3 font-medium">Data</th>
               </tr>
             </thead>
             <tbody>
               {data.map((s: any) => (
                 <tr key={s.id} className="border-b border-border/50">
-                  <td className="py-3 font-medium">{s.customer?.name ?? '-'}</td>
-                  <td className="py-3">
+                  <td className="p-3 font-medium">{s.customer?.name ?? '-'}</td>
+                  <td className="p-3">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[s.status] ?? ''}`}>{s.status}</span>
                   </td>
-                  <td className="py-3 text-right">R$ {Number(s.total).toFixed(2)}</td>
-                  <td className="py-3 text-muted-foreground">{new Date(s.createdAt).toLocaleDateString('pt-BR')}</td>
+                  <td className="p-3 text-right">R$ {Number(s.total).toFixed(2)}</td>
+                  <td className="p-3 text-muted-foreground">{new Date(s.createdAt).toLocaleDateString('pt-BR')}</td>
                 </tr>
               ))}
             </tbody>

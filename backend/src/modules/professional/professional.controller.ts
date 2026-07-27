@@ -14,13 +14,16 @@ import { ProfessionalService } from './professional.service';
 import { CreateProfessionalDto } from './dto/create-professional.dto';
 import { UpdateProfessionalDto } from './dto/update-professional.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('professionals')
 export class ProfessionalController {
   constructor(private readonly professionalService: ProfessionalService) {}
 
   @Get()
+  @Permissions('professionals.view')
   findAll(
     @Request() req: any,
     @Query('page') page?: string,
@@ -43,11 +46,13 @@ export class ProfessionalController {
   }
 
   @Get(':id')
+  @Permissions('professionals.view')
   findOne(@Request() req: any, @Param('id') id: string) {
     return this.professionalService.findOne(req.user.companyId, id);
   }
 
   @Post()
+  @Permissions('professionals.create')
   create(@Request() req: any, @Body() dto: CreateProfessionalDto) {
     return this.professionalService.create(
       req.user.companyId,
@@ -57,6 +62,7 @@ export class ProfessionalController {
   }
 
   @Patch(':id')
+  @Permissions('professionals.update')
   update(
     @Request() req: any,
     @Param('id') id: string,
@@ -71,6 +77,7 @@ export class ProfessionalController {
   }
 
   @Delete(':id')
+  @Permissions('professionals.delete')
   remove(@Request() req: any, @Param('id') id: string) {
     return this.professionalService.remove(req.user.companyId, id, req.user.id);
   }

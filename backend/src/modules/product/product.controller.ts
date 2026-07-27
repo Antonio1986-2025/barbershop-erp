@@ -14,13 +14,16 @@ import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
+  @Permissions('products.view')
   findAll(
     @Request() req: any,
     @Query('page') page?: string,
@@ -43,16 +46,19 @@ export class ProductController {
   }
 
   @Get(':id')
+  @Permissions('products.view')
   findOne(@Request() req: any, @Param('id') id: string) {
     return this.productService.findOne(req.user.companyId, id);
   }
 
   @Post()
+  @Permissions('products.create')
   create(@Request() req: any, @Body() dto: CreateProductDto) {
     return this.productService.create(req.user.companyId, req.user.id, dto);
   }
 
   @Patch(':id')
+  @Permissions('products.update')
   update(
     @Request() req: any,
     @Param('id') id: string,
@@ -62,6 +68,7 @@ export class ProductController {
   }
 
   @Delete(':id')
+  @Permissions('products.delete')
   remove(@Request() req: any, @Param('id') id: string) {
     return this.productService.remove(req.user.companyId, id, req.user.id);
   }

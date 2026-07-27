@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 
-const VERSION = 'v1.0.5';
+const VERSION = 'v1.0.6';
 
 // ── SIMPLE SECTIONS DATA ──
 interface Section { id: string; title: string; icon: string; content: string }

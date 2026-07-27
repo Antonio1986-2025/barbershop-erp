@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { getToken } from '@/lib/auth';
 import { ErrorBox } from '@/components/crud/error-box';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 export default function BarberDashboardPage() {
   const { user } = useAuth();
@@ -16,8 +19,9 @@ export default function BarberDashboardPage() {
     if (!user) return;
     if (!user.roles?.includes('barber')) { router.replace('/dashboard'); return; }
 
-    fetch('/api/barber/dashboard', {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    const token = getToken();
+    fetch(`${API_BASE}/api/barber/dashboard`, {
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
       .then(setData)
@@ -33,14 +37,14 @@ export default function BarberDashboardPage() {
   const dateStr = now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 py-6 sm:px-6">
       <div>
-        <h1 className="text-2xl font-bold">Minha Dashboard</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">Minha Dashboard</h1>
         <p className="text-sm text-muted-foreground capitalize">{dateStr}</p>
       </div>
 
       {/* Cards */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 sm:grid-cols-4">
         <Card value={data.appointmentsToday?.total ?? 0} label="Atendimentos hoje" color="blue" />
         <Card value={data.servicesToday ?? 0} label="Serviços realizados" color="green" />
         <Card value={data.productsSoldToday ?? 0} label="Produtos vendidos" color="purple" />

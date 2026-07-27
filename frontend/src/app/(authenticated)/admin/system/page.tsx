@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { getToken } from '@/lib/auth';
 
-const VERSION = 'v1.0.5';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+const VERSION = 'v1.0.6';
 
 interface SysInfo {
   uptime: string;
@@ -23,8 +25,8 @@ export default function AdminSystemPage() {
     if (!user) return;
     async function load() {
       try {
-        const token = localStorage.getItem('token');
-        const r = await fetch('/api/audit?page=1&limit=10', { headers: { Authorization: `Bearer ${token}` } });
+        const token = getToken();
+        const r = await fetch(`${API_BASE}/api/audit?page=1&limit=10`, { headers: { Authorization: `Bearer ${token}` } });
         const d = await r.json();
         setLogins(d.data ?? []);
       } catch {}

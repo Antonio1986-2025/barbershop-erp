@@ -464,6 +464,8 @@ model Company {
   financialCategories FinancialCategory[]
   financialAccounts   FinancialAccount[]
   cashClosings        CashClosing[]
+  holidays               Holiday[]
+  professionalAbsences   ProfessionalAbsence[]
 
   @@index([status])
   @@index([createdAt])
@@ -1051,6 +1053,7 @@ model Professional {
   appointments   Appointment[]
   serviceOrders  ServiceOrder[]
   scheduleBlocks ScheduleBlock[]
+  absences       ProfessionalAbsence[]
 
   @@unique([companyId, document])
   @@index([companyId])
@@ -2278,4 +2281,49 @@ model CommissionClosing {
   @@index([status])
   @@index([createdAt])
   @@map("commission_closings")
+}
+
+// ── Work Schedule: Holidays ──
+
+model Holiday {
+  id        String   @id @default(uuid())
+  companyId String
+  date      DateTime
+  name      String
+  recurring Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id])
+
+  @@unique([companyId, date])
+  @@index([companyId])
+  @@index([date])
+  @@map("holidays")
+}
+
+// ── Work Schedule: Professional Absences ──
+
+model ProfessionalAbsence {
+  id             String   @id @default(uuid())
+  companyId      String
+  professionalId String
+
+  type      String    // VACATION | DAY_OFF | BLOCKED | SICK_LEAVE
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company      Company      @relation(fields: [companyId], references: [id])
+  professional Professional @relation(fields: [professionalId], references: [id])
+
+  @@index([companyId, professionalId])
+  @@index([startDate, endDate])
+  @@index([professionalId])
+  @@map("professional_absences")
 }

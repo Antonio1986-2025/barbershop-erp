@@ -39,6 +39,7 @@ import { ObservabilityModule } from './modules/observability/observability.modul
 import { ServiceOrderModule } from './modules/service-order/service-order.module';
 import { BarberModule } from './modules/barber/barber.module';
 import { CommissionModule } from './modules/commission/commission.module';
+import { WorkScheduleModule } from './modules/work-schedule/work-schedule.module';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { CommissionModule } from './modules/commission/commission.module';
     ServiceOrderModule,
     BarberModule,
     CommissionModule,
+    WorkScheduleModule,
   ],
   controllers: [AppController],
   providers: [

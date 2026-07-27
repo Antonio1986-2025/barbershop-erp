@@ -11,16 +11,20 @@ import {
   Req,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ServiceOrderService } from './service-order.service';
 import { CreateServiceOrderDto } from './dto/create-service-order.dto';
 import { UpdateServiceOrderDto } from './dto/update-service-order.dto';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
 @Controller('service-orders')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class ServiceOrderController {
   constructor(private readonly service: ServiceOrderService) {}
 
   @Get()
+  @Permissions('schedule.view')
   findAll(
     @Req() req: any,
     @Query('unitId') unitId?: string,
@@ -41,16 +45,19 @@ export class ServiceOrderController {
   }
 
   @Get(':id')
+  @Permissions('schedule.view')
   findOne(@Req() req: any, @Param('id') id: string) {
     return this.service.findOne(req.user.companyId, id);
   }
 
   @Post()
+  @Permissions('schedule.create')
   create(@Req() req: any, @Body() dto: CreateServiceOrderDto) {
     return this.service.create(req.user.companyId, req.user.id, dto);
   }
 
   @Post('test-raw')
+  @Permissions('schedule.create')
   async createRaw(@Req() req: any, @Body() body: any) {
     try {
       return await this.service.create(req.user.companyId, req.user.id, body);
@@ -60,6 +67,7 @@ export class ServiceOrderController {
   }
 
   @Patch(':id')
+  @Permissions('schedule.update')
   update(
     @Req() req: any,
     @Param('id') id: string,
@@ -69,11 +77,13 @@ export class ServiceOrderController {
   }
 
   @Post(':id/generate-sale')
+  @Permissions('schedule.view')
   generateSale(@Req() req: any, @Param('id') id: string) {
     return this.service.generateSale(req.user.companyId, id, req.user.id);
   }
 
   @Post(':id/cancel')
+  @Permissions('schedule.update')
   cancel(
     @Req() req: any,
     @Param('id') id: string,
@@ -83,6 +93,7 @@ export class ServiceOrderController {
   }
 
   @Delete(':id')
+  @Permissions('schedule.delete')
   async remove(@Req() req: any, @Param('id') id: string) {
     await this.service.cancel(req.user.companyId, id, req.user.id, 'Exclusão');
     return { success: true };

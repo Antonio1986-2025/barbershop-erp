@@ -194,6 +194,44 @@ export class ScheduleService {
     serviceId?: string,
   ) {
     const dayOfWeek = new Date(date + 'T12:00:00Z').getUTCDay();
+    const targetDate = new Date(date + 'T12:00:00Z');
+
+    // 0. Check if date is a holiday
+    const dayStart = new Date(date + 'T00:00:00Z');
+    const dayEnd = new Date(date + 'T23:59:59Z');
+    const holiday = await this.prisma.holiday.findFirst({
+      where: {
+        companyId,
+        date: { gte: dayStart, lt: dayEnd },
+      },
+    });
+    if (holiday) {
+      return {
+        date, available: false, slots: [],
+        reason: `Feriado: ${holiday.name}`,
+      };
+    }
+
+    // 0b. Check if professional has an absence on this date
+    if (professionalId) {
+      const absence = await this.prisma.professionalAbsence.findFirst({
+        where: {
+          companyId,
+          professionalId,
+          startDate: { lte: targetDate },
+          endDate: { gte: targetDate },
+        },
+      });
+      if (absence) {
+        const typeLabels: Record<string, string> = {
+          VACATION: 'Férias', DAY_OFF: 'Folga', BLOCKED: 'Bloqueado', SICK_LEAVE: 'Afastado',
+        };
+        return {
+          date, available: false, slots: [],
+          reason: `Profissional ${typeLabels[absence.type] ?? 'ausente'} (${absence.reason ?? 'sem motivo informado'})`,
+        };
+      }
+    }
 
     // 1. Find business hours (unit-level)
     const unitHours = await this.prisma.businessHour.findMany({
@@ -212,14 +250,10 @@ export class ScheduleService {
       const profHours = await this.prisma.businessHour.findMany({
         where: { companyId, unitId, professionalId, dayOfWeek, active: true },
       });
-      // Professional hours override unit hours when set
       if (profHours.length > 0) {
         effectiveHours = profHours;
       }
     }
-
-    const dayStart = new Date(`${date}T00:00:00Z`);
-    const dayEnd = new Date(`${date}T23:59:59Z`);
 
     // 3. Fetch blocks
     const blocks = await this.prisma.scheduleBlock.findMany({

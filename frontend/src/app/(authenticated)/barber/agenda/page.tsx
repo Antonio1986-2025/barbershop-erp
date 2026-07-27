@@ -3,7 +3,18 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { getToken } from '@/lib/auth';
 import { ErrorBox } from '@/components/crud/error-box';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+
+function apiHeaders() {
+  const token = getToken();
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
 
 export default function BarberAgendaPage() {
   const { user } = useAuth();
@@ -17,18 +28,19 @@ export default function BarberAgendaPage() {
     if (!user) return;
     if (!user.roles?.includes('barber')) { router.replace('/dashboard'); return; }
     load();
-  }, [user]);
+  }, [user, filter]);
 
   async function load() {
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const url = filter ? `/api/barber/appointments?status=${filter}` : '/api/barber/appointments';
-      const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      const url = filter
+        ? `${API_BASE}/api/barber/appointments?status=${filter}`
+        : `${API_BASE}/api/barber/appointments`;
+      const r = await fetch(url, { headers: apiHeaders() });
       const d = await r.json();
       setData(Array.isArray(d) ? d : []);
-    } catch (e: any) { setError(e.message) }
-    finally { setLoading(false) }
+    } catch (e: any) { setError(e.message); }
+    finally { setLoading(false); }
   }
 
   const statusColors: Record<string, string> = {
@@ -47,9 +59,9 @@ export default function BarberAgendaPage() {
   if (error) return <ErrorBox message={error} />;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-4 py-6 sm:px-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Minha Agenda</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">Minha Agenda</h1>
         <select value={filter} onChange={(e) => setFilter(e.target.value)}
           className="rounded-md border border-border bg-card-bg px-3 py-1.5 text-sm">
           <option value="">Todos</option>

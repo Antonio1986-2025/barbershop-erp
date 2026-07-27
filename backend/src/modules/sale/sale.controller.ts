@@ -11,8 +11,10 @@ import { UpdateSaleItemDto } from './dto/update-sale-item.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { SaleQueryDto } from './dto/sale-query.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { PermissionsGuard } from '../auth/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('sales')
 export class SaleController {
   constructor(
@@ -21,6 +23,7 @@ export class SaleController {
   ) {}
 
   @Get()
+  @Permissions('sales.view')
   findAll(@Request() req: any, @Query() query: SaleQueryDto) {
     const orderDir = (query.orderDir === 'asc' || query.orderDir === 'desc')
       ? query.orderDir : undefined;
@@ -31,16 +34,19 @@ export class SaleController {
   }
 
   @Get(':id')
+  @Permissions('sales.view')
   findOne(@Request() req: any, @Param('id') id: string) {
     return this.saleService.findOne(req.user.companyId, id);
   }
 
   @Post()
+  @Permissions('sales.create')
   create(@Request() req: any, @Body() dto: CreateSaleDto) {
     return this.saleService.create(req.user.companyId, req.user.id, dto);
   }
 
   @Patch(':id')
+  @Permissions('sales.update')
   update(
     @Request() req: any,
     @Param('id') id: string,
@@ -50,16 +56,19 @@ export class SaleController {
   }
 
   @Delete(':id')
+  @Permissions('sales.delete')
   remove(@Request() req: any, @Param('id') id: string) {
     return this.saleService.remove(req.user.companyId, id, req.user.id);
   }
 
   @Patch(':id/open')
+  @Permissions('sales.update')
   open(@Request() req: any, @Param('id') id: string) {
     return this.saleService.open(req.user.companyId, id, req.user.id);
   }
 
   @Patch(':id/cancel')
+  @Permissions('sales.update')
   cancel(
     @Request() req: any,
     @Param('id') id: string,
@@ -69,6 +78,7 @@ export class SaleController {
   }
 
   @Patch(':id/refund')
+  @Permissions('sales.update')
   refund(
     @Request() req: any,
     @Param('id') id: string,
@@ -78,6 +88,7 @@ export class SaleController {
   }
 
   @Post(':id/items')
+  @Permissions('sales.update')
   addItem(
     @Request() req: any,
     @Param('id') id: string,
@@ -87,6 +98,7 @@ export class SaleController {
   }
 
   @Patch(':id/items/:itemId')
+  @Permissions('sales.update')
   updateItem(
     @Request() req: any,
     @Param('id') id: string,
@@ -99,6 +111,7 @@ export class SaleController {
   }
 
   @Delete(':id/items/:itemId')
+  @Permissions('sales.delete')
   removeItem(
     @Request() req: any,
     @Param('id') id: string,
@@ -110,6 +123,7 @@ export class SaleController {
   }
 
   @Post(':id/payments')
+  @Permissions('sales.create')
   createPayment(
     @Request() req: any,
     @Param('id') id: string,
@@ -119,6 +133,7 @@ export class SaleController {
   }
 
   @Get(':id/payments')
+  @Permissions('sales.view')
   getPayments(@Request() req: any, @Param('id') id: string) {
     return this.salePaymentService.findBySale(req.user.companyId, id);
   }

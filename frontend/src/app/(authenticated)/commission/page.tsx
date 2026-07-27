@@ -6,7 +6,14 @@ import { useRouter } from 'next/navigation';
 import { ErrorBox } from '@/components/crud/error-box';
 import { Pagination } from '@/components/crud/pagination';
 import { useToast } from '@/components/ui/toast';
-import { ConfirmDialog, useConfirm } from '@/components/ui/confirm-dialog';
+import {
+  fetchCommissions,
+  approveCommission,
+  rejectCommission,
+  fetchCommissionClosings,
+  closeCommissionPeriod,
+  type Commission,
+} from '@/lib/commission';
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: 'Pendente',
@@ -28,14 +35,13 @@ export default function CommissionAdminPage() {
   const { user } = useAuth();
   const router = useRouter();
   const { addToast } = useToast();
-  const confirm = useConfirm();
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Commission[]>([]);
   const [meta, setMeta] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('PENDING');
-  const [selected, setSelected] = useState<any>(null);
+  const [selected, setSelected] = useState<Commission | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [showReject, setShowReject] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -55,91 +61,72 @@ export default function CommissionAdminPage() {
     loadClosings();
   }, [user, page, statusFilter]);
 
-  async function load() {
+  function load() {
     setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      const url = statusFilter
-        ? `/api/commission?page=${page}&status=${statusFilter}`
-        : `/api/commission?page=${page}`;
-      const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-      const d = await r.json();
-      setData(d.data ?? []);
-      setMeta(d.meta ?? { page: 1, limit: 20, total: 0, totalPages: 0 });
-    } catch (e: any) { setError(e.message) }
-    finally { setLoading(false) }
+    setError('');
+    fetchCommissions({ page, status: statusFilter || undefined })
+      .then((r) => { setData(r.data); setMeta(r.meta); })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   }
 
-  async function loadClosings() {
-    try {
-      const token = localStorage.getItem('token');
-      const r = await fetch('/api/commission/closings', { headers: { Authorization: `Bearer ${token}` } });
-      const d = await r.json();
-      setClosings(d.data ?? []);
-    } catch {}
+  function loadClosings() {
+    fetchCommissionClosings()
+      .then(setClosings)
+      .catch(() => {});
   }
 
   async function handleApprove(id: string) {
     setActionLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const r = await fetch(`/api/commission/${id}/approve`, {
-        method: 'POST', headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!r.ok) throw new Error((await r.json()).message || 'Erro ao aprovar');
+      await approveCommission(id);
       addToast('SUCCESS', 'Comissão aprovada');
       load();
-    } catch (e: any) { addToast('ERROR', e.message) }
-    finally { setActionLoading(false) }
+    } catch (e: any) {
+      addToast('ERROR', e.message);
+    } finally {
+      setActionLoading(false);
+    }
   }
 
   async function handleReject(id: string) {
-    if (!rejectReason.trim()) { addToast('ERROR', 'Motivo da rejeição é obrigatório'); return }
+    if (!rejectReason.trim()) { addToast('ERROR', 'Motivo da rejeição é obrigatório'); return; }
     setActionLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const r = await fetch(`/api/commission/${id}/reject`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reason: rejectReason }),
-      });
-      if (!r.ok) throw new Error((await r.json()).message || 'Erro ao rejeitar');
+      await rejectCommission(id, rejectReason);
       addToast('SUCCESS', 'Comissão rejeitada');
       setShowReject(false);
       setRejectReason('');
       setSelected(null);
       load();
-    } catch (e: any) { addToast('ERROR', e.message) }
-    finally { setActionLoading(false) }
+    } catch (e: any) {
+      addToast('ERROR', e.message);
+    } finally {
+      setActionLoading(false);
+    }
   }
 
   async function handleClosePeriod() {
     setActionLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const unitId = ''; // Will need unit selection
-      const r = await fetch('/api/commission/close-period', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ unitId, periodStart, periodEnd }),
-      });
-      if (!r.ok) throw new Error((await r.json()).message || 'Erro ao fechar período');
+      await closeCommissionPeriod({ unitId: '', periodStart, periodEnd });
       addToast('SUCCESS', 'Período fechado com sucesso');
       setShowCloseModal(false);
       load();
       loadClosings();
-    } catch (e: any) { addToast('ERROR', e.message) }
-    finally { setActionLoading(false) }
+    } catch (e: any) {
+      addToast('ERROR', e.message);
+    } finally {
+      setActionLoading(false);
+    }
   }
 
   if (loading) return <div className="flex justify-center py-12"><p className="text-muted-foreground animate-pulse">Carregando...</p></div>;
 
   return (
-    <div className="space-y-6">
-      {confirm.dialog}
-
+    <div className="mx-auto max-w-5xl space-y-6 px-4 py-6 sm:px-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Comissões</h1>
+        <h1 className="text-xl font-bold sm:text-2xl">Comissões</h1>
         <button onClick={() => setShowCloseModal(true)}
           className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary-light transition-colors">
           Fechar Período
@@ -178,7 +165,7 @@ export default function CommissionAdminPage() {
               </tr>
             </thead>
             <tbody>
-              {data.map((c: any) => (
+              {data.map((c) => (
                 <tr key={c.id} className="border-b border-border/50 hover:bg-muted/20">
                   <td className="p-3">{new Date(c.createdAt).toLocaleDateString('pt-BR')}</td>
                   <td className="p-3">R$ {Number(c.totalServiceAmount || c.totalProductAmount || 0).toFixed(2)}</td>
