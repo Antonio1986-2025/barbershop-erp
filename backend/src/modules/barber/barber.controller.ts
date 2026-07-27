@@ -39,6 +39,16 @@ export class BarberController {
     return this.barberService.getSales(req.user.companyId, req.user, { status, page, limit });
   }
 
+  @Get('commissions')
+  getCommissions(
+    @Request() req: any,
+    @Query('status') status?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.barberService.getCommissions(req.user.companyId, req.user, { status, page, limit });
+  }
+
   @Get('profile')
   getProfile(@Request() req: any) {
     return this.barberService.getProfile(req.user.companyId, req.user);

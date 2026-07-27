@@ -28,7 +28,7 @@ export default function BarberCommissionsPage() {
   const router = useRouter();
   const { addToast } = useToast();
   const [data, setData] = useState<any[]>([]);
-  const [meta, setMeta] = useState({ page: 1, limit: 10, total: 0, totalPages: 0 });
+  const [meta, setMeta] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -39,52 +39,28 @@ export default function BarberCommissionsPage() {
     if (!user) return;
     if (!user.roles?.includes('barber')) { router.replace('/dashboard'); return; }
     load();
-  }, [user, page, statusFilter, period]);
+  }, [user, page, statusFilter]);
 
   async function load() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      let url = `/api/barber/sales?page=${page}`;
+      let url = `/api/commission?page=${page}`;
       if (statusFilter) url += `&status=${statusFilter}`;
       const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       const d = await r.json();
       setData(d.data ?? []);
-      setMeta(d.meta ?? { page: 1, limit: 10, total: 0, totalPages: 0 });
-    } catch (e: any) { setError(e.message) }
-    finally { setLoading(false) }
-  }
-
-  // We use the barber sales to show commissions info
-  // For actual commissions data, we need the commission endpoint
-  const [commissions, setCommissions] = useState<any[]>([]);
-  const [commMeta, setCommMeta] = useState({ page: 1, limit: 20, total: 0, totalPages: 0 });
-
-  useEffect(() => {
-    if (!user) return;
-    loadCommissions();
-  }, [user, page]);
-
-  async function loadCommissions() {
-    try {
-      const token = localStorage.getItem('token');
-      const url = statusFilter
-        ? `/api/commission?page=${page}&status=${statusFilter}`
-        : `/api/commission?page=${page}`;
-      const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-      const d = await r.json();
-      setCommissions(d.data ?? []);
-      setCommMeta(d.meta ?? { page: 1, limit: 20, total: 0, totalPages: 0 });
+      setMeta(d.meta ?? { page: 1, limit: 20, total: 0, totalPages: 0 });
     } catch (e: any) { setError(e.message) }
     finally { setLoading(false) }
   }
 
   const summary = {
-    total: commissions.reduce((s, c) => s + Number(c.commissionAmount), 0),
-    pending: commissions.filter((c) => c.status === 'PENDING').reduce((s, c) => s + Number(c.commissionAmount), 0),
-    approved: commissions.filter((c) => c.status === 'APPROVED').reduce((s, c) => s + Number(c.commissionAmount), 0),
-    paid: commissions.filter((c) => c.status === 'PAID').reduce((s, c) => s + Number(c.commissionAmount), 0),
-    rejected: commissions.filter((c) => c.status === 'REJECTED').reduce((s, c) => s + Number(c.commissionAmount), 0),
+    total: data.reduce((s, c) => s + Number(c.commissionAmount), 0),
+    pending: data.filter((c) => c.status === 'PENDING').reduce((s, c) => s + Number(c.commissionAmount), 0),
+    approved: data.filter((c) => c.status === 'APPROVED').reduce((s, c) => s + Number(c.commissionAmount), 0),
+    paid: data.filter((c) => c.status === 'PAID').reduce((s, c) => s + Number(c.commissionAmount), 0),
+    rejected: data.filter((c) => c.status === 'REJECTED').reduce((s, c) => s + Number(c.commissionAmount), 0),
   };
 
   if (loading) return <div className="flex justify-center py-12"><p className="text-muted-foreground animate-pulse">Carregando...</p></div>;
@@ -99,7 +75,7 @@ export default function BarberCommissionsPage() {
         <SummaryCard label="Total" value={summary.total} color="blue" />
         <SummaryCard label="Pendente" value={summary.pending} color="yellow" />
         <SummaryCard label="Aprovada" value={summary.approved} color="green" />
-        <SummaryCard label="Paga" value={summary.paid} color="gray" />
+        <SummaryCard label="Paga" value={summary.paid} color="blue" />
         <SummaryCard label="Rejeitada" value={summary.rejected} color="red" />
       </div>
 
@@ -122,7 +98,7 @@ export default function BarberCommissionsPage() {
       </div>
 
       {/* Commissions List */}
-      {commissions.length === 0 ? (
+      {data.length === 0 ? (
         <div className="flex justify-center py-12"><p className="text-muted-foreground">Nenhuma comissão encontrada.</p></div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
@@ -137,7 +113,7 @@ export default function BarberCommissionsPage() {
               </tr>
             </thead>
             <tbody>
-              {commissions.map((c: any) => (
+              {data.map((c: any) => (
                 <tr key={c.id} className="border-b border-border/50 hover:bg-muted/20">
                   <td className="p-3">{new Date(c.createdAt).toLocaleDateString('pt-BR')}</td>
                   <td className="p-3">R$ {Number(c.totalServiceAmount || c.totalProductAmount || 0).toFixed(2)}</td>
@@ -145,7 +121,7 @@ export default function BarberCommissionsPage() {
                   <td className="p-3 font-semibold">R$ {Number(c.commissionAmount).toFixed(2)}</td>
                   <td className="p-3">
                     <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[c.status] ?? ''}`}>
-                      {STATUS_LABELS[c.status] ?? c.status}
+                      {c.status}
                     </span>
                   </td>
                 </tr>
@@ -155,8 +131,8 @@ export default function BarberCommissionsPage() {
         </div>
       )}
 
-      {commMeta.totalPages > 1 && (
-        <Pagination page={commMeta.page} totalPages={commMeta.totalPages} onPageChange={setPage} />
+      {meta.totalPages > 1 && (
+        <Pagination page={meta.page} totalPages={meta.totalPages} onPageChange={setPage} />
       )}
     </div>
   );

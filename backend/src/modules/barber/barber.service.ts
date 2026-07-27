@@ -140,6 +140,28 @@ export class BarberService {
     return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
   }
 
+  async getCommissions(companyId: string, user: any, query: { status?: string; page?: number; limit?: number }) {
+    const professionalId = this.getProfessionalId(user);
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+
+    // Get commissions for this professional
+    const where: any = { companyId, professionalId };
+    if (query.status) where.status = query.status;
+
+    const [data, total] = await Promise.all([
+      this.prisma.commission.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: { items: true },
+      }),
+      this.prisma.commission.count({ where }),
+    ]);
+    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+  }
+
   async getProfile(companyId: string, user: any) {
     const professionalId = this.getProfessionalId(user);
     const professional = await this.prisma.professional.findFirst({
