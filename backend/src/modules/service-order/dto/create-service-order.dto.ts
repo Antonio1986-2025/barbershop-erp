@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsArray, ValidateNested, IsNumber, Min, IsUUID } from 'class-validator';
+import { IsString, IsOptional, IsArray, ValidateNested, IsNumber, Min, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateServiceOrderItemDto {
@@ -29,12 +29,15 @@ export class CreateServiceOrderItemDto {
 
 export class CreateServiceOrderDto {
   @IsString()
+  @IsNotEmpty()
   unitId: string;
 
   @IsString()
+  @IsNotEmpty()
   customerId: string;
 
   @IsString()
+  @IsNotEmpty()
   professionalId: string;
 
   @IsOptional()
