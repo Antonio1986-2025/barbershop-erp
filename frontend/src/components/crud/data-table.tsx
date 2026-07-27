@@ -92,7 +92,7 @@ export function DataTable<T>({
             {data.map((item, idx) => (
               <tr key={idx} className="border-b border-border hover:bg-muted/50 transition-colors">
                 {columns.map((col, i) => (
-                  <td key={i} className={`px-4 py-3 ${col.className ?? ''} ${col.hideOnMobile ? 'hidden md:table-cell' : ''}`}>
+                  <td key={i} data-label={col.header} className={`px-4 py-3 ${col.className ?? ''} ${col.hideOnMobile ? 'hidden md:table-cell' : ''}`}>
                     {col.render(item)}
                   </td>
                 ))}
