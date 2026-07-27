@@ -23,6 +23,89 @@
   --radius: 8px;
 }
 
+/* ─── Dark Mode ──────────────────────────────────── */
+.dark {
+  --background: #0f0f1a;
+  --foreground: #e4e4e7;
+  --primary: #a52a2a;
+  --primary-foreground: #ffffff;
+  --primary-light: #c0392b;
+  --accent: #d4a84b;
+  --accent-foreground: #0f0f1a;
+  --muted: #1a1a2e;
+  --muted-foreground: #a1a1aa;
+  --border: #27272a;
+  --sidebar-bg: #0a0a14;
+  --sidebar-active: #a52a2a;
+  --card-bg: #1a1a2e;
+  --card-border: #27272a;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+/* ─── Design System Utilities ─────────────────────── */
+.card-premium {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+  transition: all 0.2s ease;
+}
+.card-premium:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+
+.btn-premium {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  min-height: 40px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: none;
+}
+.btn-premium:active { transform: scale(0.97); }
+
+/* ─── Skeleton Loading ──────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Status Badges Premium ──────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+}
+.badge-success { background: #dcfce7; color: #166534; }
+.badge-warning { background: #fef3c7; color: #92400e; }
+.badge-danger  { background: #fee2e2; color: #991b1b; }
+.badge-info    { background: #dbeafe; color: #1e40af; }
+.badge-muted   { background: var(--muted); color: var(--muted-foreground); }
+.dark .badge-success { background: #052e16; color: #86efac; }
+.dark .badge-warning { background: #451a03; color: #fcd34d; }
+.dark .badge-danger  { background: #450a0a; color: #fca5a5; }
+.dark .badge-info    { background: #0c1929; color: #93c5fd; }
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -38,6 +121,7 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+  --color-danger-foreground: #ffffff;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --radius-sm: 4px;
