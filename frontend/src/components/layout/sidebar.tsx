@@ -77,6 +77,7 @@ const adminGroups: NavGroup[] = [
       { href: '/auditoria', label: 'Auditoria', icon: 'clipboard-list' },
       { href: '/configuracoes', label: 'Configurações', icon: 'settings' },
       { href: '/status', label: 'Status', icon: 'activity' },
+      { href: '/admin/system', label: 'Saúde do Sistema', icon: 'activity' },
     ],
   },
 ];
