@@ -13,7 +13,7 @@ export default function Home() {
   const [data, setData] = useState<HealthResponse | null>(null);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/health`)
+    fetch(`/health`)
       .then((res) => res.json())
       .then(setData)
       .catch(() => setData(null));

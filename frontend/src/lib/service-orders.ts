@@ -1,7 +1,5 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-
 function headers() {
   const token = getToken();
   return {
@@ -47,7 +45,7 @@ export async function fetchServiceOrders(params: {
   professionalId?: string;
   status?: string;
 } = {}): Promise<ServiceOrderListResponse> {
-  const url = new URL(`${API_BASE}/api/service-orders`);
+  const url = new URL(`/api/service-orders`, window.location.origin);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') {
       url.searchParams.set(key, String(value));
@@ -59,7 +57,7 @@ export async function fetchServiceOrders(params: {
 }
 
 export async function fetchServiceOrder(id: string): Promise<ServiceOrder> {
-  const res = await fetch(`${API_BASE}/api/service-orders/${id}`, {
+  const res = await fetch(`/api/service-orders/${id}`, {
     headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -74,7 +72,7 @@ export async function createServiceOrder(data: {
   items?: { serviceId?: string; productId?: string; quantity: number; unitPrice: number }[];
   notes?: string;
 }): Promise<ServiceOrder> {
-  const res = await fetch(`${API_BASE}/api/service-orders`, {
+  const res = await fetch(`/api/service-orders`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify(data),
@@ -87,7 +85,7 @@ export async function updateServiceOrder(
   id: string,
   data: Partial<ServiceOrder>,
 ): Promise<ServiceOrder> {
-  const res = await fetch(`${API_BASE}/api/service-orders/${id}`, {
+  const res = await fetch(`/api/service-orders/${id}`, {
     method: 'PATCH',
     headers: headers(),
     body: JSON.stringify(data),
@@ -97,7 +95,7 @@ export async function updateServiceOrder(
 }
 
 export async function cancelServiceOrder(id: string, reason?: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/service-orders/${id}/cancel`, {
+  const res = await fetch(`/api/service-orders/${id}/cancel`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify({ reason }),
@@ -106,7 +104,7 @@ export async function cancelServiceOrder(id: string, reason?: string): Promise<v
 }
 
 export async function generateSaleFromOrder(id: string): Promise<any> {
-  const res = await fetch(`${API_BASE}/api/service-orders/${id}/generate-sale`, {
+  const res = await fetch(`/api/service-orders/${id}/generate-sale`, {
     method: 'POST',
     headers: headers(),
   });

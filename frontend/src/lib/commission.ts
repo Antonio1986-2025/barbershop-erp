@@ -1,7 +1,5 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-
 function headers() {
   const token = getToken();
   return {
@@ -49,7 +47,7 @@ export async function fetchCommissions(params: {
   professionalId?: string;
   unitId?: string;
 } = {}): Promise<CommissionListResponse> {
-  const url = new URL(`${API_BASE}/api/commission`);
+  const url = new URL(`/api/commission`);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') {
       url.searchParams.set(key, String(value));
@@ -61,7 +59,7 @@ export async function fetchCommissions(params: {
 }
 
 export async function approveCommission(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/commission/${id}/approve`, {
+  const res = await fetch(`/api/commission/${id}/approve`, {
     method: 'POST',
     headers: headers(),
   });
@@ -69,7 +67,7 @@ export async function approveCommission(id: string): Promise<void> {
 }
 
 export async function rejectCommission(id: string, reason: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/commission/${id}/reject`, {
+  const res = await fetch(`/api/commission/${id}/reject`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify({ reason }),
@@ -78,7 +76,7 @@ export async function rejectCommission(id: string, reason: string): Promise<void
 }
 
 export async function fetchCommissionClosings(): Promise<any[]> {
-  const res = await fetch(`${API_BASE}/api/commission/closings`, {
+  const res = await fetch(`/api/commission/closings`, {
     headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -91,7 +89,7 @@ export async function closeCommissionPeriod(data: {
   periodStart: string;
   periodEnd: string;
 }): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/commission/close-period`, {
+  const res = await fetch(`/api/commission/close-period`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify(data),
