@@ -334,7 +334,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
 
   return (
     <>
-      <aside className={`fixed inset-y-0 left-0 z-40 w-72 transform transition-transform duration-200 ease-in-out lg:static lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 w-72 transform transition-transform duration-200 ease-in-out lg:hidden ${open ? 'translate-x-0' : '-translate-x-full'}`}>
         {sidebarContent}
       </aside>
       <aside className="hidden lg:flex lg:w-72 lg:shrink-0">
