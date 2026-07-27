@@ -209,7 +209,7 @@ function NovoAgendamentoForm() {
           ) : slotsError ? (
             <p className="text-sm text-danger">{slotsError}</p>
           ) : slots.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum horário disponível nesta data</p>
+            <p className="text-sm text-muted-foreground">Nenhum horário disponível. Verifique o expediente da unidade e a disponibilidade do profissional.</p>
           ) : (
             <select className="w-full rounded-md border border-border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               value={slot} onChange={e => setSlot(e.target.value)} required>

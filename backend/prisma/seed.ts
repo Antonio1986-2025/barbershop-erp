@@ -171,6 +171,19 @@ async function seed() {
   await createUser('Visualizador', 'visualizador@demo.com', roleViewer.id);
   const barberUserId = await createUser('Barbeiro', 'barber@demo.com', roleBarber.id);
 
+  // ── Business Hours (Matriz) ──
+  for (const day of [1, 2, 3, 4, 5, 6]) {
+    const end = day === 6 ? '13:00' : '18:00';
+    const existing = await prisma.businessHour.findFirst({
+      where: { companyId: company.id, unitId: unitMatriz.id, dayOfWeek: day, startTime: '08:00' },
+    });
+    if (!existing) {
+      await prisma.businessHour.create({
+        data: { companyId: company.id, unitId: unitMatriz.id, dayOfWeek: day, startTime: '08:00', endTime: end, active: true },
+      });
+    }
+  }
+
   // ── Categories ──
   const catPomadas = await prisma.category.upsert({
     where: { companyId_name: { companyId: company.id, name: 'Pomadas' } },

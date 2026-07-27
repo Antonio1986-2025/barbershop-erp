@@ -193,7 +193,7 @@ export class ScheduleService {
     professionalId?: string,
     serviceId?: string,
   ) {
-    const dayOfWeek = new Date(date).getDay();
+    const dayOfWeek = new Date(date + 'T12:00:00Z').getUTCDay();
 
     const hours = await this.prisma.businessHour.findMany({
       where: { companyId, unitId, dayOfWeek, active: true },
