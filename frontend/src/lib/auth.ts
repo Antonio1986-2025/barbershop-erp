@@ -5,7 +5,6 @@ function getApiBase(): string {
 }
 const REFRESH_TOKEN_KEY = 'barbershop_refresh_token';
 
-
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem(ACCESS_TOKEN_KEY);

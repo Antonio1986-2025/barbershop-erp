@@ -55,8 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        const data = await res.json();
-        setUser(data);
+        setUser(await res.json());
       } else {
         const refreshToken = getRefreshToken();
         if (refreshToken) {
@@ -72,9 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const meRes = await fetch(`${getApiBase()}/api/auth/me`, {
               headers: { Authorization: `Bearer ${accessToken}` },
             });
-            if (meRes.ok) {
-              setUser(await meRes.json());
-            }
+            if (meRes.ok) setUser(await meRes.json());
           } else {
             clearToken();
             setUser(null);
@@ -119,9 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         method: 'POST',
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-    } catch {
-      // ignore
-    }
+    } catch {}
     clearToken();
     setUser(null);
   };
