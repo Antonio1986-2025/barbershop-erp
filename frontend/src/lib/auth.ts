@@ -1,10 +1,10 @@
 const ACCESS_TOKEN_KEY = 'barbershop_access_token';
-const REFRESH_TOKEN_KEY = 'barbershop_refresh_token';
-
 function getApiBase(): string {
   if (typeof window === 'undefined') return 'http://localhost:3001';
   return `http://${window.location.hostname}:3001`;
 }
+const REFRESH_TOKEN_KEY = 'barbershop_refresh_token';
+
 
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null;
