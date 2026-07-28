@@ -1,8 +1,4 @@
 const ACCESS_TOKEN_KEY = 'barbershop_access_token';
-function getApiBase(): string {
-  if (typeof window === 'undefined') return 'http://localhost:3001';
-  return `http://${window.location.hostname}:3001`;
-}
 const REFRESH_TOKEN_KEY = 'barbershop_refresh_token';
 
 export function getToken(): string | null {
@@ -53,7 +49,7 @@ export async function refreshRequest(): Promise<RefreshResponse | null> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return null;
   try {
-    const res = await fetch(`${getApiBase()}/api/auth/refresh`, {
+    const res = await fetch(`/api/auth/refresh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
@@ -72,7 +68,7 @@ export async function logoutRequest(): Promise<void> {
   const token = getToken();
   if (!token) return;
   try {
-    await fetch(`${getApiBase()}/api/auth/logout`, {
+    await fetch(`/api/auth/logout`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -81,7 +77,7 @@ export async function logoutRequest(): Promise<void> {
 }
 
 export async function meRequest(token: string) {
-  const res = await fetch(`${getApiBase()}/api/auth/me`, {
+  const res = await fetch(`/api/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error('Unauthorized');

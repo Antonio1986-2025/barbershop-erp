@@ -9,10 +9,6 @@ import {
 import type { ReactNode } from 'react';
 import { getToken, getRefreshToken, clearToken, setToken, setRefreshToken } from '@/lib/auth';
 
-function getApiBase(): string {
-  if (typeof window === 'undefined') return 'http://localhost:3001';
-  return `http://${window.location.hostname}:3001`;
-}
 
 interface User {
   id: string;
@@ -51,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const res = await fetch(`${getApiBase()}/api/auth/me`, {
+      const res = await fetch(`/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -59,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         const refreshToken = getRefreshToken();
         if (refreshToken) {
-          const refreshRes = await fetch(`${getApiBase()}/api/auth/refresh`, {
+          const refreshRes = await fetch(`/api/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refreshToken }),
@@ -68,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const { accessToken, refreshToken: newRefresh } = await refreshRes.json();
             setToken(accessToken);
             setRefreshToken(newRefresh);
-            const meRes = await fetch(`${getApiBase()}/api/auth/me`, {
+            const meRes = await fetch(`/api/auth/me`, {
               headers: { Authorization: `Bearer ${accessToken}` },
             });
             if (meRes.ok) setUser(await meRes.json());
@@ -93,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUser]);
 
   const login = async (email: string, password: string) => {
-    const res = await fetch(`${getApiBase()}/api/auth/login`, {
+    const res = await fetch(`/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -112,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch(`${getApiBase()}/api/auth/logout`, {
+      await fetch(`/api/auth/logout`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${getToken()}` },
       });
