@@ -111,6 +111,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(data.accessToken);
     setRefreshToken(data.refreshToken);
     setUser(data.user);
+    // Aguarda o cookie ser commitado antes de navegar
+    await new Promise(r => setTimeout(r, 100));
     window.location.href = '/dashboard';
   };
 
