@@ -2,9 +2,11 @@
 
 import { useState, FormEvent } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
 
 export function LoginForm() {
   const { login } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,7 +24,7 @@ export function LoginForm() {
     setLoading(true);
     try {
       await login(email, password);
-      window.location.href = '/dashboard';
+      router.push('/dashboard');
     } catch {
       setError('Email ou senha inválidos');
     } finally {
