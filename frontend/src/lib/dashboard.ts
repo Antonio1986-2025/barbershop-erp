@@ -1,14 +1,20 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
 
 function headers() {
   const token = getToken();
   return { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
 }
 
-async function apiGet<T>(path: string, params?: Record<string, string | undefined>): Promise<T> {
-  const url = new URL(`${API_BASE}${path}`);
+async function apiGet<T>(
+  path: string,
+  params?: Record<string, string | undefined>,
+): Promise<T> {
+  const url = new URL(`${getApiBase()}${path}`);
   if (params) {
     for (const [k, v] of Object.entries(params)) {
       if (v !== undefined && v !== '') url.searchParams.set(k, v);

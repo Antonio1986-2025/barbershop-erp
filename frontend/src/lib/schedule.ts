@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -43,7 +47,7 @@ export async function fetchBusinessHours(companyId?: string, unitId?: string): P
   const params = new URLSearchParams();
   if (unitId) params.set('unitId', unitId);
   const qs = params.toString();
-  const res = await fetch(`${API_BASE}/api/schedule/business-hours${qs ? '?' + qs : ''}`, { headers: headers() });
+  const res = await fetch(`/api/schedule/business-hours${qs ? '?' + qs : ''}`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -55,7 +59,7 @@ export async function createBusinessHour(data: {
   endTime: string;
   active?: boolean;
 }): Promise<BusinessHour> {
-  const res = await fetch(`${API_BASE}/api/schedule/business-hours`, {
+  const res = await fetch(`/api/schedule/business-hours`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify(data),
@@ -65,7 +69,7 @@ export async function createBusinessHour(data: {
 }
 
 export async function updateBusinessHour(id: string, data: Partial<BusinessHour>): Promise<BusinessHour> {
-  const res = await fetch(`${API_BASE}/api/schedule/business-hours/${id}`, {
+  const res = await fetch(`/api/schedule/business-hours/${id}`, {
     method: 'PATCH',
     headers: headers(),
     body: JSON.stringify(data),
@@ -75,7 +79,7 @@ export async function updateBusinessHour(id: string, data: Partial<BusinessHour>
 }
 
 export async function deleteBusinessHour(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/schedule/business-hours/${id}`, { method: 'DELETE', headers: headers() });
+  const res = await fetch(`/api/schedule/business-hours/${id}`, { method: 'DELETE', headers: headers() });
   if (!res.ok) throw new Error(await res.text());
 }
 
@@ -84,7 +88,7 @@ export async function fetchScheduleBlocks(unitId?: string, professionalId?: stri
   if (unitId) params.set('unitId', unitId);
   if (professionalId) params.set('professionalId', professionalId);
   const qs = params.toString();
-  const res = await fetch(`${API_BASE}/api/schedule/blocks${qs ? '?' + qs : ''}`, { headers: headers() });
+  const res = await fetch(`/api/schedule/blocks${qs ? '?' + qs : ''}`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -98,7 +102,7 @@ export async function createScheduleBlock(data: {
   startAt: string;
   endAt: string;
 }): Promise<ScheduleBlock> {
-  const res = await fetch(`${API_BASE}/api/schedule/blocks`, {
+  const res = await fetch(`/api/schedule/blocks`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify(data),
@@ -108,7 +112,7 @@ export async function createScheduleBlock(data: {
 }
 
 export async function updateScheduleBlock(id: string, data: Partial<ScheduleBlock>): Promise<ScheduleBlock> {
-  const res = await fetch(`${API_BASE}/api/schedule/blocks/${id}`, {
+  const res = await fetch(`/api/schedule/blocks/${id}`, {
     method: 'PATCH',
     headers: headers(),
     body: JSON.stringify(data),
@@ -118,7 +122,7 @@ export async function updateScheduleBlock(id: string, data: Partial<ScheduleBloc
 }
 
 export async function deleteScheduleBlock(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/schedule/blocks/${id}`, { method: 'DELETE', headers: headers() });
+  const res = await fetch(`/api/schedule/blocks/${id}`, { method: 'DELETE', headers: headers() });
   if (!res.ok) throw new Error(await res.text());
 }
 
@@ -135,7 +139,7 @@ export async function fetchAvailability(params: {
   professionalId?: string;
   serviceId?: string;
 }): Promise<AvailabilityResult> {
-  const url = new URL(`${API_BASE}/api/schedule/availability`);
+  const url = new URL(`/api/schedule/availability`);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
   }

@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -32,7 +36,7 @@ export async function fetchSuppliers(params: {
   page?: number; limit?: number; search?: string; active?: string;
   orderBy?: string; orderDir?: string;
 }): Promise<{ data: Supplier[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
-  const url = new URL(`${API_BASE}/api/suppliers`);
+  const url = new URL(`/api/suppliers`);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -42,7 +46,7 @@ export async function fetchSuppliers(params: {
 }
 
 export async function fetchSupplier(id: string): Promise<Supplier> {
-  const res = await fetch(`${API_BASE}/api/suppliers/${id}`, { headers: headers() });
+  const res = await fetch(`/api/suppliers/${id}`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -50,7 +54,7 @@ export async function fetchSupplier(id: string): Promise<Supplier> {
 export async function createSupplier(data: {
   name: string; document?: string; email?: string; phone?: string; contact?: string; notes?: string;
 }): Promise<Supplier> {
-  const res = await fetch(`${API_BASE}/api/suppliers`, {
+  const res = await fetch(`/api/suppliers`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -60,7 +64,7 @@ export async function createSupplier(data: {
 export async function updateSupplier(id: string, data: {
   name?: string; document?: string; email?: string; phone?: string; contact?: string; notes?: string;
 }): Promise<Supplier> {
-  const res = await fetch(`${API_BASE}/api/suppliers/${id}`, {
+  const res = await fetch(`/api/suppliers/${id}`, {
     method: 'PATCH', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -68,7 +72,7 @@ export async function updateSupplier(id: string, data: {
 }
 
 export async function deleteSupplier(id: string): Promise<Supplier> {
-  const res = await fetch(`${API_BASE}/api/suppliers/${id}`, {
+  const res = await fetch(`/api/suppliers/${id}`, {
     method: 'DELETE', headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());

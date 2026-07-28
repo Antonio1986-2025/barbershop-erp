@@ -3,6 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 
+function getApiBase(): string {
+  if (typeof window === 'undefined') return 'http://localhost:3001';
+  return `http://${window.location.hostname}:3001`;
+}
+
 type HealthResponse = {
   status: string;
   service: string;
@@ -13,7 +18,7 @@ export default function Home() {
   const [data, setData] = useState<HealthResponse | null>(null);
 
   useEffect(() => {
-    fetch(`/health`)
+    fetch(`${getApiBase()}/health`)
       .then((res) => res.json())
       .then(setData)
       .catch(() => setData(null));

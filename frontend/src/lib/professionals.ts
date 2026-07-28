@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -58,7 +62,7 @@ export async function fetchProfessionals(params: {
   orderBy?: string;
   orderDir?: string;
 }): Promise<ProfessionalListResponse> {
-  const url = new URL(`${API_BASE}/api/professionals`);
+  const url = new URL(`/api/professionals`);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') {
       url.searchParams.set(key, String(value));
@@ -70,7 +74,7 @@ export async function fetchProfessionals(params: {
 }
 
 export async function fetchProfessional(id: string): Promise<Professional> {
-  const res = await fetch(`${API_BASE}/api/professionals/${id}`, {
+  const res = await fetch(`/api/professionals/${id}`, {
     headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -80,7 +84,7 @@ export async function fetchProfessional(id: string): Promise<Professional> {
 export async function createProfessional(
   data: { name: string; email?: string; phone?: string; document?: string; specialty?: string; unitIds?: string[] },
 ): Promise<Professional> {
-  const res = await fetch(`${API_BASE}/api/professionals`, {
+  const res = await fetch(`/api/professionals`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify(data),
@@ -93,7 +97,7 @@ export async function updateProfessional(
   id: string,
   data: { name?: string; email?: string; phone?: string; document?: string; specialty?: string; unitIds?: string[] },
 ): Promise<Professional> {
-  const res = await fetch(`${API_BASE}/api/professionals/${id}`, {
+  const res = await fetch(`/api/professionals/${id}`, {
     method: 'PATCH',
     headers: headers(),
     body: JSON.stringify(data),
@@ -103,7 +107,7 @@ export async function updateProfessional(
 }
 
 export async function deleteProfessional(id: string): Promise<Professional> {
-  const res = await fetch(`${API_BASE}/api/professionals/${id}`, {
+  const res = await fetch(`/api/professionals/${id}`, {
     method: 'DELETE',
     headers: headers(),
   });

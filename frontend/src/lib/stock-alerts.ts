@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -47,7 +51,7 @@ export async function fetchAlerts(params: {
   page?: number; limit?: number; unitId?: string; productId?: string;
   type?: string; resolved?: boolean; startDate?: string; endDate?: string;
 }): Promise<{ data: StockAlert[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
-  const url = new URL(`${API_BASE}/api/stock/alerts`);
+  const url = new URL(`/api/stock/alerts`);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -57,13 +61,13 @@ export async function fetchAlerts(params: {
 }
 
 export async function fetchOpenAlertCount(): Promise<number> {
-  const res = await fetch(`${API_BASE}/api/stock/alerts/count/open`, { headers: headers() });
+  const res = await fetch(`/api/stock/alerts/count/open`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function resolveAlert(id: string): Promise<StockAlert> {
-  const res = await fetch(`${API_BASE}/api/stock/alerts/${id}/resolve`, {
+  const res = await fetch(`/api/stock/alerts/${id}/resolve`, {
     method: 'PATCH', headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -71,7 +75,7 @@ export async function resolveAlert(id: string): Promise<StockAlert> {
 }
 
 export async function checkAlerts(): Promise<{ alertsCreated: number; alertsResolved: number }> {
-  const res = await fetch(`${API_BASE}/api/stock/alerts/check`, {
+  const res = await fetch(`/api/stock/alerts/check`, {
     method: 'POST', headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());

@@ -18,9 +18,12 @@ export default function NovoUsuarioPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+    function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
     const token = getToken();
-    fetch(`${API}/api/roles`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${getApiBase()}/api/roles`, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => r.json())
       .then(setRoles)
       .catch(() => {});

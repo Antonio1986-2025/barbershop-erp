@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -43,7 +47,7 @@ export async function fetchUnits(params?: {
   page?: number; limit?: number; search?: string; status?: string;
   orderBy?: string; orderDir?: string;
 }): Promise<UnitListResponse> {
-  const url = new URL(`${API_BASE}/api/units`);
+  const url = new URL(`/api/units`);
   if (!params) {
     url.searchParams.set('simple', 'true');
   } else {
@@ -57,13 +61,13 @@ export async function fetchUnits(params?: {
 }
 
 export async function fetchUnitsSimple(): Promise<{ id: string; name: string; code: string }[]> {
-  const res = await fetch(`${API_BASE}/api/units?simple=true`, { headers: headers() });
+  const res = await fetch(`/api/units?simple=true`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function fetchUnit(id: string): Promise<Unit> {
-  const res = await fetch(`${API_BASE}/api/units/${id}`, { headers: headers() });
+  const res = await fetch(`/api/units/${id}`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -74,7 +78,7 @@ export async function createUnit(data: {
   neighborhood?: string; city?: string; state?: string; zipCode?: string;
   document?: string; status?: string;
 }): Promise<Unit> {
-  const res = await fetch(`${API_BASE}/api/units`, {
+  const res = await fetch(`/api/units`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -87,7 +91,7 @@ export async function updateUnit(id: string, data: Partial<{
   neighborhood: string; city: string; state: string; zipCode: string;
   document: string; status: string;
 }>): Promise<Unit> {
-  const res = await fetch(`${API_BASE}/api/units/${id}`, {
+  const res = await fetch(`/api/units/${id}`, {
     method: 'PATCH', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -95,7 +99,7 @@ export async function updateUnit(id: string, data: Partial<{
 }
 
 export async function deleteUnit(id: string): Promise<Unit> {
-  const res = await fetch(`${API_BASE}/api/units/${id}`, {
+  const res = await fetch(`/api/units/${id}`, {
     method: 'DELETE', headers: headers(),
   });
   if (!res.ok) {

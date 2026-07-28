@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -73,7 +77,7 @@ export async function fetchNotifications(params: {
   startDate?: string;
   endDate?: string;
 }): Promise<NotificationListResponse> {
-  const url = new URL(`${API_BASE}/api/notifications`);
+  const url = new URL(`/api/notifications`);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
   }
@@ -83,13 +87,13 @@ export async function fetchNotifications(params: {
 }
 
 export async function fetchNotification(id: string): Promise<Notification> {
-  const res = await fetch(`${API_BASE}/api/notifications/${id}`, { headers: headers() });
+  const res = await fetch(`/api/notifications/${id}`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function markNotificationAsRead(id: string): Promise<Notification> {
-  const res = await fetch(`${API_BASE}/api/notifications/${id}/read`, {
+  const res = await fetch(`/api/notifications/${id}/read`, {
     method: 'PATCH',
     headers: headers(),
   });
@@ -98,7 +102,7 @@ export async function markNotificationAsRead(id: string): Promise<Notification> 
 }
 
 export async function fetchUnreadCount(): Promise<number> {
-  const res = await fetch(`${API_BASE}/api/notifications/unread-count`, { headers: headers() });
+  const res = await fetch(`/api/notifications/unread-count`, { headers: headers() });
   if (!res.ok) return 0;
   const data = await res.json();
   return typeof data === 'number' ? data : 0;

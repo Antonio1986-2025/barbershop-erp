@@ -6,7 +6,11 @@ import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/auth';
 import { ErrorBox } from '@/components/crud/error-box';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function apiHeaders() {
   const token = getToken();
@@ -34,8 +38,8 @@ export default function BarberAgendaPage() {
     setLoading(true);
     try {
       const url = filter
-        ? `${API_BASE}/api/barber/appointments?status=${filter}`
-        : `${API_BASE}/api/barber/appointments`;
+        ? `/api/barber/appointments?status=${filter}`
+        : `/api/barber/appointments`;
       const r = await fetch(url, { headers: apiHeaders() });
       const d = await r.json();
       setData(Array.isArray(d) ? d : []);

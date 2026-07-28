@@ -2,33 +2,11 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const protectedRoutes = [
-  '/dashboard',
-  '/clientes',
-  '/profissionais',
-  '/agenda',
-  '/agendamentos',
-  '/service-orders',
-  '/vendas',
-  '/pdv',
-  '/caixa',
-  '/financeiro',
-  '/estoque',
-  '/compras',
-  '/fornecedores',
-  '/categorias',
-  '/produtos',
-  '/servicos',
-  '/unidades',
-  '/usuarios',
-  '/empresas',
-  '/notificacoes',
-  '/auditoria',
-  '/configuracoes',
-  '/commission',
-  '/status',
-  '/admin',
-  '/barber',
-  '/ajuda',
+  '/dashboard', '/clientes', '/profissionais', '/agenda', '/agendamentos',
+  '/service-orders', '/vendas', '/pdv', '/caixa', '/financeiro', '/estoque',
+  '/compras', '/fornecedores', '/categorias', '/produtos', '/servicos',
+  '/unidades', '/usuarios', '/empresas', '/notificacoes', '/auditoria',
+  '/configuracoes', '/commission', '/status', '/admin', '/barber', '/ajuda',
 ];
 
 export function proxy(request: NextRequest) {

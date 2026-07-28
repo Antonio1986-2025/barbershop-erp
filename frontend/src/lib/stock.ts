@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -58,25 +62,25 @@ export interface ReportQuery {
 }
 
 export async function fetchDashboardCards(): Promise<DashboardCards> {
-  const res = await fetch(`${API_BASE}/api/stock/dashboard/cards`, { headers: headers() });
+  const res = await fetch(`/api/stock/dashboard/cards`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function fetchDashboardCharts(): Promise<any> {
-  const res = await fetch(`${API_BASE}/api/stock/dashboard/charts`, { headers: headers() });
+  const res = await fetch(`/api/stock/dashboard/charts`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function fetchDashboardRankings(): Promise<any> {
-  const res = await fetch(`${API_BASE}/api/stock/dashboard/rankings`, { headers: headers() });
+  const res = await fetch(`/api/stock/dashboard/rankings`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function fetchDashboardAlerts(): Promise<any> {
-  const res = await fetch(`${API_BASE}/api/stock/dashboard/alerts`, { headers: headers() });
+  const res = await fetch(`/api/stock/dashboard/alerts`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -85,7 +89,7 @@ export async function fetchMovements(params: {
   page?: number; limit?: number; productId?: string; unitId?: string;
   type?: string; startDate?: string; endDate?: string;
 }): Promise<{ data: StockMovement[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
-  const url = new URL(`${API_BASE}/api/stock/movements`);
+  const url = new URL(`/api/stock/movements`);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -97,7 +101,7 @@ export async function fetchMovements(params: {
 export async function adjustStock(data: {
   unitId: string; productId: string; quantity: number; unitCost?: number; description?: string;
 }): Promise<StockMovement> {
-  const res = await fetch(`${API_BASE}/api/stock/adjust`, {
+  const res = await fetch(`/api/stock/adjust`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -105,7 +109,7 @@ export async function adjustStock(data: {
 }
 
 export async function fetchCurrentStock(params: ReportQuery): Promise<{ data: any[]; totalValue: number; totalItems: number }> {
-  const url = new URL(`${API_BASE}/api/stock/reports/current-stock`);
+  const url = new URL(`/api/stock/reports/current-stock`);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -115,7 +119,7 @@ export async function fetchCurrentStock(params: ReportQuery): Promise<{ data: an
 }
 
 export async function fetchLowStock(params: ReportQuery): Promise<{ data: any[]; totalItems: number }> {
-  const url = new URL(`${API_BASE}/api/stock/reports/low-stock`);
+  const url = new URL(`/api/stock/reports/low-stock`);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -125,7 +129,7 @@ export async function fetchLowStock(params: ReportQuery): Promise<{ data: any[];
 }
 
 export async function fetchProductStock(productId: string): Promise<any> {
-  const res = await fetch(`${API_BASE}/api/stock/products/${productId}/stock`, { headers: headers() });
+  const res = await fetch(`/api/stock/products/${productId}/stock`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }

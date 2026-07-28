@@ -7,7 +7,11 @@ import { getToken } from '@/lib/auth';
 import { ErrorBox } from '@/components/crud/error-box';
 import { Pagination } from '@/components/crud/pagination';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function apiHeaders() {
   const token = getToken();
@@ -37,8 +41,8 @@ export default function BarberSalesPage() {
     setLoading(true);
     try {
       const url = filter
-        ? `${API_BASE}/api/barber/sales?page=${page}&status=${filter}`
-        : `${API_BASE}/api/barber/sales?page=${page}`;
+        ? `/api/barber/sales?page=${page}&status=${filter}`
+        : `/api/barber/sales?page=${page}`;
       const r = await fetch(url, { headers: apiHeaders() });
       const d = await r.json();
       setData(d.data ?? []);

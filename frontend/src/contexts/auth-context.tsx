@@ -7,134 +7,135 @@ import {
   useState,
 } from 'react';
 import type { ReactNode } from 'react';
-import {
-  getToken,
-  setToken,
-  setRefreshToken,
-  clearToken,
-  loginRequest,
-  logoutRequest,
-  meRequest,
-  LoginResponse,
-  getRefreshToken,
-} from '@/lib/auth';
+import { getToken, getRefreshToken, clearToken, setToken, setRefreshToken, loginRequest, logoutRequest, meRequest } from '@/lib/auth';
+import { useToast } from '@/components/ui/toast';
+
+function getApiBase(): string {
+  if (typeof window === 'undefined') return 'http://localhost:3001';
+  return `http://${window.location.hostname}:3001`;
+}
 
 interface User {
   id: string;
   name: string;
   email: string;
-  companyId: string;
-  companyName: string;
   roles: string[];
-  permissions: string[];
+  companyName: string;
 }
 
-interface AuthContextValue {
+interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (data: Partial<User>) => void;
 }
 
-export const AuthContext = createContext<AuthContextValue>({
+export const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   login: async () => {},
   logout: async () => {},
+  updateUser: () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const { addToast: showToast } = useToast();
 
-  const logout = useCallback(async () => {
-    await logoutRequest().catch(() => {});
-    clearToken();
-    setUser(null);
-    window.location.href = '/login';
+  const fetchUser = useCallback(async () => {
+    const token = getToken();
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUser(data);
+      } else {
+        // Try refresh
+        const refreshToken = getRefreshToken();
+        if (refreshToken) {
+          const refreshRes = await fetch(`/api/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken }),
+          });
+          if (refreshRes.ok) {
+            const { accessToken, refreshToken: newRefresh } = await refreshRes.json();
+            setToken(accessToken);
+            setRefreshToken(newRefresh);
+            const meRes = await fetch(`/api/auth/me`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            if (meRes.ok) {
+              setUser(await meRes.json());
+            }
+          } else {
+                        clearToken();
+                        setUser(null);
+                      }
+        } else {
+                      clearToken();
+                      setUser(null);
+                    }
+      }
+    } catch {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
-
-  const login = useCallback(
-    async (email: string, password: string) => {
-      const data: LoginResponse = await loginRequest(email, password);
-      setToken(data.accessToken);
-      setRefreshToken(data.refreshToken);
-      setUser(data.user);
-    },
-    [],
-  );
-
-  // Simplified: just use a mounted flag to prevent hydration mismatch
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    // Only run auth check after mount (client-side only)
-    const init = async () => {
-      const token = getToken();
-      if (!token) {
-        const refreshToken = getRefreshToken();
-        if (!refreshToken) {
-          setLoading(false);
-          return;
-        }
-        try {
-          const data = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/api/auth/refresh`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ refreshToken }),
-            },
-          );
-          if (data.ok) {
-            const r = await data.json();
-            setToken(r.accessToken);
-            setRefreshToken(r.refreshToken);
-            const me = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/api/auth/me`,
-              { headers: { Authorization: `Bearer ${r.accessToken}` } },
-            );
-            if (me.ok) setUser(await me.json());
-            else clearToken();
-          }
-        } catch {
-          clearToken();
-        }
-        setLoading(false);
-        return;
-      }
+    fetchUser();
+  }, [fetchUser]);
 
-      try {
-        const me = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/api/auth/me`,
-          { headers: { Authorization: `Bearer ${token}` } },
-        );
-        if (me.ok) {
-          setUser(await me.json());
-        } else {
-          clearToken();
-        }
-      } catch {
-        clearToken();
-      }
-      setLoading(false);
-    };
+  const login = async (email: string, password: string) => {
+    const res = await fetch(`${getApiBase()}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
 
-    init();
-  }, []);
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: 'Erro ao fazer login' }));
+      throw new Error(error.message);
+    }
 
-  // Don't render children on server - prevents hydration mismatch
-  if (!mounted) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-zinc-500">Carregando...</p>
-      </div>
-    );
-  }
+    const data = await res.json();
+    setToken(data.accessToken);
+    setRefreshToken(data.refreshToken);
+    setUser(data.user);
+    showToast?.('SUCCESS', 'Login realizado com sucesso!');
+  };
+
+  const logout = async () => {
+    try {
+      await fetch(`/api/auth/logout`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+    } catch {
+      // ignore
+    }
+    clearToken();
+    setUser(null);
+  };
+
+  const updateUser = (data: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...data } : prev));
+  };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

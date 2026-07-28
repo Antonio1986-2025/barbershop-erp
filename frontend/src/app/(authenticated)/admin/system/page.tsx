@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { getToken } from '@/lib/auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 const VERSION = 'v1.0.6';
 
 interface SysInfo {
@@ -26,7 +30,7 @@ export default function AdminSystemPage() {
     async function load() {
       try {
         const token = getToken();
-        const r = await fetch(`${API_BASE}/api/audit?page=1&limit=10`, { headers: { Authorization: `Bearer ${token}` } });
+        const r = await fetch(`/api/audit?page=1&limit=10`, { headers: { Authorization: `Bearer ${token}` } });
         const d = await r.json();
         setLogins(d.data ?? []);
       } catch {}

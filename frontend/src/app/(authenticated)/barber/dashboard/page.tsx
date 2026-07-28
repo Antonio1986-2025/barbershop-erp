@@ -6,7 +6,11 @@ import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/auth';
 import { ErrorBox } from '@/components/crud/error-box';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 export default function BarberDashboardPage() {
   const { user } = useAuth();
@@ -20,7 +24,7 @@ export default function BarberDashboardPage() {
     if (!user.roles?.includes('barber')) { router.replace('/dashboard'); return; }
 
     const token = getToken();
-    fetch(`${API_BASE}/api/barber/dashboard`, {
+    fetch(`/api/barber/dashboard`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())

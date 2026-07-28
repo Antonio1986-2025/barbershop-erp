@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -38,7 +42,7 @@ export async function fetchUsers(params: {
   page?: number; limit?: number; search?: string; active?: string; roleId?: string;
   orderBy?: string; orderDir?: string;
 }): Promise<UserListResponse> {
-  const url = new URL(`${API_BASE}/api/users`);
+  const url = new URL(`/api/users`);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -48,7 +52,7 @@ export async function fetchUsers(params: {
 }
 
 export async function fetchUser(id: string): Promise<User> {
-  const res = await fetch(`${API_BASE}/api/users/${id}`, { headers: headers() });
+  const res = await fetch(`/api/users/${id}`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -56,7 +60,7 @@ export async function fetchUser(id: string): Promise<User> {
 export async function createUser(data: {
   name: string; email: string; password: string; roleIds?: string[];
 }): Promise<User> {
-  const res = await fetch(`${API_BASE}/api/users`, {
+  const res = await fetch(`/api/users`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -66,7 +70,7 @@ export async function createUser(data: {
 export async function updateUser(id: string, data: {
   name?: string; email?: string; password?: string; roleIds?: string[];
 }): Promise<User> {
-  const res = await fetch(`${API_BASE}/api/users/${id}`, {
+  const res = await fetch(`/api/users/${id}`, {
     method: 'PATCH', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -74,7 +78,7 @@ export async function updateUser(id: string, data: {
 }
 
 export async function deleteUser(id: string): Promise<User> {
-  const res = await fetch(`${API_BASE}/api/users/${id}`, {
+  const res = await fetch(`/api/users/${id}`, {
     method: 'DELETE', headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());

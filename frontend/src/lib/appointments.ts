@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -62,7 +66,7 @@ export async function fetchAppointments(params: {
   startDate?: string;
   endDate?: string;
 }): Promise<Appointment[]> {
-  const url = new URL(`${API_BASE}/api/appointments`);
+  const url = new URL(`/api/appointments`);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
   }
@@ -72,7 +76,7 @@ export async function fetchAppointments(params: {
 }
 
 export async function fetchAppointment(id: string): Promise<Appointment> {
-  const res = await fetch(`${API_BASE}/api/appointments/${id}`, { headers: headers() });
+  const res = await fetch(`/api/appointments/${id}`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -83,7 +87,7 @@ export async function fetchAppointmentsCalendar(params: {
   unitId?: string;
   professionalId?: string;
 }): Promise<Appointment[]> {
-  const url = new URL(`${API_BASE}/api/appointments/calendar`);
+  const url = new URL(`/api/appointments/calendar`);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
   }
@@ -103,7 +107,7 @@ export async function createAppointment(data: {
   newCustomerPhone?: string;
   createSale?: boolean;
 }): Promise<Appointment> {
-  const res = await fetch(`${API_BASE}/api/appointments`, {
+  const res = await fetch(`/api/appointments`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify(data),
@@ -113,7 +117,7 @@ export async function createAppointment(data: {
 }
 
 export async function updateAppointment(id: string, data: Partial<Appointment>): Promise<Appointment> {
-  const res = await fetch(`${API_BASE}/api/appointments/${id}`, {
+  const res = await fetch(`/api/appointments/${id}`, {
     method: 'PATCH',
     headers: headers(),
     body: JSON.stringify(data),
@@ -123,7 +127,7 @@ export async function updateAppointment(id: string, data: Partial<Appointment>):
 }
 
 export async function cancelAppointment(id: string, reason?: string): Promise<Appointment> {
-  const res = await fetch(`${API_BASE}/api/appointments/${id}/cancel`, {
+  const res = await fetch(`/api/appointments/${id}/cancel`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify({ reason }),
@@ -133,7 +137,7 @@ export async function cancelAppointment(id: string, reason?: string): Promise<Ap
 }
 
 export async function rescheduleAppointment(id: string, newStartAt: string, reason?: string): Promise<Appointment> {
-  const res = await fetch(`${API_BASE}/api/appointments/${id}/reschedule`, {
+  const res = await fetch(`/api/appointments/${id}/reschedule`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify({ newStartAt, reason }),
@@ -143,7 +147,7 @@ export async function rescheduleAppointment(id: string, newStartAt: string, reas
 }
 
 export async function updateAppointmentStatus(id: string, status: string): Promise<Appointment> {
-  const res = await fetch(`${API_BASE}/api/appointments/${id}/status`, {
+  const res = await fetch(`/api/appointments/${id}/status`, {
     method: 'PATCH',
     headers: headers(),
     body: JSON.stringify({ status }),
@@ -153,7 +157,7 @@ export async function updateAppointmentStatus(id: string, status: string): Promi
 }
 
 export async function deleteAppointment(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/appointments/${id}`, {
+  const res = await fetch(`/api/appointments/${id}`, {
     method: 'DELETE',
     headers: headers(),
   });

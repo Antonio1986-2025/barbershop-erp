@@ -6,7 +6,11 @@ import { useRouter } from 'next/navigation';
 import { getToken } from '@/lib/auth';
 import { ErrorBox } from '@/components/crud/error-box';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function apiHeaders() {
   const token = getToken();
@@ -31,7 +35,7 @@ export default function BarberProfilePage() {
 
   async function load() {
     try {
-      const r = await fetch(`${API_BASE}/api/barber/profile`, { headers: apiHeaders() });
+      const r = await fetch(`/api/barber/profile`, { headers: apiHeaders() });
       setData(await r.json());
     } catch (e: any) { setError(e.message); }
     finally { setLoading(false); }

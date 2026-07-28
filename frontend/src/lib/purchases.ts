@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -60,7 +64,7 @@ export async function fetchPurchases(params: {
   page?: number; limit?: number; status?: string; supplierId?: string;
   startDate?: string; endDate?: string; orderBy?: string; orderDir?: string;
 }): Promise<{ data: Purchase[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
-  const url = new URL(`${API_BASE}/api/purchases`);
+  const url = new URL(`/api/purchases`);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -70,7 +74,7 @@ export async function fetchPurchases(params: {
 }
 
 export async function fetchPurchase(id: string): Promise<Purchase> {
-  const res = await fetch(`${API_BASE}/api/purchases/${id}`, { headers: headers() });
+  const res = await fetch(`/api/purchases/${id}`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -79,7 +83,7 @@ export async function createPurchase(data: {
   supplierId: string; unitId: string; invoiceNumber?: string; notes?: string;
   items: { productId: string; quantity: number; unitCost: number }[];
 }): Promise<Purchase> {
-  const res = await fetch(`${API_BASE}/api/purchases`, {
+  const res = await fetch(`/api/purchases`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -87,7 +91,7 @@ export async function createPurchase(data: {
 }
 
 export async function confirmPurchase(id: string): Promise<Purchase> {
-  const res = await fetch(`${API_BASE}/api/purchases/${id}/confirm`, {
+  const res = await fetch(`/api/purchases/${id}/confirm`, {
     method: 'POST', headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -95,7 +99,7 @@ export async function confirmPurchase(id: string): Promise<Purchase> {
 }
 
 export async function cancelPurchase(id: string, reason?: string): Promise<Purchase> {
-  const res = await fetch(`${API_BASE}/api/purchases/${id}/cancel`, {
+  const res = await fetch(`/api/purchases/${id}/cancel`, {
     method: 'POST', headers: headers(), body: JSON.stringify({ reason }),
   });
   if (!res.ok) throw new Error(await res.text());

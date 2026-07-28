@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -48,7 +52,7 @@ export async function fetchServices(params: {
   orderBy?: string;
   orderDir?: string;
 }): Promise<ServiceListResponse> {
-  const url = new URL(`${API_BASE}/api/services`);
+  const url = new URL(`/api/services`);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') {
       url.searchParams.set(key, String(value));
@@ -60,7 +64,7 @@ export async function fetchServices(params: {
 }
 
 export async function fetchService(id: string): Promise<Service> {
-  const res = await fetch(`${API_BASE}/api/services/${id}`, { headers: headers() });
+  const res = await fetch(`/api/services/${id}`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -73,7 +77,7 @@ export async function createService(data: {
   commissionType?: string;
   commissionValue?: number;
 }): Promise<Service> {
-  const res = await fetch(`${API_BASE}/api/services`, {
+  const res = await fetch(`/api/services`, {
     method: 'POST',
     headers: headers(),
     body: JSON.stringify(data),
@@ -93,7 +97,7 @@ export async function updateService(
     commissionValue?: number;
   },
 ): Promise<Service> {
-  const res = await fetch(`${API_BASE}/api/services/${id}`, {
+  const res = await fetch(`/api/services/${id}`, {
     method: 'PATCH',
     headers: headers(),
     body: JSON.stringify(data),
@@ -103,7 +107,7 @@ export async function updateService(
 }
 
 export async function deleteService(id: string): Promise<Service> {
-  const res = await fetch(`${API_BASE}/api/services/${id}`, {
+  const res = await fetch(`/api/services/${id}`, {
     method: 'DELETE',
     headers: headers(),
   });

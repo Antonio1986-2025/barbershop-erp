@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -108,7 +112,7 @@ export async function fetchSales(params: {
   startDate?: string; endDate?: string;
   orderBy?: string; orderDir?: string;
 }): Promise<SaleListResponse> {
-  const url = new URL(`${API_BASE}/api/sales`);
+  const url = new URL(`/api/sales`);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -118,7 +122,7 @@ export async function fetchSales(params: {
 }
 
 export async function fetchSale(id: string): Promise<Sale> {
-  const res = await fetch(`${API_BASE}/api/sales/${id}`, { headers: headers() });
+  const res = await fetch(`/api/sales/${id}`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -129,7 +133,7 @@ export async function createSale(data: {
   notes?: string;
   items: { productId?: string; serviceId?: string; quantity: number; unitPrice: number }[];
 }): Promise<Sale> {
-  const res = await fetch(`${API_BASE}/api/sales`, {
+  const res = await fetch(`/api/sales`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -137,7 +141,7 @@ export async function createSale(data: {
 }
 
 export async function openSale(id: string): Promise<Sale> {
-  const res = await fetch(`${API_BASE}/api/sales/${id}/open`, {
+  const res = await fetch(`/api/sales/${id}/open`, {
     method: 'PATCH', headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -145,7 +149,7 @@ export async function openSale(id: string): Promise<Sale> {
 }
 
 export async function cancelSale(id: string, reason?: string): Promise<Sale> {
-  const res = await fetch(`${API_BASE}/api/sales/${id}/cancel`, {
+  const res = await fetch(`/api/sales/${id}/cancel`, {
     method: 'PATCH', headers: headers(), body: JSON.stringify({ reason }),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -153,7 +157,7 @@ export async function cancelSale(id: string, reason?: string): Promise<Sale> {
 }
 
 export async function refundSale(id: string, reason?: string): Promise<Sale> {
-  const res = await fetch(`${API_BASE}/api/sales/${id}/refund`, {
+  const res = await fetch(`/api/sales/${id}/refund`, {
     method: 'PATCH', headers: headers(), body: JSON.stringify({ reason }),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -163,7 +167,7 @@ export async function refundSale(id: string, reason?: string): Promise<Sale> {
 export async function addSaleItem(saleId: string, data: {
   productId?: string; serviceId?: string; quantity: number; unitPrice: number;
 }): Promise<SaleItem> {
-  const res = await fetch(`${API_BASE}/api/sales/${saleId}/items`, {
+  const res = await fetch(`/api/sales/${saleId}/items`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -173,7 +177,7 @@ export async function addSaleItem(saleId: string, data: {
 export async function updateSaleItem(saleId: string, itemId: string, data: {
   quantity: number;
 }): Promise<SaleItem> {
-  const res = await fetch(`${API_BASE}/api/sales/${saleId}/items/${itemId}`, {
+  const res = await fetch(`/api/sales/${saleId}/items/${itemId}`, {
     method: 'PATCH', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -181,7 +185,7 @@ export async function updateSaleItem(saleId: string, itemId: string, data: {
 }
 
 export async function removeSaleItem(saleId: string, itemId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/sales/${saleId}/items/${itemId}`, {
+  const res = await fetch(`/api/sales/${saleId}/items/${itemId}`, {
     method: 'DELETE', headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -190,7 +194,7 @@ export async function removeSaleItem(saleId: string, itemId: string): Promise<vo
 export async function createPayment(saleId: string, data: {
   amount: number; paymentMethod: string;
 }): Promise<Payment> {
-  const res = await fetch(`${API_BASE}/api/sales/${saleId}/payments`, {
+  const res = await fetch(`/api/sales/${saleId}/payments`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -198,13 +202,13 @@ export async function createPayment(saleId: string, data: {
 }
 
 export async function fetchPayments(saleId: string): Promise<Payment[]> {
-  const res = await fetch(`${API_BASE}/api/sales/${saleId}/payments`, { headers: headers() });
+  const res = await fetch(`/api/sales/${saleId}/payments`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function cancelPayment(id: string): Promise<Payment> {
-  const res = await fetch(`${API_BASE}/api/payments/${id}/cancel`, {
+  const res = await fetch(`/api/payments/${id}/cancel`, {
     method: 'PATCH', headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());

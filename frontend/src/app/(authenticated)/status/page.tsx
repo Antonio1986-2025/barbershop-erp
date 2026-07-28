@@ -2,6 +2,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 type Health = {
   status: string;
   timestamp: string;
@@ -16,9 +21,7 @@ export default function StatusPage() {
   const load = useCallback(async () => {
     setError('');
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001'}/health`,
-      );
+      const res = await fetch(`${getApiBase()}/health`);
       if (!res.ok) throw new Error(await res.text());
       setHealth(await res.json());
     } catch (e: any) {
@@ -26,66 +29,58 @@ export default function StatusPage() {
     }
   }, []);
 
-  useEffect(() => { load() }, [load]);
-
-  function formatUptime(seconds: number) {
-    const d = Math.floor(seconds / 86400);
-    const h = Math.floor((seconds % 86400) / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${d}d ${h}h ${m}m ${s}s`;
-  }
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 30000);
+    return () => clearInterval(interval);
+  }, [load]);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Status do Sistema</h1>
+    <div className="max-w-2xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">Status do Sistema</h1>
 
       {error && (
-        <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700">
-          {error}
+        <div className="mb-4 p-4 rounded-lg bg-red-50 text-red-700 border border-red-200">
+          Erro: {error}
         </div>
       )}
 
       {health && (
-        <>
+        <div className="space-y-3">
+          <div className="p-4 rounded-lg bg-card-bg border border-border">
+            <div className="flex items-center gap-3">
+              <div className={`w-3 h-3 rounded-full ${health.status === 'ok' ? 'bg-green-500' : 'bg-red-500'}`} />
+              <span className="font-medium">
+                Status: <span className="font-normal capitalize">{health.status}</span>
+              </span>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-lg border p-4">
-              <p className="text-sm text-zinc-500">Status</p>
-              <p className={`mt-1 text-lg font-bold ${health.status === 'ok' ? 'text-green-600' : 'text-red-600'}`}>
-                {health.status === 'ok' ? 'Operacional' : 'Indisponível'}
-              </p>
+            <div className="p-4 rounded-lg bg-card-bg border border-border">
+              <p className="text-sm text-muted-foreground">Versão</p>
+              <p className="font-mono">{health.version}</p>
             </div>
-            <div className="rounded-lg border p-4">
-              <p className="text-sm text-zinc-500">Versão</p>
-              <p className="mt-1 text-lg font-bold">{health.version}</p>
-            </div>
-            <div className="rounded-lg border p-4">
-              <p className="text-sm text-zinc-500">Tempo de Atividade</p>
-              <p className="mt-1 text-lg font-bold">{formatUptime(health.uptime)}</p>
-            </div>
-            <div className="rounded-lg border p-4">
-              <p className="text-sm text-zinc-500">Última Verificação</p>
-              <p className="mt-1 text-lg font-bold">
-                {new Date(health.timestamp).toLocaleString('pt-BR')}
-              </p>
+            <div className="p-4 rounded-lg bg-card-bg border border-border">
+              <p className="text-sm text-muted-foreground">Uptime</p>
+              <p className="font-mono">{Math.floor(health.uptime / 60)} min</p>
             </div>
           </div>
 
-          <div className="rounded-lg border p-4">
-            <h2 className="mb-2 text-lg font-semibold">Resposta Completa</h2>
-            <pre className="overflow-x-auto rounded bg-zinc-50 p-4 text-xs text-zinc-700">
-              {JSON.stringify(health, null, 2)}
-            </pre>
+          <div className="p-4 rounded-lg bg-card-bg border border-border">
+            <p className="text-sm text-muted-foreground">Timestamp</p>
+            <p className="font-mono">{new Date(health.timestamp).toLocaleString('pt-BR')}</p>
           </div>
-
-          <button
-            onClick={load}
-            className="rounded bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-700"
-          >
-            Atualizar
-          </button>
-        </>
+        </div>
       )}
+
+      <button
+        onClick={load}
+        disabled={error !== ''}
+        className="mt-4 w-full py-2 px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary-light transition-colors disabled:opacity-50"
+      >
+        Atualizar
+      </button>
     </div>
   );
 }

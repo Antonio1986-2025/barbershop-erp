@@ -1,6 +1,10 @@
 import { getToken } from './auth';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+function getApiBase(): string {
+  if (typeof window === 'undefined') return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_API_URL ?? `http://${window.location.hostname}:3001`;
+}
+
 
 function headers() {
   const token = getToken();
@@ -84,13 +88,13 @@ export const ACCOUNT_STATUS_COLORS: Record<string, string> = {
 
 // Categories
 export async function fetchCategories(): Promise<FinancialCategory[]> {
-  const res = await fetch(`${API_BASE}/api/financial/categories`, { headers: headers() });
+  const res = await fetch(`/api/financial/categories`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
 
 export async function createCategory(data: { name: string; type: string }): Promise<FinancialCategory> {
-  const res = await fetch(`${API_BASE}/api/financial/categories`, {
+  const res = await fetch(`/api/financial/categories`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -98,7 +102,7 @@ export async function createCategory(data: { name: string; type: string }): Prom
 }
 
 export async function updateCategory(id: string, data: { name?: string; type?: string }): Promise<FinancialCategory> {
-  const res = await fetch(`${API_BASE}/api/financial/categories/${id}`, {
+  const res = await fetch(`/api/financial/categories/${id}`, {
     method: 'PATCH', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -106,7 +110,7 @@ export async function updateCategory(id: string, data: { name?: string; type?: s
 }
 
 export async function deleteCategory(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/financial/categories/${id}`, {
+  const res = await fetch(`/api/financial/categories/${id}`, {
     method: 'DELETE', headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -117,7 +121,7 @@ export async function fetchAccounts(params: {
   page?: number; limit?: number; type?: string; status?: string;
   categoryId?: string; startDate?: string; endDate?: string;
 }): Promise<AccountListResponse> {
-  const url = new URL(`${API_BASE}/api/financial/accounts`);
+  const url = new URL(`/api/financial/accounts`);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -130,7 +134,7 @@ export async function createAccount(data: {
   categoryId: string; description: string; type: string;
   amount: number; dueDate: string;
 }): Promise<FinancialAccount> {
-  const res = await fetch(`${API_BASE}/api/financial/accounts`, {
+  const res = await fetch(`/api/financial/accounts`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -138,7 +142,7 @@ export async function createAccount(data: {
 }
 
 export async function updateAccount(id: string, data: Partial<FinancialAccount>): Promise<FinancialAccount> {
-  const res = await fetch(`${API_BASE}/api/financial/accounts/${id}`, {
+  const res = await fetch(`/api/financial/accounts/${id}`, {
     method: 'PATCH', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -146,7 +150,7 @@ export async function updateAccount(id: string, data: Partial<FinancialAccount>)
 }
 
 export async function payAccount(id: string): Promise<FinancialAccount> {
-  const res = await fetch(`${API_BASE}/api/financial/accounts/${id}/pay`, {
+  const res = await fetch(`/api/financial/accounts/${id}/pay`, {
     method: 'PATCH', headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -154,7 +158,7 @@ export async function payAccount(id: string): Promise<FinancialAccount> {
 }
 
 export async function cancelAccount(id: string): Promise<FinancialAccount> {
-  const res = await fetch(`${API_BASE}/api/financial/accounts/${id}/cancel`, {
+  const res = await fetch(`/api/financial/accounts/${id}/cancel`, {
     method: 'PATCH', headers: headers(),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -165,7 +169,7 @@ export async function cancelAccount(id: string): Promise<FinancialAccount> {
 export async function fetchCashFlow(params: {
   unitId?: string; startDate?: string; endDate?: string;
 }): Promise<CashFlow> {
-  const url = new URL(`${API_BASE}/api/financial/cash-flow`);
+  const url = new URL(`/api/financial/cash-flow`);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -178,7 +182,7 @@ export async function fetchCashFlow(params: {
 export async function createCashClosing(data: {
   cashRegisterId: string; expectedAmount?: number; closingAmount?: number;
 }): Promise<CashClosing> {
-  const res = await fetch(`${API_BASE}/api/financial/cash-closing`, {
+  const res = await fetch(`/api/financial/cash-closing`, {
     method: 'POST', headers: headers(), body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error(await res.text());
@@ -187,7 +191,7 @@ export async function createCashClosing(data: {
 
 export async function fetchCashClosings(unitId?: string): Promise<CashClosing[]> {
   const params = unitId ? `?unitId=${unitId}` : '';
-  const res = await fetch(`${API_BASE}/api/financial/cash-closing${params}`, { headers: headers() });
+  const res = await fetch(`/api/financial/cash-closing${params}`, { headers: headers() });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
