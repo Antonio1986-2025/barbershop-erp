@@ -99,7 +99,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUser]);
 
   const login = async (email: string, password: string) => {
-    const res = await fetch(`${getApiBase()}/api/auth/login`, {
+    const apiUrl = `${getApiBase()}/api/auth/login`;
+    console.log('[Auth] Login:', apiUrl);
+    const res = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -114,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(data.accessToken);
     setRefreshToken(data.refreshToken);
     setUser(data.user);
-    showToast?.('SUCCESS', 'Login realizado com sucesso!');
+    window.location.href = '/dashboard';
   };
 
   const logout = async () => {
