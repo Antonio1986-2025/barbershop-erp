@@ -7,8 +7,7 @@ import {
   useState,
 } from 'react';
 import type { ReactNode } from 'react';
-import { getToken, getRefreshToken, clearToken, setToken, setRefreshToken, loginRequest, logoutRequest, meRequest } from '@/lib/auth';
-import { useToast } from '@/components/ui/toast';
+import { getToken, getRefreshToken, clearToken, setToken, setRefreshToken } from '@/lib/auth';
 
 function getApiBase(): string {
   if (typeof window === 'undefined') return 'http://localhost:3001';
@@ -42,7 +41,6 @@ export const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const { addToast: showToast } = useToast();
 
   const fetchUser = useCallback(async () => {
     const token = getToken();
@@ -53,17 +51,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const res = await fetch(`/api/auth/me`, {
+      const res = await fetch(`${getApiBase()}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         const data = await res.json();
         setUser(data);
       } else {
-        // Try refresh
         const refreshToken = getRefreshToken();
         if (refreshToken) {
-          const refreshRes = await fetch(`/api/auth/refresh`, {
+          const refreshRes = await fetch(`${getApiBase()}/api/auth/refresh`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ refreshToken }),
@@ -72,20 +69,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const { accessToken, refreshToken: newRefresh } = await refreshRes.json();
             setToken(accessToken);
             setRefreshToken(newRefresh);
-            const meRes = await fetch(`/api/auth/me`, {
+            const meRes = await fetch(`${getApiBase()}/api/auth/me`, {
               headers: { Authorization: `Bearer ${accessToken}` },
             });
             if (meRes.ok) {
               setUser(await meRes.json());
             }
           } else {
-                        clearToken();
-                        setUser(null);
-                      }
+            clearToken();
+            setUser(null);
+          }
         } else {
-                      clearToken();
-                      setUser(null);
-                    }
+          clearToken();
+          setUser(null);
+        }
       }
     } catch {
       setUser(null);
@@ -99,9 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUser]);
 
   const login = async (email: string, password: string) => {
-    const apiUrl = `${getApiBase()}/api/auth/login`;
-    console.log('[Auth] Login:', apiUrl);
-    const res = await fetch(apiUrl, {
+    const res = await fetch(`${getApiBase()}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -121,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch(`/api/auth/logout`, {
+      await fetch(`${getApiBase()}/api/auth/logout`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${getToken()}` },
       });
