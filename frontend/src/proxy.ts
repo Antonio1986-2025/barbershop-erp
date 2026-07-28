@@ -1,28 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const protectedRoutes = [
-  '/dashboard', '/clientes', '/profissionais', '/agenda', '/agendamentos',
-  '/service-orders', '/vendas', '/pdv', '/caixa', '/financeiro', '/estoque',
-  '/compras', '/fornecedores', '/categorias', '/produtos', '/servicos',
-  '/unidades', '/usuarios', '/empresas', '/notificacoes', '/auditoria',
-  '/configuracoes', '/commission', '/status', '/admin', '/barber', '/ajuda',
-];
-
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('barbershop_token')?.value;
 
-  const isProtected = protectedRoutes.some((route) =>
-    pathname.startsWith(route),
-  );
-
-  if (isProtected && !token) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('from', pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
+  // Redirect /login to /dashboard if already authenticated
   if (pathname === '/login' && token) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
@@ -32,6 +15,7 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    '/login',
     '/dashboard/:path*',
     '/clientes/:path*',
     '/profissionais/:path*',
