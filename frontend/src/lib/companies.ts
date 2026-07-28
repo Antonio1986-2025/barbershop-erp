@@ -59,7 +59,7 @@ export async function fetchCompanies(params: {
   page?: number; limit?: number; search?: string; status?: string;
   orderBy?: string; orderDir?: string;
 }): Promise<CompanyListResponse> {
-  const url = new URL(`/api/companies`);
+  const url = new URL(`/api/companies`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }

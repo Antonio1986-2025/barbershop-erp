@@ -77,7 +77,7 @@ export async function fetchNotifications(params: {
   startDate?: string;
   endDate?: string;
 }): Promise<NotificationListResponse> {
-  const url = new URL(`/api/notifications`);
+  const url = new URL(`/api/notifications`, window.location.origin);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
   }

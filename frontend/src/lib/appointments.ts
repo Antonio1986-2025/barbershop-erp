@@ -66,7 +66,7 @@ export async function fetchAppointments(params: {
   startDate?: string;
   endDate?: string;
 }): Promise<Appointment[]> {
-  const url = new URL(`/api/appointments`);
+  const url = new URL(`/api/appointments`, window.location.origin);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
   }
@@ -87,7 +87,7 @@ export async function fetchAppointmentsCalendar(params: {
   unitId?: string;
   professionalId?: string;
 }): Promise<Appointment[]> {
-  const url = new URL(`/api/appointments/calendar`);
+  const url = new URL(`/api/appointments/calendar`, window.location.origin);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
   }

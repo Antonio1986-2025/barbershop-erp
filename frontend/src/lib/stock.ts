@@ -89,7 +89,7 @@ export async function fetchMovements(params: {
   page?: number; limit?: number; productId?: string; unitId?: string;
   type?: string; startDate?: string; endDate?: string;
 }): Promise<{ data: StockMovement[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
-  const url = new URL(`/api/stock/movements`);
+  const url = new URL(`/api/stock/movements`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -109,7 +109,7 @@ export async function adjustStock(data: {
 }
 
 export async function fetchCurrentStock(params: ReportQuery): Promise<{ data: any[]; totalValue: number; totalItems: number }> {
-  const url = new URL(`/api/stock/reports/current-stock`);
+  const url = new URL(`/api/stock/reports/current-stock`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -119,7 +119,7 @@ export async function fetchCurrentStock(params: ReportQuery): Promise<{ data: an
 }
 
 export async function fetchLowStock(params: ReportQuery): Promise<{ data: any[]; totalItems: number }> {
-  const url = new URL(`/api/stock/reports/low-stock`);
+  const url = new URL(`/api/stock/reports/low-stock`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }

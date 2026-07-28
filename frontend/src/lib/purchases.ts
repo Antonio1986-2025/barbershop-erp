@@ -64,7 +64,7 @@ export async function fetchPurchases(params: {
   page?: number; limit?: number; status?: string; supplierId?: string;
   startDate?: string; endDate?: string; orderBy?: string; orderDir?: string;
 }): Promise<{ data: Purchase[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
-  const url = new URL(`/api/purchases`);
+  const url = new URL(`/api/purchases`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }

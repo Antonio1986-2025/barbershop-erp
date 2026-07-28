@@ -52,7 +52,7 @@ export async function fetchServices(params: {
   orderBy?: string;
   orderDir?: string;
 }): Promise<ServiceListResponse> {
-  const url = new URL(`/api/services`);
+  const url = new URL(`/api/services`, window.location.origin);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') {
       url.searchParams.set(key, String(value));

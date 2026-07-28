@@ -42,7 +42,7 @@ export async function fetchAuditLogs(params: {
   page?: number; limit?: number; entity?: string; action?: string;
   userId?: string; startDate?: string; endDate?: string;
 }): Promise<AuditListResponse> {
-  const url = new URL(`/api/audit-logs`);
+  const url = new URL(`/api/audit-logs`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }

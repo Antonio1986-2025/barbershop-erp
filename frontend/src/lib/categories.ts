@@ -37,7 +37,7 @@ export async function fetchCategories(params: {
   page?: number; limit?: number; search?: string; active?: string;
   orderBy?: string; orderDir?: string;
 }): Promise<CategoryListResponse> {
-  const url = new URL(`/api/categories`);
+  const url = new URL(`/api/categories`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }

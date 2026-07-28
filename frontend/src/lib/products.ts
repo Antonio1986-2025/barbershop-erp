@@ -46,7 +46,7 @@ export async function fetchProducts(params: {
   page?: number; limit?: number; search?: string; active?: string; categoryId?: string;
   orderBy?: string; orderDir?: string;
 }): Promise<ProductListResponse> {
-  const url = new URL(`/api/products`);
+  const url = new URL(`/api/products`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }

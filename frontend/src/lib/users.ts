@@ -42,7 +42,7 @@ export async function fetchUsers(params: {
   page?: number; limit?: number; search?: string; active?: string; roleId?: string;
   orderBy?: string; orderDir?: string;
 }): Promise<UserListResponse> {
-  const url = new URL(`/api/users`);
+  const url = new URL(`/api/users`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }

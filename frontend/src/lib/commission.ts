@@ -47,7 +47,7 @@ export async function fetchCommissions(params: {
   professionalId?: string;
   unitId?: string;
 } = {}): Promise<CommissionListResponse> {
-  const url = new URL(`/api/commission`);
+  const url = new URL(`/api/commission`, window.location.origin);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') {
       url.searchParams.set(key, String(value));

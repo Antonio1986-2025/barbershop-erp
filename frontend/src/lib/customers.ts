@@ -52,7 +52,7 @@ export async function fetchCustomers(params: {
   orderBy?: string;
   orderDir?: string;
 }): Promise<CustomerListResponse> {
-  const url = new URL(`/api/customers`);
+  const url = new URL(`/api/customers`, window.location.origin);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') {
       url.searchParams.set(key, String(value));

@@ -36,7 +36,7 @@ export async function fetchSuppliers(params: {
   page?: number; limit?: number; search?: string; active?: string;
   orderBy?: string; orderDir?: string;
 }): Promise<{ data: Supplier[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
-  const url = new URL(`/api/suppliers`);
+  const url = new URL(`/api/suppliers`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }

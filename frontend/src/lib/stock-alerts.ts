@@ -51,7 +51,7 @@ export async function fetchAlerts(params: {
   page?: number; limit?: number; unitId?: string; productId?: string;
   type?: string; resolved?: boolean; startDate?: string; endDate?: string;
 }): Promise<{ data: StockAlert[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
-  const url = new URL(`/api/stock/alerts`);
+  const url = new URL(`/api/stock/alerts`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }

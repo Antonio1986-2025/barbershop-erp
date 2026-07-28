@@ -121,7 +121,7 @@ export async function fetchAccounts(params: {
   page?: number; limit?: number; type?: string; status?: string;
   categoryId?: string; startDate?: string; endDate?: string;
 }): Promise<AccountListResponse> {
-  const url = new URL(`/api/financial/accounts`);
+  const url = new URL(`/api/financial/accounts`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
@@ -169,7 +169,7 @@ export async function cancelAccount(id: string): Promise<FinancialAccount> {
 export async function fetchCashFlow(params: {
   unitId?: string; startDate?: string; endDate?: string;
 }): Promise<CashFlow> {
-  const url = new URL(`/api/financial/cash-flow`);
+  const url = new URL(`/api/financial/cash-flow`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }

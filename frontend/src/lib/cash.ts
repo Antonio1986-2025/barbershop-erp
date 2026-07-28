@@ -138,7 +138,7 @@ export async function fetchCashSummary(id: string): Promise<CashSummary> {
 }
 
 export async function fetchCashHistory(unitId?: string): Promise<CashHistoryItem[]> {
-  const url = new URL(`/api/cash/history`);
+  const url = new URL(`/api/cash/history`, window.location.origin);
   if (unitId) url.searchParams.set('unitId', unitId);
   const res = await fetch(url.toString(), { headers: headers() });
   if (!res.ok) throw new Error(await res.text());

@@ -139,7 +139,7 @@ export async function fetchAvailability(params: {
   professionalId?: string;
   serviceId?: string;
 }): Promise<AvailabilityResult> {
-  const url = new URL(`/api/schedule/availability`);
+  const url = new URL(`/api/schedule/availability`, window.location.origin);
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== '') url.searchParams.set(key, String(value));
   }

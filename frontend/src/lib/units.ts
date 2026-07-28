@@ -47,7 +47,7 @@ export async function fetchUnits(params?: {
   page?: number; limit?: number; search?: string; status?: string;
   orderBy?: string; orderDir?: string;
 }): Promise<UnitListResponse> {
-  const url = new URL(`/api/units`);
+  const url = new URL(`/api/units`, window.location.origin);
   if (!params) {
     url.searchParams.set('simple', 'true');
   } else {

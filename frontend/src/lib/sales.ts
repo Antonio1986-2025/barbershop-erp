@@ -112,7 +112,7 @@ export async function fetchSales(params: {
   startDate?: string; endDate?: string;
   orderBy?: string; orderDir?: string;
 }): Promise<SaleListResponse> {
-  const url = new URL(`/api/sales`);
+  const url = new URL(`/api/sales`, window.location.origin);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== '') url.searchParams.set(k, String(v));
   }
